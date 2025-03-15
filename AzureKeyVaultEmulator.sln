@@ -5,8 +5,6 @@ VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator", "AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj", "{ABAEE20D-4E4B-45CF-ABEA-A02263F63615}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.AcceptanceTests", "AzureKeyVaultEmulator.AcceptanceTests\AzureKeyVaultEmulator.AcceptanceTests.csproj", "{181CD468-BBCA-424A-97A7-5ACC8331FE5A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C9BA3288-4BA1-4BA4-A7FB-3729ABFC8488}"
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
@@ -75,10 +73,6 @@ Global
 		{ABAEE20D-4E4B-45CF-ABEA-A02263F63615}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABAEE20D-4E4B-45CF-ABEA-A02263F63615}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABAEE20D-4E4B-45CF-ABEA-A02263F63615}.Release|Any CPU.Build.0 = Release|Any CPU
-		{181CD468-BBCA-424A-97A7-5ACC8331FE5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{181CD468-BBCA-424A-97A7-5ACC8331FE5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{181CD468-BBCA-424A-97A7-5ACC8331FE5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{181CD468-BBCA-424A-97A7-5ACC8331FE5A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5FEF252E-CD35-438F-8128-041B257E9B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5FEF252E-CD35-438F-8128-041B257E9B3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FEF252E-CD35-438F-8128-041B257E9B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,73 +1,54 @@
 using AzureKeyVaultEmulator.ServiceConfiguration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+//builder.Services.AddConfiguredAuthentication();
 
-builder.Services.AddControllers()
-    .AddJsonOptions(o =>
-    {
-        o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    });
+builder.Services.AddControllers();
 
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddConfiguredSwaggerGen();
-builder.Services.AddConfiguredAuthentication();
 
+builder.Services.AddConfiguredSwaggerGen();
 builder.Services.RegisterCustomServices();
 
 var app = builder.Build();
 
-app.MapDefaultEndpoints();
-
-if (builder.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Azure KeyVault Emulator"));
 }
 
-app.UseHttpsRedirection();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
-app.UseRouting();
+//app.MapGet("/token", () =>
+//{
+//    var claims = new[]
+//    {
+//        new Claim(JwtRegisteredClaimNames.Sub, "localuser"),
+//        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+//    };
 
-app.UseAuthentication();
-app.UseAuthorization();
+//    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("this is my custom Secret key for authentication"));
+//    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+//    var token = new JwtSecurityToken(
+//        issuer: "https://localazurekeyvault.localhost.com",
+//        audience: "https://localazurekeyvault.localhost.com",
+//        claims: claims,
+//        expires: DateTime.Now.AddMinutes(30),
+//        signingCredentials: creds);
+
+//    return new JwtSecurityTokenHandler().WriteToken(token);
+//});
 
 app.MapControllers();
-
-app.MapDefaultEndpoints();
-
-app.MapGet("/token", () =>
-{
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("cdb1e7890baa2f02708211612646e7b499a44ef5266a7d0ccfbec58e271be316"));
-    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-    var descriptor = new SecurityTokenDescriptor
-    {
-        Expires = DateTime.Now.AddDays(31),
-        IssuedAt = DateTime.Now,
-        NotBefore = DateTime.Now,
-        Audience = "azurelocalkeyvault",
-        Issuer = "https://localhost",
-        SigningCredentials = creds,
-    };
-
-    var handler = new JwtSecurityTokenHandler();
-
-    var token = handler.CreateJwtSecurityToken(descriptor);
-
-    return handler.WriteToken(token);
-});
 
 app.Run();
 

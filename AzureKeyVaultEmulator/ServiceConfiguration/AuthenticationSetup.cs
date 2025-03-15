@@ -1,4 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AzureKeyVaultEmulator.ServiceConfiguration
 {
@@ -7,25 +14,24 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
         public static IServiceCollection AddConfiguredAuthentication(this IServiceCollection services)
         {
             services
-                .AddAuthentication(x =>
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
                 {
-                    x.DefaultAuthenticateScheme = BearerTokenDefaults.AuthenticationScheme;
-                })
-                .AddBearerToken(BearerTokenDefaults.AuthenticationScheme, x =>
-                {
-                    x.BearerTokenExpiration = TimeSpan.FromDays(1);
-
-                    x.Events = new BearerTokenEvents
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        OnMessageReceived = async (context) => 
-                        {
-                            context.Principal = new System.Security.Claims.ClaimsPrincipal();
-                            context.Success();
+                        ValidateAudience = false,
+                        ValidateActor = false,
+                        ValidateIssuer = false,
+                        ValidateLifetime = false,
+                        
+                        IssuerSigningKey = new SymmetricSecurityKey(new HMACSHA256(Encoding.UTF8.GetBytes("this is my custom Secret key for authentication")).Key),
 
-                            await Task.CompletedTask;
-                        }
+                        ValidIssuer = "https://localazurekeyvault.localhost.com",
+                        ValidAudience = "https://localazurekeyvault.localhost"
                     };
                 });
+
+            services.AddAuthorization();
 
             return services;
         }
