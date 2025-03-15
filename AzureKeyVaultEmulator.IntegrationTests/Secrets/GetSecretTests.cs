@@ -10,7 +10,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         private readonly string _defaultSecretValue = "myPassword";
 
         [Theory]
-        [InlineData(1.0)]
+        [InlineData(7.4)]
         public async Task GetSecretReturnsCorrectValueTest(double version)
         {
             var client = await fixture.CreateHttpClient(version);
@@ -19,7 +19,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             await CreateSecretAsync(client);
 
-            var response = await client.GetAsync($"secrets/{_defaultSecretName}");
+            var response = await client.GetAsync($"secrets/{_defaultSecretName}?api-version={version}");
 
             response.EnsureSuccessStatusCode();
 
@@ -30,7 +30,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(_defaultSecretValue, secret.Value);
         }
 
-        private async Task CreateSecretAsync(HttpClient client, string name = "", string value = "")
+        private async Task CreateSecretAsync(HttpClient client, string name = "", string value = "", double version = 7.4)
         {
             if (string.IsNullOrEmpty(name))
                 name = _defaultSecretName;
@@ -40,9 +40,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             var createdSecret = RequestSetup.CreateSecretModel(value);
 
-            var createResponse = await client.PutAsync($"secrets/{name}", createdSecret);
-
-            createResponse.EnsureSuccessStatusCode();
+            var createdResponse = await client.PutAsync($"secrets/{name}?api-version={version}", createdSecret);
+            
+            createdResponse.EnsureSuccessStatusCode();
         }
     }
 }
