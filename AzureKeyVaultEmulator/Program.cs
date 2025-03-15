@@ -1,5 +1,4 @@
 using AzureKeyVaultEmulator.ServiceConfiguration;
-using Google.Protobuf.WellKnownTypes;
 using System.Text.Json.Serialization;
 
 
@@ -39,3 +38,6 @@ app.UseAuthorization();
 //app.UseEndpoints(endpoints => endpoints.MapControllers());
 
 app.Run();
+
+// Required for integration testing: https://stackoverflow.com/a/70026704/4664094
+public partial class Program { }

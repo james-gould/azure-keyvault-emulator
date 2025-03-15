@@ -52,9 +52,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Checks", "Checks", "{9D1079
 		scripts\checks\dotnetcheck.sh = scripts\checks\dotnetcheck.sh
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LocalCerts", "LocalCerts", "{89F2199D-9243-4928-85F2-D4B8D5E0FEEE}"
+	ProjectSection(SolutionItems) = preProject
+		local-certs\azure-keyvault-emulator.crt = local-certs\azure-keyvault-emulator.crt
+		local-certs\azure-keyvault-emulator.key = local-certs\azure-keyvault-emulator.key
+		local-certs\azure-keyvault-emulator.pfx = local-certs\azure-keyvault-emulator.pfx
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.AppHost", "AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj", "{5FEF252E-CD35-438F-8128-041B257E9B3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Shared", "AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.ServiceDefaults\AzureKeyVaultEmulator.Shared.csproj", "{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.IntegrationTests", "AzureKeyVaultEmulator.IntegrationTests\AzureKeyVaultEmulator.IntegrationTests.csproj", "{29CA2D9E-75F2-4613-B329-4DB808D28481}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,6 +87,10 @@ Global
 		{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29CA2D9E-75F2-4613-B329-4DB808D28481}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29CA2D9E-75F2-4613-B329-4DB808D28481}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29CA2D9E-75F2-4613-B329-4DB808D28481}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29CA2D9E-75F2-4613-B329-4DB808D28481}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -10,7 +10,7 @@ namespace AzureKeyVaultEmulator.Shared.Models
     public class AttributeBase
     {
         [JsonPropertyName("enabled")]
-        public bool Enabled { get; set; }
+        public bool Enabled { get; set; } = true;
 
         [JsonPropertyName("exp")]
         public int Expiration { get; set; }
