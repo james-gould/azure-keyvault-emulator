@@ -8,7 +8,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
 {
     [ApiController]
     [Route("secrets/{name}")]
-    //[Authorize]
+    [Authorize]
     public class SecretsController : ControllerBase
     {
         private readonly IKeyVaultSecretService _keyVaultSecretService;

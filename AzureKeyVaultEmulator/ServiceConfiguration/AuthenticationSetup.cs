@@ -26,8 +26,8 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
                         
                         IssuerSigningKey = new SymmetricSecurityKey(new HMACSHA256(Encoding.UTF8.GetBytes("this is my custom Secret key for authentication")).Key),
 
-                        ValidIssuer = "https://localazurekeyvault.localhost.com",
-                        ValidAudience = "https://localazurekeyvault.localhost"
+                        ValidIssuer = "localazurekeyvault.localhost.com",
+                        ValidAudience = "localazurekeyvault.localhost.com"
                     };
                 });
 

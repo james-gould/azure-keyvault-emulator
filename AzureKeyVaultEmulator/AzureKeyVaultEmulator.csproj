@@ -4,18 +4,9 @@
 	<nullable>enable</nullable>
 	<ImplicitUsings>true</ImplicitUsings>
   </PropertyGroup>
+
   <ItemGroup>
-    <Compile Remove="Keys\Models\**" />
-    <Compile Remove="Secrets\Models\**" />
-    <Content Remove="Keys\Models\**" />
-    <Content Remove="Secrets\Models\**" />
-    <EmbeddedResource Remove="Keys\Models\**" />
-    <EmbeddedResource Remove="Secrets\Models\**" />
-    <None Remove="Keys\Models\**" />
-    <None Remove="Secrets\Models\**" />
-  </ItemGroup>
-  <ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.16" />
+	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.14" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
   <ItemGroup>
