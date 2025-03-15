@@ -1,4 +1,8 @@
 using AzureKeyVaultEmulator.ServiceConfiguration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Text.Json.Serialization;
 
 
@@ -42,6 +46,28 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapDefaultEndpoints();
+
+app.MapGet("/token", () =>
+{
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("cdb1e7890baa2f02708211612646e7b499a44ef5266a7d0ccfbec58e271be316"));
+    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+    var descriptor = new SecurityTokenDescriptor
+    {
+        Expires = DateTime.Now.AddDays(31),
+        IssuedAt = DateTime.Now,
+        NotBefore = DateTime.Now,
+        Audience = "azurelocalkeyvault",
+        Issuer = "https://localhost",
+        SigningCredentials = creds,
+    };
+
+    var handler = new JwtSecurityTokenHandler();
+
+    var token = handler.CreateJwtSecurityToken(descriptor);
+
+    return handler.WriteToken(token);
+});
 
 app.Run();
 

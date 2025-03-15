@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.OpenApi.Models;
-using System;
 
 namespace AzureKeyVaultEmulator.ServiceConfiguration
 {
@@ -17,8 +15,8 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
-                    Description = "JWT Authorization header using the Bearer scheme. Use 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE4OTAyMzkwMjIsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjUwMDEvIn0.bHLeGTRqjJrmIJbErE-1Azs724E5ibzvrIc-UQL6pws'",
-                    Scheme = JwtBearerDefaults.AuthenticationScheme,
+                    Description = "JWT Authorization header using the Bearer scheme. Use '/token to generate a token",
+                    Scheme = BearerTokenDefaults.AuthenticationScheme,
                 });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
