@@ -1,46 +1,49 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35828.75 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator", "AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj", "{ABAEE20D-4E4B-45CF-ABEA-A02263F63615}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.AcceptanceTests", "AzureKeyVaultEmulator.AcceptanceTests\AzureKeyVaultEmulator.AcceptanceTests.csproj", "{181CD468-BBCA-424A-97A7-5ACC8331FE5A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C9BA3288-4BA1-4BA4-A7FB-3729ABFC8488}"
-ProjectSection(SolutionItems) = preProject
-	makefile = makefile
-	README.md = README.md
-	.gitignore = .gitignore
-	.dockerignore = .dockerignore
-	Dockerfile = Dockerfile
-	docker-compose.yml = docker-compose.yml
-	.releaserc.json = .releaserc.json
-	CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
-	LICENSE = LICENSE
-	package.json = package.json
-	CHANGELOG.md = CHANGELOG.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.gitignore = .gitignore
+		.releaserc.json = .releaserc.json
+		CHANGELOG.md = CHANGELOG.md
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
+		LICENSE = LICENSE
+		makefile = makefile
+		package.json = package.json
+		README.md = README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{EEEEDF54-ADE9-447E-8ED7-36A9E3CC0FD0}"
-ProjectSection(SolutionItems) = preProject
-	scripts\acceptancetest.sh = scripts\acceptancetest.sh
-	scripts\dependencycheck.sh = scripts\dependencycheck.sh
-	scripts\serviceup.sh = scripts\serviceup.sh
-	scripts\startdocker.sh = scripts\startdocker.sh
-	scripts\stopdocker.sh = scripts\stopdocker.sh
-	scripts\stopservice.sh = scripts\stopservice.sh
-	scripts\verify.sh = scripts\verify.sh
-	scripts\release.sh = scripts\release.sh
-	scripts\importcert.sh = scripts\importcert.sh
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		scripts\acceptancetest.sh = scripts\acceptancetest.sh
+		scripts\dependencycheck.sh = scripts\dependencycheck.sh
+		scripts\importcert.sh = scripts\importcert.sh
+		scripts\release.sh = scripts\release.sh
+		scripts\serviceup.sh = scripts\serviceup.sh
+		scripts\startdocker.sh = scripts\startdocker.sh
+		scripts\stopdocker.sh = scripts\stopdocker.sh
+		scripts\stopservice.sh = scripts\stopservice.sh
+		scripts\verify.sh = scripts\verify.sh
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipeline", "Pipeline", "{B4453CBE-DBCF-4CBF-B6DC-B951DA62668A}"
-ProjectSection(SolutionItems) = preProject
-	.github\workflows\pull-request.yml = .github\workflows\pull-request.yml
-	.github\workflows\verify.yml = .github\workflows\verify.yml
-	.github\dependabot.yml = .github\dependabot.yml
-	.github\CODEOWNERS = .github\CODEOWNERS
-	.github\ISSUE_TEMPLATE.md = .github\ISSUE_TEMPLATE.md
-	.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		.github\CODEOWNERS = .github\CODEOWNERS
+		.github\dependabot.yml = .github\dependabot.yml
+		.github\ISSUE_TEMPLATE.md = .github\ISSUE_TEMPLATE.md
+		.github\workflows\pull-request.yml = .github\workflows\pull-request.yml
+		.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
+		.github\workflows\verify.yml = .github\workflows\verify.yml
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Checks", "Checks", "{9D107928-7669-4B0C-9291-F5318F9F334B}"
 	ProjectSection(SolutionItems) = preProject
@@ -48,6 +51,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Checks", "Checks", "{9D1079
 		scripts\checks\dockercomposecheck.sh = scripts\checks\dockercomposecheck.sh
 		scripts\checks\dotnetcheck.sh = scripts\checks\dotnetcheck.sh
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.AppHost", "AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj", "{5FEF252E-CD35-438F-8128-041B257E9B3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Shared", "AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.ServiceDefaults\AzureKeyVaultEmulator.Shared.csproj", "{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,8 +70,22 @@ Global
 		{181CD468-BBCA-424A-97A7-5ACC8331FE5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{181CD468-BBCA-424A-97A7-5ACC8331FE5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{181CD468-BBCA-424A-97A7-5ACC8331FE5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FEF252E-CD35-438F-8128-041B257E9B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FEF252E-CD35-438F-8128-041B257E9B3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FEF252E-CD35-438F-8128-041B257E9B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FEF252E-CD35-438F-8128-041B257E9B3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91E546A8-90C4-DDA6-57EB-95AF3F911C0F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9D107928-7669-4B0C-9291-F5318F9F334B} = {EEEEDF54-ADE9-447E-8ED7-36A9E3CC0FD0}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F55DDB9-3B7B-46C5-AB82-AB7A76A1B187}
 	EndGlobalSection
 EndGlobal
