@@ -33,6 +33,8 @@ namespace AzureKeyVaultEmulator
                     o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                 });
 
+            services.AddHttpContextAccessor();
+
             services.AddConfiguredSwaggerGen();
             services.AddConfiguredAuthentication();
 
@@ -45,7 +47,7 @@ namespace AzureKeyVaultEmulator
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Azure KeyVault Emulator v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Azure KeyVault Emulator"));
             }
 
             app.UseHttpsRedirection();

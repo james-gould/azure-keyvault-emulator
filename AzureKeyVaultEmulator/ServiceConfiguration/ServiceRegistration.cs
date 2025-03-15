@@ -9,7 +9,6 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
     {
         public static IServiceCollection RegisterCustomServices(this IServiceCollection services)
         {
-            services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IKeyVaultKeyService, KeyVaultKeyService>();
             services.AddScoped<IKeyVaultSecretService, KeyVaultSecretService>();
 
