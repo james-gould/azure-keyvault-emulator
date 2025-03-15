@@ -13,7 +13,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [InlineData(1.0)]
         public async Task GetSecretReturnsCorrectValueTest(double version)
         {
-            var client = fixture.CreateHttpClient(version);
+            var client = await fixture.CreateHttpClient(version);
 
             Assert.NotNull(client);
 

@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
-	
   <PropertyGroup>
-	<IsAspireHost>true</IsAspireHost>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -13,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
 	<PackageReference Include="Aspire.Hosting.Testing" Version="9.0.0" />
     <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
     <PackageReference Include="Asp.Versioning.Http.Client" Version="8.1.0" />
@@ -24,13 +20,13 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="System.Net" />
-    <Using Include="Microsoft.Extensions.DependencyInjection" />
-    <Using Include="Aspire.Hosting.ApplicationModel" />
-    <Using Include="Aspire.Hosting.Testing" />
-    <Using Include="Xunit" />
-  </ItemGroup>
+	<ItemGroup>
+		<Using Include="System.Net" />
+		<Using Include="Microsoft.Extensions.DependencyInjection" />
+		<Using Include="Aspire.Hosting.ApplicationModel" />
+		<Using Include="Aspire.Hosting.Testing" />
+		<Using Include="Xunit" />
+	</ItemGroup>
 
   <ItemGroup>
     <Folder Include="Keys\" />
@@ -40,7 +36,6 @@
   <ItemGroup>
     <ProjectReference Include="..\AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj" />
     <ProjectReference Include="..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false"/>
-    <ProjectReference Include="..\AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj" />
   </ItemGroup>
 
 </Project>

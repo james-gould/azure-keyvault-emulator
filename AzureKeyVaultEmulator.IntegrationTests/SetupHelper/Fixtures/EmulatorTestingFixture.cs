@@ -1,19 +1,26 @@
 ﻿using Asp.Versioning;
 using Asp.Versioning.Http;
+using Aspire.Hosting;
 using AzureKeyVaultEmulator.Shared.Constants;
+using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
 {
     public sealed class EmulatorTestingFixture : IAsyncLifetime
     {
         private DistributedApplication? _app;
+        private ResourceNotificationService? _notificationService;
 
-        public HttpClient CreateHttpClient(double version)
+        public async Task<HttpClient> CreateHttpClient(double version, string applicationName = AspireConstants.EmulatorServiceName)
         {
             // Requires extension of testing library to include this
             var opt = new ApiVersionHandler(new QueryStringApiVersionWriter(), new ApiVersion(version));
 
-            return _app!.CreateHttpClient(AspireConstants.EmulatorServiceName);
+            var client = _app!.CreateHttpClient(applicationName);
+
+            await _notificationService!.WaitForResourceAsync(applicationName, KnownResourceStates.Running).WaitAsync(TimeSpan.FromSeconds(30));
+
+            return client;
         }
 
         public async Task InitializeAsync()
@@ -27,20 +34,15 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
 
             _app = await builder.BuildAsync();
 
+            _notificationService = _app.Services.GetService<ResourceNotificationService>();
+
             await _app.StartAsync();
         }
 
         async Task IAsyncLifetime.DisposeAsync()
         {
-            await _app!.StopAsync();
-            if (_app is IAsyncDisposable asyncDisposable)
-            {
-                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-            }
-            else
-            {
-                _app.Dispose();
-            }
+            if(_app is not null)
+                await _app.DisposeAsync().ConfigureAwait(false);
         }
     }
 }
