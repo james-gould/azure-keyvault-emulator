@@ -2,6 +2,6 @@ using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<WebApplication1>("TestAPI");
+builder.AddProject<AzureKeyVaultEmulator>("KeyVaultEmulatorAPI");
 
 builder.Build().Run();
