@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Concurrent;
-using AzureKeyVaultEmulator.Secrets.Models;
+using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using Microsoft.AspNetCore.Http;
 
 namespace AzureKeyVaultEmulator.Secrets.Services

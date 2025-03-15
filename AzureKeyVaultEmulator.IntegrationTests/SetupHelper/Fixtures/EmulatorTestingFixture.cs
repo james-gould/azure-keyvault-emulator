@@ -1,43 +1,38 @@
 ﻿using Asp.Versioning;
 using Asp.Versioning.Http;
+using AzureKeyVaultEmulator.Shared.Constants;
 using Microsoft.Extensions.Hosting;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
 {
-    public sealed class EmulatorTestingFixture : WebApplicationFactory<Program>, IAsyncLifetime
+    public sealed class EmulatorTestingFixture : IAsyncLifetime
     {
-        private readonly IHost _app;
-
-        public EmulatorTestingFixture()
-        {
-            var options = new DistributedApplicationOptions { AssemblyName = typeof(EmulatorTestingFixture).Assembly.FullName, DisableDashboard = true };
-            var builder = DistributedApplication.CreateBuilder(options);
-
-            _app = builder.Build();
-        }
+        private DistributedApplication _app;
 
         public HttpClient CreateHttpClient(double version)
         {
+            // Requires extension of testing library to include this
             var opt = new ApiVersionHandler(new QueryStringApiVersionWriter(), new ApiVersion(version));
 
-            return CreateDefaultClient(opt);
-        }
-
-        protected override IHost CreateHost(IHostBuilder builder)
-        {
-            // Area to configure IHost if required.
-
-            return base.CreateHost(builder);
+            return _app.CreateHttpClient(AspireConstants.EmulatorServiceName);
         }
 
         public async Task InitializeAsync()
         {
+            var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>();
+
+            builder.Services.ConfigureHttpClientDefaults(c =>
+            {
+                c.AddStandardResilienceHandler();
+            });
+
+            _app = await builder.BuildAsync();
+
             await _app.StartAsync();
         }
 
         async Task IAsyncLifetime.DisposeAsync()
         {
-            await DisposeAsync();
             await _app.StopAsync();
             if (_app is IAsyncDisposable asyncDisposable)
             {

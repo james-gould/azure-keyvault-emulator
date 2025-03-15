@@ -13,10 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0"/>
+	<PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+	<PackageReference Include="Aspire.Hosting.Testing" Version="9.0.0" />
     <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
     <PackageReference Include="Asp.Versioning.Http.Client" Version="8.1.0" />
-    <PackageReference Include="Aspire.Hosting.Testing" Version="9.0.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.14" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
@@ -38,7 +38,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj" IsAspireProjectResource="false"/>
+    <ProjectReference Include="..\AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj" />
+    <ProjectReference Include="..\AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.ServiceDefaults\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false"/>
+    <ProjectReference Include="..\AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj" />
   </ItemGroup>
 
 </Project>

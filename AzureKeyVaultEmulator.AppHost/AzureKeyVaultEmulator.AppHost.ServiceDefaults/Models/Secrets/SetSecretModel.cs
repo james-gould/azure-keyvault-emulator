@@ -1,8 +1,7 @@
-using AzureKeyVaultEmulator.Shared.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace AzureKeyVaultEmulator.Secrets.Models
+namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 {
     public class SetSecretModel : ICreateItem
     {

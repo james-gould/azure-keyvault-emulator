@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Concurrent;
 using AzureKeyVaultEmulator.Keys.Factories;
-using AzureKeyVaultEmulator.Keys.Models;
 using AzureKeyVaultEmulator.Shared.Constants;
-using Microsoft.AspNetCore.Http;
+using AzureKeyVaultEmulator.Shared.Models.Keys;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Keys.Services

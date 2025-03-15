@@ -4,6 +4,8 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
     {
@@ -20,6 +22,8 @@ builder.Services.AddConfiguredAuthentication();
 builder.Services.RegisterCustomServices();
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 if (builder.Environment.IsDevelopment())
 {
