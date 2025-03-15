@@ -8,21 +8,21 @@ namespace AzureKeyVaultEmulator.Keys.Models
     {
         [JsonPropertyName("kty")]
         [Required]
-        public string KeyType { get; set; }
+        public string KeyType { get; set; } = string.Empty;
 
         [JsonPropertyName("attributes")]
-        public KeyAttributesModel KeyAttributes { get; set; }
+        public KeyAttributesModel KeyAttributes { get; set; } = new();
 
         [JsonPropertyName("crv")]
-        public string KeyCurveName { get; set; }
+        public string KeyCurveName { get; set; } = string.Empty;
 
         [JsonPropertyName("key_ops")]
-        public List<string> KeyOperations { get; set; }
+        public List<string> KeyOperations { get; set; } = [];
 
         [JsonPropertyName("key_size")]
         public int? KeySize { get; set; }
 
         [JsonPropertyName("tags")]
-        public object Tags { get; set; }
+        public object? Tags { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [HttpPut]
         [Produces("application/json")]
         [Consumes("application/json")]
-        [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         public IActionResult SetSecret(
             [RegularExpression("[a-zA-Z0-9-]+")][FromRoute] string name,
             [FromQuery(Name = "api-version")] string apiVersion,
@@ -36,7 +36,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
 
         [HttpGet("{version}")]
         [Produces("application/json")]
-        [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         public IActionResult GetSecret(
             [FromRoute] string name,
             [FromRoute] string version,
@@ -51,7 +51,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
 
         [HttpGet]
         [Produces("application/json")]
-        [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         public IActionResult GetSecret(
             [FromRoute] string name,
             [FromQuery(Name = "api-version")] string apiVersion)

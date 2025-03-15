@@ -7,15 +7,15 @@ namespace AzureKeyVaultEmulator.Secrets.Models
     {
         [JsonPropertyName("value")]
         [Required]
-        public string Value { get; set; }
+        public string Value { get; set; } = string.Empty;
 
         [JsonPropertyName("contentType")]
-        public string ContentType { get; set; }
+        public string ContentType { get; set; } = string.Empty;
 
         [JsonPropertyName("attributes")]
-        public SecretAttributesModel SecretAttributes { get; set; }
+        public SecretAttributesModel SecretAttributes { get; set; } = new();
 
         [JsonPropertyName("tags")]
-        public object Tags { get; set; }
+        public object? Tags { get; set; }
     }
 }
