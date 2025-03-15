@@ -2,7 +2,7 @@ name: Pull Request
 
 on:
   pull_request:
-    branches: [master]
+    branches: [development]
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.0.x
 
       - name: Add hosts to /etc/hosts
         run: |
