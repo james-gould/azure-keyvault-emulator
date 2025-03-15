@@ -1,6 +1,5 @@
 ﻿using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
-using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using System.Net.Http.Json;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets

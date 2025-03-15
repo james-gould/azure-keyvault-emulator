@@ -1,5 +1,4 @@
 using AzureKeyVaultEmulator.Shared.Constants;
-using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
