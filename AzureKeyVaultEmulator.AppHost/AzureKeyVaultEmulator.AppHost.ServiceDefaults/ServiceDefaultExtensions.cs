@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Hosting;
 // Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
 // This project should be referenced by each service project in your solution.
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
-public static class Extensions
+public static class ServiceDefaultExtensions
 {
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
@@ -33,7 +33,7 @@ public static class Extensions
         });
 
         // Uncomment the following to restrict the allowed schemes for service discovery.
-        // builder.Services.Configure<ServiceDiscoveryOptions>(options =>
+        // builder.builder.Services.Configure<ServiceDiscoveryOptions>(options =>
         // {
         //     options.AllowedSchemes = ["https"];
         // });
@@ -82,7 +82,7 @@ public static class Extensions
         // Uncomment the following lines to enable the Azure Monitor exporter (requires the Azure.Monitor.OpenTelemetry.AspNetCore package)
         //if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
         //{
-        //    builder.Services.AddOpenTelemetry()
+        //    builder.builder.Services.AddOpenTelemetry()
         //       .UseAzureMonitor();
         //}
 
