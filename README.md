@@ -1,5 +1,5 @@
-# DEPRECATION NOTICE
-As of `10/29/2024` Basis Theory is no longer maintaining this repository.
+# MAINTENANCE NOTICE
+As of `10/29/2024` Basis Theory is no longer maintaining this repository. Due to its importance I've forked and began maintenance/enhancement of the features, including `.NET Aspire` support for local Azure Kyy Vault support.
 
 ## Azure KeyVault Emulator
 
