@@ -10,17 +10,30 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
     {
         private DistributedApplication? _app;
         private ResourceNotificationService? _notificationService;
+        private HttpClient? _testingClient;
 
         public async Task<HttpClient> CreateHttpClient(double version, string applicationName = AspireConstants.EmulatorServiceName)
         {
-            // Requires extension of testing library to include this
-            var opt = new ApiVersionHandler(new QueryStringApiVersionWriter(), new ApiVersion(version));
+            if (_testingClient is not null)
+                return _testingClient;
 
-            var client = _app!.CreateHttpClient(applicationName);
+            // Requires extension of testing library to include this
+            var opt = new ApiVersionHandler(new QueryStringApiVersionWriter(), new ApiVersion(version))
+            {
+                InnerHandler = new HttpClientHandler()
+            };
+
+
+            var endpoint = _app!.GetEndpoint(applicationName);
+
+            _testingClient = new HttpClient(opt)
+            {
+                BaseAddress = endpoint
+            };
 
             await _notificationService!.WaitForResourceAsync(applicationName, KnownResourceStates.Running).WaitAsync(TimeSpan.FromSeconds(30));
 
-            return client;
+            return _testingClient;
         }
 
         public async Task InitializeAsync()
@@ -39,10 +52,13 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
             await _app.StartAsync();
         }
 
-        async Task IAsyncLifetime.DisposeAsync()
+        public async Task DisposeAsync()
         {
             if(_app is not null)
                 await _app.DisposeAsync().ConfigureAwait(false);
+
+            if( _testingClient is not null)
+                _testingClient.Dispose();
         }
     }
 }

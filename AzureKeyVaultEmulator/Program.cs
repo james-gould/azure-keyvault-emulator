@@ -31,6 +31,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Worth migrating this out somewhere
 app.MapGet("/token", () =>
 {
     var claims = new[]

@@ -19,7 +19,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             await CreateSecretAsync(client);
 
-            var response = await client.GetAsync($"secrets/{_defaultSecretName}?api-version={version}");
+            var response = await client.GetAsync($"secrets/{_defaultSecretName}");
 
             response.EnsureSuccessStatusCode();
 
@@ -30,7 +30,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(_defaultSecretValue, secret.Value);
         }
 
-        private async Task CreateSecretAsync(HttpClient client, string name = "", string value = "", double version = 7.4)
+        private async Task CreateSecretAsync(HttpClient client, string name = "", string value = "")
         {
             if (string.IsNullOrEmpty(name))
                 name = _defaultSecretName;
@@ -40,7 +40,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             var createdSecret = RequestSetup.CreateSecretModel(value);
 
-            var createdResponse = await client.PutAsync($"secrets/{name}?api-version={version}", createdSecret);
+            var createdResponse = await client.PutAsync($"secrets/{name}", createdSecret);
             
             createdResponse.EnsureSuccessStatusCode();
         }
