@@ -1,12 +1,12 @@
 # MAINTENANCE NOTICE
-As of `10/29/2024` Basis Theory is no longer maintaining this repository. Due to its importance I've forked and began maintenance/enhancement of the features, including `.NET Aspire` support for local Azure Kyy Vault support.
+As of `10/29/2024` [Basis Theory](https://basistheory.com/) is no longer maintaining this repository. Due to its importance I've forked and began maintenance/enhancement of the features, including `.NET Aspire` support for local Azure Key Vault support.
 
 ## Azure KeyVault Emulator
 
 [![Version](https://img.shields.io/docker/pulls/basistheory/azure-keyvault-emulator.svg)](https://hub.docker.com/r/basistheory/azure-keyvault-emulator)
 [![Verify](https://github.com/Basis-Theory/azure-keyvault-emulator/actions/workflows/verify.yml/badge.svg)](https://github.com/Basis-Theory/azure-keyvault-emulator/actions/workflows/verify.yml)
 
-The [Basis Theory](https://basistheory.com/) Azure KeyVault Emulator to mock interactions with Azure KeyVault using the official Azure KeyVault client
+The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the official Azure KeyVault client
 
 ## Supported Operations
 
