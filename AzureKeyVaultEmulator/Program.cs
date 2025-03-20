@@ -4,7 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddConfiguredAuthentication();
@@ -56,6 +55,3 @@ app.MapGet("/token", () =>
 app.MapControllers();
 
 app.Run();
-
-// Required for integration testing: https://stackoverflow.com/a/70026704/4664094
-public partial class Program { }
