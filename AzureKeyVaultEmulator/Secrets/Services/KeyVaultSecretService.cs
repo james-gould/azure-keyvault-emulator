@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using AzureKeyVaultEmulator.Shared.Exceptions;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
@@ -20,13 +21,18 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
         public SecretResponse? Get(string name, string version = "")
         {
-            _secrets.TryGetValue(GetSecretCacheId(name, version), out var found);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            _secrets.TryGetValue(name.GetCacheId(version), out var found);
 
             return found;
         }
 
         public SecretResponse? SetSecret(string name, SetSecretModel secret)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentNullException.ThrowIfNull(secret);
+
             var version = Guid.NewGuid().ToString();
             var secretUrl = new UriBuilder
             {
@@ -44,15 +50,17 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Tags = secret.Tags
             };
 
-            _secrets.AddOrUpdate(GetSecretCacheId(name), response, (_, _) => response);
-            _secrets.TryAdd(GetSecretCacheId(name, version), response);
+            _secrets.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
+            _secrets.TryAdd(name.GetCacheId(version), response);
 
             return response;
         }
 
         public DeletedSecretBundle? DeleteSecret(string name, string version = "")
         {
-            var cacheId = GetSecretCacheId(name, version);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var cacheId = name.GetCacheId(version);
 
             var removed = _secrets.TryRemove(cacheId, out var secret);
 
@@ -72,6 +80,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return deleted;
         }
 
-        private static string GetSecretCacheId(string name, string version = "") => $"{name}{version}";
+        public BackupSecretResult? BackupSecret(string name)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

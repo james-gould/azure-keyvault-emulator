@@ -7,5 +7,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         SecretResponse? Get(string name, string version = "");
         SecretResponse? SetSecret(string name, SetSecretModel requestBody);
         DeletedSecretBundle? DeleteSecret(string name, string version = "");
+        BackupSecretResult? BackupSecret(string name);
     }
 }
