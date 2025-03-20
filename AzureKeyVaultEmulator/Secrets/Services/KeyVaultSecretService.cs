@@ -254,8 +254,13 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (attributes is not null)
                 secret.Attributes = attributes;
 
+            if(!string.IsNullOrEmpty(contentType))
+                secret.ContentType = contentType;
+
             if(tags is not null)
                 secret.Tags = tags;
+
+            secret.Attributes.Update();
 
             _secrets.TryUpdate(cacheId, secret, null);
         }
