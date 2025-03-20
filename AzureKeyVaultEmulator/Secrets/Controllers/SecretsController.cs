@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using AzureKeyVaultEmulator.Secrets.Services;
+using AzureKeyVaultEmulator.Shared.Exceptions;
+using AzureKeyVaultEmulator.Shared.Models;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +24,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [Consumes("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult SetSecret(
             [RegularExpression("[a-zA-Z0-9-]+")][FromRoute] string name,
             [FromQuery(Name = "api-version")] string apiVersion,
@@ -35,6 +38,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [HttpGet("{version}")]
         [Produces("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetSecret(
             [FromRoute] string name,
             [FromRoute] string version,
@@ -42,7 +46,8 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         {
             var secretResult = _keyVaultSecretService.Get(name, version);
 
-            if (secretResult == null) return NotFound();
+            if (secretResult is null)
+                throw new SecretException($"Could not find secret with name {name}");
 
             return Ok(secretResult);
         }
@@ -50,15 +55,30 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetSecret(
             [FromRoute] string name,
             [FromQuery(Name = "api-version")] string apiVersion)
         {
             var secretResult = _keyVaultSecretService.Get(name);
 
-            if (secretResult == null) return NotFound();
+            if (secretResult is null)
+                throw new SecretException($"Could not find secret with name {name}");
 
             return Ok(secretResult);
+        }
+
+        [HttpDelete]
+        [Produces("application/json")]
+        [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
+        public IActionResult DeleteSecret(
+            [FromRoute] string name,
+            [FromQuery] string apiVersion)
+        {
+            var deletedBundle = _keyVaultSecretService.DeleteSecret(name);
+
+            return Ok(deletedBundle);
         }
     }
 }
