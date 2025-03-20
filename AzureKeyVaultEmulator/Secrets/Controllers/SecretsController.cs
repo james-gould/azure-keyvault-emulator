@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using AzureKeyVaultEmulator.Emulator.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Exceptions;
 using AzureKeyVaultEmulator.Shared.Models;
@@ -9,18 +10,20 @@ using Microsoft.AspNetCore.Mvc;
 namespace AzureKeyVaultEmulator.Secrets.Controllers
 {
     [ApiController]
-    [Route("secrets/{name}")]
+    [Route("secrets")]
     [Authorize]
     public class SecretsController : ControllerBase
     {
         private readonly IKeyVaultSecretService _keyVaultSecretService;
+        private readonly ITokenService _token;
 
-        public SecretsController(IKeyVaultSecretService keyVaultSecretService)
+        public SecretsController(IKeyVaultSecretService keyVaultSecretService, ITokenService token)
         {
             _keyVaultSecretService = keyVaultSecretService;
+            _token = token;
         }
 
-        [HttpPut]
+        [HttpPut("{name}")]
         [Produces("application/json")]
         [Consumes("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
@@ -35,7 +38,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             return Ok(secret);
         }
 
-        [HttpGet("{version}")]
+        [HttpGet("{name}/{version}")]
         [Produces("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
@@ -49,7 +52,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             return Ok(secretResult);
         }
 
-        [HttpGet]
+        [HttpGet("{name}")]
         [Produces("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
@@ -62,7 +65,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             return Ok(secretResult);
         }
 
-        [HttpDelete]
+        [HttpDelete("{name}")]
         [Produces("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
@@ -75,7 +78,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             return Ok(deletedBundle);
         }
 
-        [HttpDelete("backup")]
+        [HttpDelete("{name}/backup")]
         [Produces("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
@@ -86,6 +89,26 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             var backupResult = _keyVaultSecretService.BackupSecret(name);
 
             return Ok(backupResult);
+        }
+
+        [HttpGet("{name}/versions")]
+        [Produces("application/json")]
+        [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
+        public IActionResult GetVersions(
+            [FromRoute] string name,
+            [FromQuery] string apiVersion,
+            [FromQuery] int maxResults = 25,
+            [FromQuery] string skipToken = "")
+        {
+            int skipCount = 0;
+
+            if(!string.IsNullOrEmpty(skipToken))
+                skipCount = _token.DecodeSkipToken(skipToken);
+
+            var currentVersionSet = _keyVaultSecretService.GetSecretVersions(name, maxResults, skipCount);
+
+            return Ok(currentVersionSet);
         }
     }
 }
