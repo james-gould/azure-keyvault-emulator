@@ -1,4 +1,5 @@
-﻿using AzureKeyVaultEmulator.Keys.Services;
+﻿using AzureKeyVaultEmulator.Emulator.Services;
+using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,8 +10,9 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
     {
         public static IServiceCollection RegisterCustomServices(this IServiceCollection services)
         {
-            services.AddScoped<IKeyVaultKeyService, KeyVaultKeyService>();
-            services.AddScoped<IKeyVaultSecretService, KeyVaultSecretService>();
+            services.AddSingleton<IKeyVaultKeyService, KeyVaultKeyService>();
+            services.AddSingleton<IKeyVaultSecretService, KeyVaultSecretService>();
+            services.AddTransient<ITokenService, TokenService>();
 
             return services;
         }

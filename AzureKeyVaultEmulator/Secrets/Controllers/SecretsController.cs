@@ -26,7 +26,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult SetSecret(
-            [RegularExpression("[a-zA-Z0-9-]+")][FromRoute] string name,
+            [FromRoute] string name,
             [FromQuery(Name = "api-version")] string apiVersion,
             [FromBody] SetSecretModel requestBody)
         {
@@ -46,9 +46,6 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         {
             var secretResult = _keyVaultSecretService.Get(name, version);
 
-            if (secretResult is null)
-                throw new SecretException($"Could not find secret with name {name}");
-
             return Ok(secretResult);
         }
 
@@ -61,9 +58,6 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromQuery(Name = "api-version")] string apiVersion)
         {
             var secretResult = _keyVaultSecretService.Get(name);
-
-            if (secretResult is null)
-                throw new SecretException($"Could not find secret with name {name}");
 
             return Ok(secretResult);
         }
