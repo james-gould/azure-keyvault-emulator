@@ -3,9 +3,6 @@ As of `10/29/2024` [Basis Theory](https://basistheory.com/) is no longer maintai
 
 ## Azure KeyVault Emulator
 
-[![Version](https://img.shields.io/docker/pulls/basistheory/azure-keyvault-emulator.svg)](https://hub.docker.com/r/basistheory/azure-keyvault-emulator)
-[![Verify](https://github.com/Basis-Theory/azure-keyvault-emulator/actions/workflows/verify.yml/badge.svg)](https://github.com/Basis-Theory/azure-keyvault-emulator/actions/workflows/verify.yml)
-
 The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the official Azure KeyVault client
 
 ## Supported Operations
