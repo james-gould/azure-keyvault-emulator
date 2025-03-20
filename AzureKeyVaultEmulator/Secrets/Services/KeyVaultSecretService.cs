@@ -203,7 +203,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             _deletedSecrets.Remove(name, out _);
         }
 
-        public void RecoverDeletedSecret(string name)
+        public SecretResponse? RecoverDeletedSecret(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -218,6 +218,8 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 throw new SecretException($"Failed to recover the secret from deleted storage, no action taken");
 
             _deletedSecrets.Remove(name, out _);
+
+            return secret;
         }
 
         public SecretResponse? RestoreSecret(string encodedSecretId)

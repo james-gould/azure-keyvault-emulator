@@ -13,7 +13,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         ListResult<SecretResponse> GetSecretVersions(string secretName, int maxResults = 25, int skipCount = 0);
         ListResult<SecretResponse> GetSecrets(int maxResults = 25, int skipCount = 0);
         void PurgeDeletedSecret(string name);
-        void RecoverDeletedSecret(string name);
+        SecretResponse? RecoverDeletedSecret(string name);
         SecretResponse? RestoreSecret(string encodedName);
         void UpdateSecret(string name, string version, SecretAttributesModel? attributes = null, string contentType = "", object? tags = null);
     }
