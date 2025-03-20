@@ -95,3 +95,4 @@ newrelic/
 ###########################
 _not-imported-dev.graphql
 local-certs/local*
+/.editorconfig
