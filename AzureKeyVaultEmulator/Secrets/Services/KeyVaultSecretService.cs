@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Concurrent;
+using System.Text;
 using AzureKeyVaultEmulator.Shared.Exceptions;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using AzureKeyVaultEmulator.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
@@ -82,7 +84,17 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
         public BackupSecretResult? BackupSecret(string name)
         {
-            throw new NotImplementedException();
+            var cacheId = name.GetCacheId();
+
+            var exists = _secrets.TryGetValue(cacheId, out var secret);
+
+            if (!exists || secret is null)
+                throw new SecretException($"Cannot backup secret by name {name} because it does not exist");
+
+            return new BackupSecretResult
+            {
+                Value = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(secret.Value))
+            };
         }
     }
 }

@@ -80,5 +80,18 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
 
             return Ok(deletedBundle);
         }
+
+        [HttpDelete("backup")]
+        [Produces("application/json")]
+        [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
+        public IActionResult BackupSecret(
+            [FromRoute] string name,
+            [FromRoute] string apiVersion)
+        {
+            var backupResult = _keyVaultSecretService.BackupSecret(name);
+
+            return Ok(backupResult);
+        }
     }
 }
