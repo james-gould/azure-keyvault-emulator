@@ -87,8 +87,6 @@ tf/terraform.tfstate.d/
 out/
 *.txt
 
-keys/
-!AzureKeyVaultEmulator/Keys
 publish/
 sftp/
 newrelic/

@@ -1,4 +1,4 @@
-For additional support or to discuss issues/features, please reach out to us on our [Community](https://community.basistheory.com) or via email at [support@basistheory.com](mailto:support@basistheory.com)
+Please provide as much information as possible to enable us to source and fix any issues you may be encountering.
 
 ## Expected Behavior
 -

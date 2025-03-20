@@ -149,7 +149,7 @@ The provided scripts will check for all dependencies, start docker, build the so
 ### Dependencies
 - [Docker](https://www.docker.com/products/docker-desktop)
 - [Docker Compose](https://www.docker.com/products/docker-desktop)
-- [.NET 6](https://dotnet.microsoft.com/download/dotnet/6.0)
+- [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 
 ### Build the KeyVault emulator and run Tests
 

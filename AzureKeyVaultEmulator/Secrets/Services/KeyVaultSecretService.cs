@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Concurrent;
-using AzureKeyVaultEmulator.Secrets.Models;
+using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using Microsoft.AspNetCore.Http;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
     public interface IKeyVaultSecretService
     {
-        SecretResponse Get(string name);
-        SecretResponse Get(string name, string version);
-        SecretResponse SetSecret(string name, SetSecretModel requestBody);
+        SecretResponse? Get(string name);
+        SecretResponse? Get(string name, string version);
+        SecretResponse? SetSecret(string name, SetSecretModel requestBody);
     }
 
     public class KeyVaultSecretService : IKeyVaultSecretService
@@ -22,28 +22,28 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public SecretResponse Get(string name)
+        public SecretResponse? Get(string name)
         {
             Secrets.TryGetValue(GetSecretCacheId(name), out var found);
 
             return found;
         }
 
-        public SecretResponse Get(string name, string version)
+        public SecretResponse? Get(string name, string version)
         {
             Secrets.TryGetValue(GetSecretCacheId(name, version), out var found);
 
             return found;
         }
 
-        public SecretResponse SetSecret(string name, SetSecretModel secret)
+        public SecretResponse? SetSecret(string name, SetSecretModel secret)
         {
             var version = Guid.NewGuid().ToString();
             var secretUrl = new UriBuilder
             {
-                Scheme = _httpContextAccessor.HttpContext.Request.Scheme,
-                Host = _httpContextAccessor.HttpContext.Request.Host.Host,
-                Port = _httpContextAccessor.HttpContext.Request.Host.Port ?? -1,
+                Scheme = _httpContextAccessor.HttpContext?.Request.Scheme,
+                Host = _httpContextAccessor.HttpContext?.Request.Host.Host,
+                Port = _httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
                 Path = $"secrets/{name}/{version}"
             };
 
@@ -61,6 +61,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return response;
         }
 
-        private static string GetSecretCacheId(string name, string version = null) => name + (version ?? "");
+        private static string GetSecretCacheId(string name, string version = "") => $"{name}{version}";
     }
 }
