@@ -26,6 +26,11 @@ The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the o
 - Get Secret
 - Get Secret by Version
 
+# Roadmap
+
+- Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault.
+- Separate NuGet package for introducing an emulated Key Vault into your .NET Aspire projects.
+
 ## Requirements
 
 ### HTTPS
