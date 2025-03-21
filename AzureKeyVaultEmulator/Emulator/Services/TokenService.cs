@@ -1,4 +1,5 @@
 ﻿using AzureKeyVaultEmulator.Shared.Constants;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -39,14 +40,14 @@ namespace AzureKeyVaultEmulator.Emulator.Services
 
         private string CreateToken(IEnumerable<Claim> claims)
         {
-            var key = new SymmetricSecurityKey(new HMACSHA256(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey)).Key);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: "localazurekeyvault.localhost.com",
                 audience: "localazurekeyvault.localhost.com",
-                claims: claims,
+                claims: [.. claims],
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);
 

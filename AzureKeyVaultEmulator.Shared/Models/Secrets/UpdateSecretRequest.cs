@@ -16,6 +16,6 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets
         public string ContentType { get; set; } = string.Empty;
 
         [JsonPropertyName("tags")]
-        public object? Tags { get; set; } = null;
+        public Dictionary<string, string>? Tags { get; set; } = [];
     }
 }

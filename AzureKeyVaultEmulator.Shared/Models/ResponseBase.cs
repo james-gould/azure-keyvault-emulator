@@ -10,6 +10,6 @@ namespace AzureKeyVaultEmulator.Shared.Models
     public class ResponseBase
     {
         [JsonPropertyName("tags")]
-        public object? Tags { get; set; }
+        public Dictionary<string, string> Tags { get; set; } = [];
     }
 }

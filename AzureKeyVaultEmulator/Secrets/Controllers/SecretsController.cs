@@ -71,7 +71,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult DeleteSecret(
             [FromRoute] string name,
-            [FromQuery] string apiVersion)
+            [FromQuery(Name = "api-version")] string apiVersion)
         {
             var deletedBundle = _keyVaultSecretService.DeleteSecret(name);
 
@@ -97,7 +97,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetSecretVersions(
             [FromRoute] string name,
-            [FromQuery] string apiVersion,
+            [FromQuery(Name = "api-version")] string apiVersion,
             [FromQuery] int maxResults = 25,
             [FromQuery] string skipToken = "")
         {
@@ -116,7 +116,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetSecrets(
-            [FromQuery] string apiVersion,
+            [FromQuery(Name = "api-version")] string apiVersion,
             [FromQuery] int maxResults = 25,
             [FromQuery] string skipToken = "")
         {
@@ -135,7 +135,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult RestoreSecret(
-            [FromQuery] string apiVersion,
+            [FromQuery(Name = "api-version")] string apiVersion,
             [FromBody] string value)
         {
             var secret = _keyVaultSecretService.RestoreSecret(value);
@@ -150,7 +150,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         public IActionResult UpdateSecret(
             [FromRoute] string name,
             [FromRoute] string version,
-            [FromQuery] string apiVersion,
+            [FromQuery(Name = "api-version")] string apiVersion,
             [FromBody] UpdateSecretRequest request)
         {
             ArgumentNullException.ThrowIfNull(request);

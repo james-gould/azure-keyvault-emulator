@@ -27,7 +27,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetDeletedSecret(
             [FromRoute] string name,
-            [FromQuery] string apiVersion)
+            [FromQuery(Name = "api-version")] string apiVersion)
         {
             var bundle = _keyVaultSecretService.GetDeletedSecret(name);
 
@@ -39,7 +39,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<ListResult<SecretResponse>>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetDeletedSecrets(
-            [FromQuery] string apiVersion,
+            [FromQuery(Name = "api-version")] string apiVersion,
             [FromQuery] int maxResults,
             [FromQuery] string skipToken)
         {
@@ -59,7 +59,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult PurgeDeletedSecret(
             [FromRoute] string name,
-            [FromQuery] string apiVersion)
+            [FromQuery(Name = "api-version")] string apiVersion)
         {
             _keyVaultSecretService.PurgeDeletedSecret(name);
 
@@ -72,7 +72,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult RecoverDeletedSecret(
             [FromRoute] string name,
-            [FromQuery] string apiVersion)
+            [FromQuery(Name = "api-version")] string apiVersion)
         {
             var secret = _keyVaultSecretService.RecoverDeletedSecret(name);
 

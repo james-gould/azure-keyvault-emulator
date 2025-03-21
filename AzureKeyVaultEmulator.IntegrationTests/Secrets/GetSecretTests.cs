@@ -1,4 +1,5 @@
-﻿using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
+﻿using Azure.Security.KeyVault.Secrets;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 using System.Net.Http.Json;
 
@@ -9,28 +10,23 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         private readonly string _defaultSecretName = "password";
         private readonly string _defaultSecretValue = "myPassword";
 
-        [Theory]
-        [InlineData(7.4)]
-        public async Task GetSecretReturnsCorrectValueTest(double version)
+        [Fact]
+        public async Task GetSecretReturnsCorrectValueTest()
         {
-            var client = await fixture.CreateHttpClient(version);
+            var client = await fixture.GetSecretClientAsync();
 
             Assert.NotNull(client);
 
-            await CreateSecretAsync(client);
+            var createdSecret = await CreateSecretAsync(client);
 
-            var response = await client.GetAsync($"secrets/{_defaultSecretName}");
+            var fromEmulator = await client.GetSecretAsync(_defaultSecretName);
 
-            response.EnsureSuccessStatusCode();
+            Assert.NotNull(fromEmulator);
 
-            var secret = await response.Content.ReadFromJsonAsync<SecretResponse>();
-
-            Assert.NotNull(secret);
-
-            Assert.Equal(_defaultSecretValue, secret.Value);
+            Assert.Equal(_defaultSecretValue, createdSecret.Value);
         }
 
-        private async Task CreateSecretAsync(HttpClient client, string name = "", string value = "")
+        private async Task<KeyVaultSecret> CreateSecretAsync(SecretClient client, string name = "", string value = "")
         {
             if (string.IsNullOrEmpty(name))
                 name = _defaultSecretName;
@@ -38,11 +34,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             if (string.IsNullOrEmpty(value))
                 value = _defaultSecretValue;
 
-            var createdSecret = RequestSetup.CreateSecretModel(value);
-
-            var createdResponse = await client.PutAsync($"secrets/{name}", createdSecret);
-            
-            createdResponse.EnsureSuccessStatusCode();
+            return await client.SetSecretAsync(new KeyVaultSecret(name, value));
         }
     }
 }

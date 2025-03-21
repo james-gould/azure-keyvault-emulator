@@ -5,7 +5,6 @@
         public static StringContent CreateSecretModel(
             string value,
             string contentType = "text/plain",
-            object? tags = null,
             bool enabled = true,
             int expiration = int.MaxValue,
             int notBefore = int.MinValue)
@@ -14,7 +13,7 @@
             {
                 Value = value,
                 ContentType = contentType,
-                Tags = tags,
+                Tags = [],
                 SecretAttributes = new SecretAttributesModel
                 {
                     Enabled = enabled,

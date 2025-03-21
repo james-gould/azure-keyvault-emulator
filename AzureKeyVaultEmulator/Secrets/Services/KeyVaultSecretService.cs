@@ -241,10 +241,13 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return secretById;
         }
 
-        public void UpdateSecret(string name, string version, SecretAttributesModel? attributes = null, string contentType = "", object? tags = null)
+        public void UpdateSecret(string name, string version, SecretAttributesModel? attributes = null, string contentType = "", Dictionary<string, string>? tags = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
+            if (tags is null)
+                tags = [];
 
             var cacheId = name.GetCacheId(version);
 
