@@ -12,7 +12,8 @@ The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the o
     - [ ] Keys
     - [ ] Certificates
     - [ ] Managed HSM
-- Separate NuGet package for introducing an emulated Key Vault into your .NET Aspire projects.
+- Separate NuGet package for introducing an emulated Key Vault into your .NET Aspire projects using a Docker Container.
+    - This will be an extension of the existing `Aspire.Hosting.KeyVault` package, downloadable as a separate dependency.
 
 ## Supported Operations
 
