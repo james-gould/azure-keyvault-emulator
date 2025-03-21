@@ -22,9 +22,20 @@ The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the o
 
 ### Secrets
 
-- Set
+- Set Secret
 - Get Secret
 - Get Secret by Version
+- Delete Secret
+- Backup Secret
+- Get Secret Versions
+- Get Secrets
+- Restore Secret
+- Update Secret
+
+- Get Deleted Secret
+- Get Deleted Secrets
+- Purge Deleted Secret
+- Recover Deleted Secret
 
 # Roadmap
 
