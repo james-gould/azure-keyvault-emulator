@@ -5,10 +5,12 @@ using System.Net.Http.Json;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 {
-    public class SecretsControllerTests(EmulatorTestingFixture fixture) : IClassFixture<EmulatorTestingFixture>
+    public class SecretsControllerTests(SecretsTestingFixture fixture) : IClassFixture<SecretsTestingFixture>
     {
         private readonly string _defaultSecretName = "password";
         private readonly string _defaultSecretValue = "myPassword";
+
+        private KeyVaultSecret? _defaultSecret = null;
 
         [Fact]
         public async Task GetSecretReturnsCorrectValueTest()
@@ -26,13 +28,43 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(_defaultSecretValue, createdSecret.Value);
         }
 
-        private async Task<KeyVaultSecret> CreateSecretAsync(SecretClient client, string name = "", string value = "")
+        [Fact]
+        public async Task SetSecretCreatesSecretInMemoryTest()
         {
-            if (string.IsNullOrEmpty(name))
-                name = _defaultSecretName;
+            var client = await fixture.GetSecretClientAsync();
 
-            if (string.IsNullOrEmpty(value))
-                value = _defaultSecretValue;
+            Assert.NotNull(client);
+
+            var createdSecret = await client.SetSecretAsync(new KeyVaultSecret(_defaultSecretName, _defaultSecretValue));
+
+            Assert.NotNull(createdSecret.Value);
+            Assert.False(createdSecret.GetRawResponse().IsError);
+
+            var secretFromKv = await client.GetSecretAsync(_defaultSecretValue, createdSecret.Value.Properties.Version);
+
+            Assert.Equal(createdSecret.Value.Value, secretFromKv.Value.Value);
+            Assert.Equal(createdSecret.Value.Properties.Version, secretFromKv.Value.Properties.Version);
+        }
+
+        [Fact]
+        public async Task GetSecretAfterDeletingProvidesKeyVaultErrorTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+        }
+
+        private async ValueTask<KeyVaultSecret> CreateSecretAsync(SecretClient client)
+        {
+            if (_defaultSecret is not null)
+                return _defaultSecret;
+
+            return _defaultSecret = await client.SetSecretAsync(new KeyVaultSecret(_defaultSecretName, _defaultSecretValue));
+        }
+
+        private async Task<KeyVaultSecret> CreateSecretAsync(SecretClient client, string name, string value)
+        {
+            ArgumentNullException.ThrowIfNull(client);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
             return await client.SetSecretAsync(new KeyVaultSecret(name, value));
         }

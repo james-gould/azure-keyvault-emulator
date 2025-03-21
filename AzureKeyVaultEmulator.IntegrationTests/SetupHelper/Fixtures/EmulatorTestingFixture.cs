@@ -11,13 +11,12 @@ using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
 {
-    public sealed class EmulatorTestingFixture : IAsyncLifetime
+    public class EmulatorTestingFixture : IAsyncLifetime
     {
-        private readonly TimeSpan _waitPeriod = TimeSpan.FromSeconds(30);
-        private DistributedApplication? _app;
-        private ResourceNotificationService? _notificationService;
+        internal readonly TimeSpan _waitPeriod = TimeSpan.FromSeconds(30);
+        internal DistributedApplication? _app;
+        internal ResourceNotificationService? _notificationService;
 
-        private SecretClient? _secretClient;
         private HttpClient? _testingClient;
 
         public async Task InitializeAsync()
@@ -30,29 +29,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
             _notificationService = _app.Services.GetService<ResourceNotificationService>();
 
             await _app.StartAsync();
-        }
-
-        public async Task<SecretClient> GetSecretClientAsync(string applicationName = AspireConstants.EmulatorServiceName)
-        {
-            if (_secretClient is not null)
-                return _secretClient;
-
-            var vaultEndpoint = _app!.GetEndpoint(applicationName);
-
-            await _notificationService!.WaitForResourceAsync(applicationName).WaitAsync(_waitPeriod);
-
-            var options = new SecretClientOptions
-            {
-                DisableChallengeResourceVerification = true
-            };
-
-            var emulatedBearerToken = await GetBearerToken();
-
-            var cred = new EmulatedTokenCredential(emulatedBearerToken);
-
-            _secretClient = new SecretClient(vaultEndpoint, cred, options);
-
-            return _secretClient;
         }
 
         public async Task<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
