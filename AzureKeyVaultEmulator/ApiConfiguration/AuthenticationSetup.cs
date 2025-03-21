@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.BearerToken;
+﻿using AzureKeyVaultEmulator.Shared.Constants;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -23,8 +24,9 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
                         ValidateActor = false,
                         ValidateIssuer = false,
                         ValidateLifetime = false,
+                        ValidateIssuerSigningKey = false,
                         
-                        IssuerSigningKey = new SymmetricSecurityKey(new HMACSHA256(Encoding.UTF8.GetBytes("this is my custom Secret key for authentication")).Key),
+                        IssuerSigningKey = new SymmetricSecurityKey(new HMACSHA256(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey)).Key),
 
                         ValidIssuer = "localazurekeyvault.localhost.com",
                         ValidAudience = "localazurekeyvault.localhost.com"

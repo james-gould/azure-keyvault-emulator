@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.Shared.Constants
 {
-    public sealed class RSAKeyTypes
+    public sealed class AuthConstants
     {
-        public const string RSA = "RSA";
-        public const string EC = "EC";
+        public const string IssuerSigningKey = "VZboShdn5FpO2b2iHA7pzhJpmc24e8u9";
     }
 }

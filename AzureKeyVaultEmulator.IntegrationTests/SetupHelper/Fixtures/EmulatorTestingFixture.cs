@@ -2,6 +2,8 @@
 using Asp.Versioning.Http;
 using Aspire.Hosting;
 using AzureKeyVaultEmulator.Shared.Constants;
+using IdentityModel.Client;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
@@ -23,7 +25,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
                 InnerHandler = new HttpClientHandler()
             };
 
-
             var endpoint = _app!.GetEndpoint(applicationName);
 
             _testingClient = new HttpClient(opt)
@@ -33,7 +34,23 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
 
             await _notificationService!.WaitForResourceAsync(applicationName, KnownResourceStates.Running).WaitAsync(TimeSpan.FromSeconds(30));
 
+            await GetBearerToken();
+
             return _testingClient;
+        }
+
+        public async Task GetBearerToken()
+        {
+            if (_testingClient is null)
+                throw new InvalidOperationException($"Failed to set up TestingHttpClient");
+
+            var response = await _testingClient.GetAsync("/token");
+
+            response.EnsureSuccessStatusCode();
+
+            var jwt = await response.Content.ReadAsStringAsync();
+
+            _testingClient.SetBearerToken(jwt);
         }
 
         public async Task InitializeAsync()

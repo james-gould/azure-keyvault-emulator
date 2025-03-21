@@ -1,7 +1,9 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using AzureKeyVaultEmulator.Shared.Constants;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace AzureKeyVaultEmulator.Emulator.Services
 {
@@ -37,12 +39,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
 
         private string CreateToken(IEnumerable<Claim> claims)
         {
-            using var rng = RandomNumberGenerator.Create();
-
-            var bytes = new byte[32];
-            rng.GetBytes(bytes);
-
-            var key = new SymmetricSecurityKey(bytes);
+            var key = new SymmetricSecurityKey(new HMACSHA256(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey)).Key);
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

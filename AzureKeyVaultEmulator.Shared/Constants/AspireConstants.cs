@@ -1,6 +1,6 @@
 ﻿namespace AzureKeyVaultEmulator.Shared.Constants
 {
-    public class AspireConstants
+    public sealed class AspireConstants
     {
         public const string EmulatorServiceName = "keyVaultEmulatorApi";
     }
