@@ -14,14 +14,19 @@ namespace AzureKeyVaultEmulator.Secrets.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ITokenService _token;
+        private readonly IJweEncryptionService _encryption;
 
         private static readonly ConcurrentDictionary<string, SecretResponse?> _secrets = new();
         private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();
 
-        public KeyVaultSecretService(IHttpContextAccessor httpContextAccessor, ITokenService token)
+        public KeyVaultSecretService(
+            IHttpContextAccessor httpContextAccessor, 
+            ITokenService token,
+            IJweEncryptionService encryption)
         {
             _httpContextAccessor = httpContextAccessor;
             _token = token;
+            _encryption = encryption;
         }
 
         public SecretResponse? Get(string name, string version = "")
@@ -101,7 +106,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             return new BackupSecretResult
             {
-                Value = secret.Id.Base64UrlEncode()
+                Value = _encryption.CreateKeyVaultJwe(secret)
             };
         }
 
@@ -215,19 +220,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            var decoded = EncodingUtils.Base64UrlDecode(encodedSecretId);
-
-            if (string.IsNullOrEmpty(decoded))
-                return new();
-
-            var uri = new Uri(decoded);
-
-            var secretById = _secrets.FirstOrDefault(x => x.Value?.Id == uri).Value;
-
-            if (secretById is null)
-                throw new SecretException($"Failed to restore secret from backup blob");
-
-            return secretById;
+            return _encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
         }
 
         public void UpdateSecret(string name, string version, SecretAttributesModel? attributes = null, string contentType = "", Dictionary<string, string>? tags = null)

@@ -8,6 +8,13 @@ using System.Text;
 
 namespace AzureKeyVaultEmulator.Emulator.Services
 {
+    public interface ITokenService
+    {
+        string CreateBearerToken(IEnumerable<Claim> claims);
+        string CreateSkipToken(int skipCount);
+        int DecodeSkipToken(string skipToken);
+    }
+
     public class TokenService : ITokenService
     {
         private const string _skipClaim = "skipCount";
@@ -38,7 +45,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             return validSkipClaim ? skipCount : default;
         }
 
-        private string CreateToken(IEnumerable<Claim> claims)
+        private static string CreateToken(IEnumerable<Claim> claims)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey));
 

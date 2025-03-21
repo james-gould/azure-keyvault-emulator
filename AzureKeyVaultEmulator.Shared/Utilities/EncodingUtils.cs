@@ -1,33 +1,32 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using Google.Protobuf;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.Shared.Utilities
 {
     public static class EncodingUtils
     {
-        public static string Base64UrlEncode<T>(this T? item) where T : class
+        public static string Base64UrlEncode(this byte[]? bytes)
         {
-            ArgumentNullException.ThrowIfNull(item);
+            ArgumentNullException.ThrowIfNull(bytes);
 
-            var asString = item.ToString();
-
-            ArgumentException.ThrowIfNullOrWhiteSpace(asString);
-
-            return WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(asString));
+            return new StringBuilder(Convert.ToBase64String(bytes)).Replace('+', '-').Replace('/', '_').Replace("=", "").ToString();
         }
 
-        public static string Base64UrlDecode(string encoded)
+        public static string Base64UrlEncode(this string str)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(encoded);
+            ArgumentException.ThrowIfNullOrWhiteSpace(str);
 
-            var bytes = WebEncoders.Base64UrlDecode(encoded);
+            var bytes = Encoding.UTF8.GetBytes(str);
 
-            return Encoding.UTF8.GetString(bytes);
+            return Base64UrlEncode(bytes);
+        }
+
+        public static byte[] Base64UrlDecode(this string encoded)
+        {
+            encoded = new StringBuilder(encoded).Replace('-', '+').Replace('_', '/').Append('=', (encoded.Length % 4 == 0) ? 0 : 4 - (encoded.Length % 4)).ToString();
+
+            return Convert.FromBase64String(encoded);
         }
     }
 }

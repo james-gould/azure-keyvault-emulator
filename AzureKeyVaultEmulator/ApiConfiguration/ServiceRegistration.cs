@@ -12,6 +12,8 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
         {
             services.AddSingleton<IKeyVaultKeyService, KeyVaultKeyService>();
             services.AddSingleton<IKeyVaultSecretService, KeyVaultSecretService>();
+
+            services.AddSingleton<IJweEncryptionService, JweEncryptionService>();
             services.AddTransient<ITokenService, TokenService>();
 
             return services;

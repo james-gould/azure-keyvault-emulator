@@ -129,15 +129,17 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             return Ok(currentVersionSet);
         }
 
-        [HttpPost("{name}/restore")]
+        [HttpPost("restore")]
         [Produces("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult RestoreSecret(
             [ApiVersion] string apiVersion,
-            [FromBody] string value)
+            [FromBody] BackupSecretResult? backup)
         {
-            var secret = _keyVaultSecretService.RestoreSecret(value);
+            ArgumentNullException.ThrowIfNull(backup);
+
+            var secret = _keyVaultSecretService.RestoreSecret(backup.Value);
 
             return Ok(secret);
         }

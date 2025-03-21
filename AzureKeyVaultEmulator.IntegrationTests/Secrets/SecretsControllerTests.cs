@@ -126,21 +126,26 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(multipleCount + 1, testSecrets.Count);
         }
 
+        [Fact]
+        public async Task RestoreSecretTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+
+            var secret = await CreateSecretAsync(client);
+
+            var backup = await client.BackupSecretAsync(_defaultSecretName);
+
+            var restored = await client.RestoreSecretBackupAsync(backup.Value);
+
+            Assert.Equal(secret.Name, restored.Value.Name);
+        }
+
         private async ValueTask<KeyVaultSecret> CreateSecretAsync(SecretClient client)
         {
             if (_defaultSecret is not null)
                 return _defaultSecret;
 
             return _defaultSecret = await client.SetSecretAsync(_defaultSecretName, _defaultSecretValue);
-        }
-
-        private async Task<KeyVaultSecret> CreateSecretAsync(SecretClient client, string name, string value)
-        {
-            ArgumentNullException.ThrowIfNull(client);
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(value);
-
-            return await client.SetSecretAsync(name, value);
         }
     }
 }
