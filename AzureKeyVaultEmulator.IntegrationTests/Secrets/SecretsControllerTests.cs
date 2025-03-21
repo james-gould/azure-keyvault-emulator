@@ -102,6 +102,30 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(copies + 1, versions.Count);
         }
 
+        [Fact]
+        public async Task GetSecretsPagesAllSecretsCreatedTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+
+            var multipleCount = Random.Shared.Next(51, 300);
+            var secretName = "mulitudeTesting";
+            var tasks = Enumerable.Range(0, multipleCount).Select(i => client.SetSecretAsync(secretName, $"{i}value"));
+
+            await Task.WhenAll(tasks);
+
+            var testSecrets = new List<SecretProperties?>();
+
+            var secrets = client.GetPropertiesOfSecretsAsync();
+
+            await foreach (var secret in secrets)
+            {
+                if(secret.Name.Equals(secretName, StringComparison.CurrentCultureIgnoreCase))
+                    testSecrets.Add(secret);
+            }
+
+            Assert.Equal(multipleCount + 1, testSecrets.Count);
+        }
+
         private async ValueTask<KeyVaultSecret> CreateSecretAsync(SecretClient client)
         {
             if (_defaultSecret is not null)

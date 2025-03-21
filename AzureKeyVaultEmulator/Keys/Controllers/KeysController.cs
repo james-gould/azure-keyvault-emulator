@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Shared.Models.Keys;
-using AzureKeyVaultEmulator.Shared.Utilities;
+using AzureKeyVaultEmulator.Shared.Utilities.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

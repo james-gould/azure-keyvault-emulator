@@ -122,11 +122,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            // next page loading which provides skipCount
-            // We then increase the skipCount by maxResults, ie next page of 25, otherwise we infinitely loop.
-            if (skipCount != 0)
-                skipCount += maxResults;
-
             var items = _deletedSecrets.Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
@@ -170,9 +165,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
-
-            if(skipCount != 0)
-                skipCount += maxResults;
 
             var items = _secrets.Skip(skipCount).Take(maxResults);
 

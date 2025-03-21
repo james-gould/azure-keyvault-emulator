@@ -1,10 +1,8 @@
-using System.ComponentModel.DataAnnotations;
 using AzureKeyVaultEmulator.Emulator.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
-using AzureKeyVaultEmulator.Shared.Exceptions;
 using AzureKeyVaultEmulator.Shared.Models;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
-using AzureKeyVaultEmulator.Shared.Utilities;
+using AzureKeyVaultEmulator.Shared.Utilities.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -100,7 +98,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromQuery] int maxResults = 25,
-            [FromQuery(Name = "$skiptoken")] string skipToken = "")
+            [SkipToken] string skipToken = "")
         {
             int skipCount = 0;
 
@@ -119,7 +117,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         public IActionResult GetSecrets(
             [ApiVersion] string apiVersion,
             [FromQuery] int maxResults = 25,
-            [FromQuery] string skipToken = "")
+            [SkipToken] string skipToken = "")
         {
             int skipCount = 0;
 
