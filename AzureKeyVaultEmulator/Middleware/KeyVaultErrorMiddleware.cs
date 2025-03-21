@@ -23,7 +23,6 @@ namespace AzureKeyVaultEmulator.Middleware
                 var errorResponse = new KeyVaultError
                 {
                     Code = "Failed to perform request into Azure Key Vault Emulator",
-                    InnerError = e,
                     Message = e.Message
                 };
 

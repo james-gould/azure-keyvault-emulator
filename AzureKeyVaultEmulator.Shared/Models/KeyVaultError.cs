@@ -13,7 +13,7 @@ namespace AzureKeyVaultEmulator.Shared.Models
         public string Code { get; set; } = string.Empty;
 
         [JsonPropertyName("innererror")]
-        public Exception? InnerError { get; set; }
+        public string InnerError => "No inner error provided with emulated key vault";
 
         [JsonPropertyName("message")]
         public string Message { get; set; } = string.Empty;

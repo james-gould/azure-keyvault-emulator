@@ -1,4 +1,5 @@
-﻿using Azure.Security.KeyVault.Secrets;
+﻿using Azure;
+using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 using System.Net.Http.Json;
@@ -38,9 +39,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var createdSecret = await client.SetSecretAsync(new KeyVaultSecret(_defaultSecretName, _defaultSecretValue));
 
             Assert.NotNull(createdSecret.Value);
-            Assert.False(createdSecret.GetRawResponse().IsError);
 
-            var secretFromKv = await client.GetSecretAsync(_defaultSecretValue, createdSecret.Value.Properties.Version);
+            var secretFromKv = await client.GetSecretAsync(_defaultSecretName, createdSecret.Value.Properties.Version);
 
             Assert.Equal(createdSecret.Value.Value, secretFromKv.Value.Value);
             Assert.Equal(createdSecret.Value.Properties.Version, secretFromKv.Value.Properties.Version);
@@ -50,6 +50,38 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         public async Task GetSecretAfterDeletingProvidesKeyVaultErrorTest()
         {
             var client = await fixture.GetSecretClientAsync();
+
+            Assert.NotNull(client);
+
+            var deletedName = "deletedSecret";
+            var deletedValue = "iShouldBeDeleted";
+
+            var createdSecret = await client.SetSecretAsync(new KeyVaultSecret(deletedName, deletedValue));
+
+            Assert.NotNull(createdSecret.Value);
+
+            var deletedSecret = await client.StartDeleteSecretAsync(deletedName);
+
+            Assert.NotNull(deletedSecret.Value);
+            Assert.Equal(deletedName, deletedSecret.Value.Name);
+
+            var gottenAfterDeleted = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(deletedName));
+
+            Assert.Equal((int)HttpStatusCode.BadRequest, gottenAfterDeleted.Status);
+        }
+
+        [Fact]
+        public async Task BackupSecretAsyncReturnsEncodedNameTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+
+            Assert.NotNull(client);
+
+            var secret = await CreateSecretAsync(client);
+
+            var backup = await client.BackupSecretAsync(_defaultSecretName);
+
+            Assert.NotEmpty(backup.Value);
         }
 
         private async ValueTask<KeyVaultSecret> CreateSecretAsync(SecretClient client)
