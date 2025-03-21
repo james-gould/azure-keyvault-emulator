@@ -77,7 +77,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         }
 
         [Fact]
-        public async Task GetSecretVersionsReturnsBackMax25PerSetTest()
+        public async Task GetSecretVersionsPagesAllSecretsByNameTest()
         {
             var client = await fixture.GetSecretClientAsync();
 
