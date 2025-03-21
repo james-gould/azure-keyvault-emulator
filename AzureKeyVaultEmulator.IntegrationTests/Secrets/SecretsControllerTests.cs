@@ -18,8 +18,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            Assert.NotNull(client);
-
             var createdSecret = await CreateSecretAsync(client);
 
             var fromEmulator = await client.GetSecretAsync(_defaultSecretName);
@@ -33,8 +31,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         public async Task SetSecretCreatesSecretInMemoryTest()
         {
             var client = await fixture.GetSecretClientAsync();
-
-            Assert.NotNull(client);
 
             var createdSecret = await client.SetSecretAsync(new KeyVaultSecret(_defaultSecretName, _defaultSecretValue));
 
@@ -50,8 +46,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         public async Task GetSecretAfterDeletingProvidesKeyVaultErrorTest()
         {
             var client = await fixture.GetSecretClientAsync();
-
-            Assert.NotNull(client);
 
             var deletedName = "deletedSecret";
             var deletedValue = "iShouldBeDeleted";
@@ -75,13 +69,37 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            Assert.NotNull(client);
-
-            var secret = await CreateSecretAsync(client);
+            await CreateSecretAsync(client);
 
             var backup = await client.BackupSecretAsync(_defaultSecretName);
 
             Assert.NotEmpty(backup.Value);
+        }
+
+        [Fact]
+        public async Task GetSecretVersionsReturnsBackMax25PerSetTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+
+            var secretName = "multipleSecrets";
+            var copies = 30;
+            var versions = new List<string>();
+
+            for(var i = 0; i < copies; i++)
+            {
+                await client.SetSecretAsync(secretName, $"{i}-value");
+            }
+
+            var properties = client.GetPropertiesOfSecretVersionsAsync(secretName);
+
+            await foreach (var version in properties)
+            {
+                Assert.NotNull(version.Version);
+                versions.Add(version.Version);
+            }
+
+            // Creating secret adds base secret + versioned one
+            Assert.Equal(copies + 1, versions.Count);
         }
 
         private async ValueTask<KeyVaultSecret> CreateSecretAsync(SecretClient client)
@@ -89,7 +107,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             if (_defaultSecret is not null)
                 return _defaultSecret;
 
-            return _defaultSecret = await client.SetSecretAsync(new KeyVaultSecret(_defaultSecretName, _defaultSecretValue));
+            return _defaultSecret = await client.SetSecretAsync(_defaultSecretName, _defaultSecretValue);
         }
 
         private async Task<KeyVaultSecret> CreateSecretAsync(SecretClient client, string name, string value)
@@ -98,7 +116,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
-            return await client.SetSecretAsync(new KeyVaultSecret(name, value));
+            return await client.SetSecretAsync(name, value);
         }
     }
 }

@@ -122,22 +122,24 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            if(maxResults > _deletedSecrets.Count)
-                maxResults = _deletedSecrets.Count;
+            // next page loading which provides skipCount
+            // We then increase the skipCount by maxResults, ie next page of 25, otherwise we infinitely loop.
+            if (skipCount != 0)
+                skipCount += maxResults;
 
             var items = _deletedSecrets.Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();
 
-            var secrets = items.Select(kvp => kvp.Value);
+            var requiresPaging = items.Count() >= maxResults;
 
             var skipToken = _token.CreateSkipToken(maxResults);
 
             return new ListResult<SecretResponse>
             {
-                NextLink = _httpContextAccessor.HttpContext?.GetNextLink(skipToken, maxResults) ?? string.Empty,
-                Values = secrets
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = items.Select(kvp => kvp.Value)
             };
         }
 
@@ -148,22 +150,19 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var items = _secrets.Where(x => x.Key.Contains(secretName)).Skip(skipCount).Take(maxResults);
+            var allItems = _secrets.Where(x => x.Key.Contains(secretName));
 
-            if (!items.Any())
+            if (!allItems.Any())
                 return new();
 
-            if (items.Count() < maxResults)
-                maxResults = items.Count();
+            var maxedItems = allItems.Skip(skipCount).Take(maxResults);
 
-            var secrets = items.Select(x => x.Value);
-
-            var skipToken = _token.CreateSkipToken(maxResults);
+            var requiresPaging = maxedItems.Count() >= maxResults;
 
             return new ListResult<SecretResponse>
             {
-                NextLink = _httpContextAccessor.HttpContext?.GetNextLink(skipToken, maxResults) ?? string.Empty,
-                Values = secrets
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = maxedItems.Select(x => x.Value)
             };
         }
 
@@ -172,22 +171,20 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
+            if(skipCount != 0)
+                skipCount += maxResults;
+
             var items = _secrets.Skip(skipCount).Take(maxResults);
 
             if(!items.Any()) 
                 return new();
 
-            if(items.Count() < maxResults)
-                maxResults = items.Count();
-
-            var secrets = items.Select(x => x.Value);
-
-            var skipToken = _token.CreateSkipToken(maxResults);
+            var requiresPaging = items.Count() >= maxResults;
 
             return new ListResult<SecretResponse>
             {
-                NextLink = _httpContextAccessor.HttpContext?.GetNextLink(skipToken, maxResults) ?? string.Empty,
-                Values = secrets
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = items.Select(x => x.Value)
             };
         }
 
@@ -268,6 +265,13 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             secret.Attributes.Update();
 
             _secrets.TryUpdate(cacheId, secret, null);
+        }
+
+        private string GenerateNextLink(int maxResults)
+        {
+            var skipToken = _token.CreateSkipToken(maxResults);
+
+            return _httpContextAccessor.GetNextLink(skipToken, maxResults);
         }
     }
 }

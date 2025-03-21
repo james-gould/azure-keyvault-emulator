@@ -100,7 +100,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromQuery] int maxResults = 25,
-            [FromQuery] string skipToken = "")
+            [FromQuery(Name = "$skiptoken")] string skipToken = "")
         {
             int skipCount = 0;
 
