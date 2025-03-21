@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 {
-    public class GetSecretTests(EmulatorTestingFixture fixture) : IClassFixture<EmulatorTestingFixture>
+    public class SecretsControllerTests(EmulatorTestingFixture fixture) : IClassFixture<EmulatorTestingFixture>
     {
         private readonly string _defaultSecretName = "password";
         private readonly string _defaultSecretValue = "myPassword";
