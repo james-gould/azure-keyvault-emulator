@@ -3,7 +3,16 @@ As of `10/29/2024` [Basis Theory](https://basistheory.com/) is no longer maintai
 
 ## Azure KeyVault Emulator
 
-The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the official Azure KeyVault client
+The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the official Azure KeyVault client or REST API.
+
+# Roadmap
+
+- Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
+    - [x] Secrets
+    - [ ] Keys
+    - [ ] Certificates
+    - [ ] Managed HSM
+- Separate NuGet package for introducing an emulated Key Vault into your .NET Aspire projects.
 
 ## Supported Operations
 
@@ -36,11 +45,6 @@ The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the o
 - Get Deleted Secrets
 - Purge Deleted Secret
 - Recover Deleted Secret
-
-# Roadmap
-
-- Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault.
-- Separate NuGet package for introducing an emulated Key Vault into your .NET Aspire projects.
 
 ## Requirements
 
