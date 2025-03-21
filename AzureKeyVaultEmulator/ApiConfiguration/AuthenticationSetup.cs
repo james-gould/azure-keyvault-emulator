@@ -20,23 +20,14 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
-                    var root = "https://localazurekeyvault.localhost:5000/";
-
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = false,
                         ValidateAudience = false,
                         ValidateLifetime = false,
-                        RequireSignedTokens = false,
                         ValidateIssuerSigningKey = false,
-                        TryAllIssuerSigningKeys = false,
 
                         SignatureValidator = (token, parameters) => new JsonWebToken(token),
-
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey)),
-
-                        ValidIssuer = root,
-                        ValidAudience = root,
                     };
 
                     options.Events = new JwtBearerEvents
@@ -46,7 +37,7 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
                             var requestHostSplit = context.Request.Host.ToString().Split(".", 2);
                             var scope = $"https://{requestHostSplit[^1]}/.default";
                             context.Response.Headers.Remove("WWW-Authenticate");
-                            context.Response.Headers["WWW-Authenticate"] = $"Bearer authorization=\"{root}{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
+                            context.Response.Headers["WWW-Authenticate"] = $"Bearer authorization=\"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
 
                             return Task.CompletedTask;
                         }
