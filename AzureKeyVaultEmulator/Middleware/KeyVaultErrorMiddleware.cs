@@ -20,9 +20,12 @@ namespace AzureKeyVaultEmulator.Middleware
             }
             catch (Exception e)
             {
+                var req = context.Request;
+
                 var errorResponse = new KeyVaultError
                 {
                     Code = "Failed to perform request into Azure Key Vault Emulator",
+                    InnerError = $"PATH: {req.Scheme}://{req.Host}/{req.Path}?{req.Query}",
                     Message = e.Message
                 };
 

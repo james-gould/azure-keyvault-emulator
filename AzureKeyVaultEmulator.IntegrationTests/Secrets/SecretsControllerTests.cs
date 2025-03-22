@@ -11,7 +11,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            var createdSecret = await fixture.CreateSecretAsync(client);
+            var createdSecret = await fixture.CreateSecretAsync();
 
             var fromEmulator = await client.GetSecretAsync(fixture.DefaultSecretName);
 
@@ -62,9 +62,11 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            await fixture.CreateSecretAsync(client);
+            var secretName = "myBackedUpSecret";
 
-            var backup = await client.BackupSecretAsync(fixture.DefaultSecretName);
+            await fixture.CreateSecretAsync(secretName, "doesntmatter");
+
+            var backup = await client.BackupSecretAsync(secretName);
 
             Assert.NotEmpty(backup.Value);
         }
@@ -75,19 +77,19 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var client = await fixture.GetSecretClientAsync();
 
             var secretName = "multipleSecrets";
-            var copies = 30;
+            var copies = Random.Shared.Next(30, 100);
+            var tasks = Enumerable.Range(0, copies)
+                                  .Select(i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
+
+            await Task.WhenAll(tasks);
+
+            var properties = client.GetPropertiesOfSecretVersionsAsync(secretName, fixture.CancellationToken);
+
             var versions = new List<string>();
-
-            for(var i = 0; i < copies; i++)
-            {
-                await client.SetSecretAsync(secretName, $"{i}-value");
-            }
-
-            var properties = client.GetPropertiesOfSecretVersionsAsync(secretName);
 
             await foreach (var version in properties)
             {
-                Assert.NotNull(version.Version);
+                Assert.NotEqual(string.Empty, version.Version);
                 versions.Add(version.Version);
             }
 
@@ -102,19 +104,18 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             var multipleCount = Random.Shared.Next(51, 300);
             var secretName = "mulitudeTesting";
-            var tasks = Enumerable.Range(0, multipleCount).Select(i => client.SetSecretAsync(secretName, $"{i}value"));
+            var tasks = Enumerable.Range(0, multipleCount)
+                                  .Select(i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
             await Task.WhenAll(tasks);
 
             var testSecrets = new List<SecretProperties?>();
 
-            var secrets = client.GetPropertiesOfSecretsAsync();
+            var secrets = client.GetPropertiesOfSecretsAsync(fixture.CancellationToken);
 
             await foreach (var secret in secrets)
-            {
-                if(secret.Name.Equals(secretName, StringComparison.CurrentCultureIgnoreCase))
+                if (secret.Name.Equals(secretName, StringComparison.CurrentCultureIgnoreCase))
                     testSecrets.Add(secret);
-            }
 
             Assert.Equal(multipleCount + 1, testSecrets.Count);
         }
@@ -124,13 +125,17 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            var secret = await fixture.CreateSecretAsync(client);
+            var secretName = "restoringSecretName";
+            var secretValue = "shouldBeRestored";
 
-            var backup = await client.BackupSecretAsync(fixture.DefaultSecretName);
+            var secret = await fixture.CreateSecretAsync(secretName, secretValue);
+
+            var backup = await client.BackupSecretAsync(secretName);
 
             var restored = await client.RestoreSecretBackupAsync(backup.Value);
 
             Assert.Equal(secret.Name, restored.Value.Name);
+            Assert.Equal(secret.Id, restored.Value.Id);
         }
 
         [Fact]
@@ -138,7 +143,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            var secret = await fixture.CreateSecretAsync(client);
+            var secret = await fixture.CreateSecretAsync();
 
             Assert.True(string.IsNullOrEmpty(secret.Properties.ContentType));
 
@@ -149,6 +154,22 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var updated = await client.UpdateSecretPropertiesAsync(secret.Properties);
 
             Assert.Equal(newContentType, updated.Value.ContentType);
+        }
+
+        [Fact]
+        public async Task DeleteSecretBehavesCorrectlyTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+
+            var secret = await fixture.CreateSecretAsync();
+
+            var deletedOperation = await client.StartDeleteSecretAsync(secret.Name);
+
+            Assert.Equal(deletedOperation.Value.Value, secret.Value);
+
+            var result = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secret.Name));
+
+            Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
         }
     }
 }

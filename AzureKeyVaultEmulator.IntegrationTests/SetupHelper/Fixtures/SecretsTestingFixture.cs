@@ -6,9 +6,11 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
     public class SecretsTestingFixture : EmulatorTestingFixture
     {
         private SecretClient? _secretClient;
+        private CancellationTokenSource _cancellationTokenSource = new(TimeSpan.FromSeconds(30));
 
         public readonly string DefaultSecretName = "password";
         public readonly string DefaultSecretValue = "hunter2";
+        public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         private KeyVaultSecret? _defaultSecret = null;
 
@@ -35,12 +37,23 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
             return _secretClient;
         }
 
-        public async ValueTask<KeyVaultSecret> CreateSecretAsync(SecretClient client)
+        public async ValueTask<KeyVaultSecret> CreateSecretAsync()
         {
             if (_defaultSecret is not null)
                 return _defaultSecret;
 
-            return _defaultSecret = await client.SetSecretAsync(DefaultSecretName, DefaultSecretValue);
+            ArgumentNullException.ThrowIfNull(_secretClient);
+
+            return _defaultSecret = await _secretClient.SetSecretAsync(DefaultSecretName, DefaultSecretValue);
+        }
+
+        public async Task<KeyVaultSecret> CreateSecretAsync(string secretName, string secretValue)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(secretName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(secretValue);
+            ArgumentNullException.ThrowIfNull(_secretClient);
+
+            return await _secretClient.SetSecretAsync(secretName, secretValue, CancellationToken);
         }
     }
 }

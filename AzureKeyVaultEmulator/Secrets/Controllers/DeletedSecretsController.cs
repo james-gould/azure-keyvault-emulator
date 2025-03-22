@@ -41,8 +41,8 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetDeletedSecrets(
             [ApiVersion] string apiVersion,
-            [FromQuery] int maxResults,
-            [SkipToken] string skipToken)
+            [FromQuery] int maxResults = 25,
+            [SkipToken] string skipToken = "")
         {
             var skipCount = 0;
 

@@ -110,7 +110,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             var cacheId = name.GetCacheId();
 
-            var exists = _secrets.TryGetValue(cacheId, out var secret);
+            var exists = _deletedSecrets.TryGetValue(cacheId, out var secret);
 
             if (!exists || secret is null)
                 throw new SecretException($"Cannot get deleted secret with name: {name} because it does not exist");
@@ -129,8 +129,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 return new();
 
             var requiresPaging = items.Count() >= maxResults;
-
-            var skipToken = _token.CreateSkipToken(maxResults);
 
             return new ListResult<SecretResponse>
             {
