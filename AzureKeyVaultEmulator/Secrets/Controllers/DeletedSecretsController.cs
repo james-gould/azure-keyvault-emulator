@@ -2,6 +2,7 @@
 using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Utilities.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetDeletedSecret(
             [FromRoute] string name,
-            [FromQuery] string apiVersion)
+            [ApiVersion] string apiVersion)
         {
             var bundle = _keyVaultSecretService.GetDeletedSecret(name);
 
@@ -39,9 +40,9 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<ListResult<SecretResponse>>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetDeletedSecrets(
-            [FromQuery] string apiVersion,
-            [FromQuery] int maxResults,
-            [FromQuery] string skipToken)
+            [ApiVersion] string apiVersion,
+            [FromQuery] int maxResults = 25,
+            [SkipToken] string skipToken = "")
         {
             var skipCount = 0;
 
@@ -59,7 +60,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult PurgeDeletedSecret(
             [FromRoute] string name,
-            [FromQuery] string apiVersion)
+            [ApiVersion] string apiVersion)
         {
             _keyVaultSecretService.PurgeDeletedSecret(name);
 
@@ -72,7 +73,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult RecoverDeletedSecret(
             [FromRoute] string name,
-            [FromQuery] string apiVersion)
+            [ApiVersion] string apiVersion)
         {
             var secret = _keyVaultSecretService.RecoverDeletedSecret(name);
 

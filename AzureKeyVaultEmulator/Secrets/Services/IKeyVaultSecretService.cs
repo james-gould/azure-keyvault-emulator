@@ -15,6 +15,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         void PurgeDeletedSecret(string name);
         SecretResponse? RecoverDeletedSecret(string name);
         SecretResponse? RestoreSecret(string encodedName);
-        void UpdateSecret(string name, string version, SecretAttributesModel? attributes = null, string contentType = "", object? tags = null);
+        SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes);
     }
 }

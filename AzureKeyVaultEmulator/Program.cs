@@ -1,4 +1,5 @@
 using AzureKeyVaultEmulator.ServiceConfiguration;
+using AzureKeyVaultEmulator.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Azure KeyVault Emulator"));
 }
+
+app.UseMiddleware<KeyVaultErrorMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

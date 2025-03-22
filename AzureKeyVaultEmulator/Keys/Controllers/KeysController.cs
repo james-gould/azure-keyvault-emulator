@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Shared.Models.Keys;
+using AzureKeyVaultEmulator.Shared.Utilities.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +25,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult CreateKey(
             [RegularExpression("[a-zA-Z0-9-]+")][FromRoute] string name,
-            [FromQuery(Name = "api-version")] string apiVersion,
+            [ApiVersion] string apiVersion,
             [FromBody] CreateKeyModel requestBody)
         {
             var createdKey = _keyVaultKeyService.CreateKey(name, requestBody);
@@ -38,7 +39,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         public IActionResult GetKey(
             [FromRoute] string name,
             [FromRoute] string version,
-            [FromQuery(Name = "api-version")] string apiVersion)
+            [ApiVersion] string apiVersion)
         {
             var keyResult = _keyVaultKeyService.Get(name, version);
 
@@ -52,7 +53,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult GetKey(
             [FromRoute] string name,
-            [FromQuery(Name = "api-version")] string apiVersion)
+            [ApiVersion] string apiVersion)
         {
             var keyResult = _keyVaultKeyService.Get(name);
 
@@ -67,7 +68,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         public IActionResult Encrypt(
             [FromRoute] string name,
             [FromRoute] string version,
-            [FromQuery(Name = "api-version")] string apiVersion,
+            [ApiVersion] string apiVersion,
             [FromBody] KeyOperationParameters keyOperationParameters)
         {
             var result = _keyVaultKeyService.Encrypt(name, version, keyOperationParameters);
@@ -81,7 +82,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         public IActionResult Decrypt(
             [FromRoute] string name,
             [FromRoute] string version,
-            [FromQuery(Name = "api-version")] string apiVersion,
+            [ApiVersion] string apiVersion,
             [FromBody] KeyOperationParameters keyOperationParameters)
         {
             var result = _keyVaultKeyService.Decrypt(name, version, keyOperationParameters);

@@ -1,12 +1,8 @@
-using System;
 using System.Collections.Concurrent;
-using System.Text;
 using AzureKeyVaultEmulator.Emulator.Services;
 using AzureKeyVaultEmulator.Shared.Exceptions;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using AzureKeyVaultEmulator.Shared.Utilities;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
@@ -14,14 +10,19 @@ namespace AzureKeyVaultEmulator.Secrets.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ITokenService _token;
+        private readonly IJweEncryptionService _encryption;
 
         private static readonly ConcurrentDictionary<string, SecretResponse?> _secrets = new();
         private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();
 
-        public KeyVaultSecretService(IHttpContextAccessor httpContextAccessor, ITokenService token)
+        public KeyVaultSecretService(
+            IHttpContextAccessor httpContextAccessor, 
+            ITokenService token,
+            IJweEncryptionService encryption)
         {
             _httpContextAccessor = httpContextAccessor;
             _token = token;
+            _encryption = encryption;
         }
 
         public SecretResponse? Get(string name, string version = "")
@@ -101,7 +102,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             return new BackupSecretResult
             {
-                Value = secret.Id.Base64UrlEncode()
+                Value = _encryption.CreateKeyVaultJwe(secret)
             };
         }
 
@@ -109,7 +110,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             var cacheId = name.GetCacheId();
 
-            var exists = _secrets.TryGetValue(cacheId, out var secret);
+            var exists = _deletedSecrets.TryGetValue(cacheId, out var secret);
 
             if (!exists || secret is null)
                 throw new SecretException($"Cannot get deleted secret with name: {name} because it does not exist");
@@ -122,22 +123,17 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            if(maxResults > _deletedSecrets.Count)
-                maxResults = _deletedSecrets.Count;
-
             var items = _deletedSecrets.Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();
 
-            var secrets = items.Select(kvp => kvp.Value);
-
-            var skipToken = _token.CreateSkipToken(maxResults);
+            var requiresPaging = items.Count() >= maxResults;
 
             return new ListResult<SecretResponse>
             {
-                NextLink = _httpContextAccessor.HttpContext?.GetNextLink(skipToken, maxResults) ?? string.Empty,
-                Values = secrets
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = items.Select(kvp => kvp.Value)
             };
         }
 
@@ -148,22 +144,19 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var items = _secrets.Where(x => x.Key.Contains(secretName)).Skip(skipCount).Take(maxResults);
+            var allItems = _secrets.Where(x => x.Key.Contains(secretName));
 
-            if (!items.Any())
+            if (!allItems.Any())
                 return new();
 
-            if (items.Count() < maxResults)
-                maxResults = items.Count();
+            var maxedItems = allItems.Skip(skipCount).Take(maxResults);
 
-            var secrets = items.Select(x => x.Value);
-
-            var skipToken = _token.CreateSkipToken(maxResults);
+            var requiresPaging = maxedItems.Count() >= maxResults;
 
             return new ListResult<SecretResponse>
             {
-                NextLink = _httpContextAccessor.HttpContext?.GetNextLink(skipToken, maxResults) ?? string.Empty,
-                Values = secrets
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = maxedItems.Select(x => x.Value)
             };
         }
 
@@ -177,17 +170,12 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if(!items.Any()) 
                 return new();
 
-            if(items.Count() < maxResults)
-                maxResults = items.Count();
-
-            var secrets = items.Select(x => x.Value);
-
-            var skipToken = _token.CreateSkipToken(maxResults);
+            var requiresPaging = items.Count() >= maxResults;
 
             return new ListResult<SecretResponse>
             {
-                NextLink = _httpContextAccessor.HttpContext?.GetNextLink(skipToken, maxResults) ?? string.Empty,
-                Values = secrets
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = items.Select(x => x.Value)
             };
         }
 
@@ -226,22 +214,10 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            var decoded = EncodingUtils.Base64UrlDecode(encodedSecretId);
-
-            if (string.IsNullOrEmpty(decoded))
-                return new();
-
-            var uri = new Uri(decoded);
-
-            var secretById = _secrets.FirstOrDefault(x => x.Value?.Id == uri).Value;
-
-            if (secretById is null)
-                throw new SecretException($"Failed to restore secret from backup blob");
-
-            return secretById;
+            return _encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
         }
 
-        public void UpdateSecret(string name, string version, SecretAttributesModel? attributes = null, string contentType = "", object? tags = null)
+        public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -253,18 +229,21 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!exists || secret is null)
                 throw new SecretException($"Cannot find secret with name {name} and version {version}");
 
-            if (attributes is not null)
-                secret.Attributes = attributes;
-
-            if(!string.IsNullOrEmpty(contentType))
-                secret.ContentType = contentType;
-
-            if(tags is not null)
-                secret.Tags = tags;
+            if(!string.IsNullOrEmpty(attributes.ContentType))
+                secret.Attributes.ContentType = attributes.ContentType;
 
             secret.Attributes.Update();
 
             _secrets.TryUpdate(cacheId, secret, null);
+
+            return secret.Attributes;
+        }
+
+        private string GenerateNextLink(int maxResults)
+        {
+            var skipToken = _token.CreateSkipToken(maxResults);
+
+            return _httpContextAccessor.GetNextLink(skipToken, maxResults);
         }
     }
 }
