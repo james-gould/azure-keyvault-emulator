@@ -1,18 +1,38 @@
 ﻿using Asp.Versioning;
 using Asp.Versioning.Http;
 using Aspire.Hosting;
+using Azure.Core;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.Shared.Constants;
+using IdentityModel.Client;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
 {
-    public sealed class EmulatorTestingFixture : IAsyncLifetime
+    public class EmulatorTestingFixture : IAsyncLifetime
     {
-        private DistributedApplication? _app;
-        private ResourceNotificationService? _notificationService;
-        private HttpClient? _testingClient;
+        internal readonly TimeSpan _waitPeriod = TimeSpan.FromSeconds(30);
+        internal DistributedApplication? _app;
+        internal ResourceNotificationService? _notificationService;
 
-        public async Task<HttpClient> CreateHttpClient(double version, string applicationName = AspireConstants.EmulatorServiceName)
+        private HttpClient? _testingClient;
+        private string _bearerToken = string.Empty;
+
+        public async Task InitializeAsync()
+        {
+            var builder = await DistributedApplicationTestingBuilder
+                .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>([], (x, y) => x.DisableDashboard = true);
+
+            _app = await builder.BuildAsync();
+
+            _notificationService = _app.Services.GetService<ResourceNotificationService>();
+
+            await _app.StartAsync();
+        }
+
+        public async ValueTask<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
         {
             if (_testingClient is not null)
                 return _testingClient;
@@ -23,7 +43,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
                 InnerHandler = new HttpClientHandler()
             };
 
-
             var endpoint = _app!.GetEndpoint(applicationName);
 
             _testingClient = new HttpClient(opt)
@@ -31,25 +50,28 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
                 BaseAddress = endpoint
             };
 
-            await _notificationService!.WaitForResourceAsync(applicationName, KnownResourceStates.Running).WaitAsync(TimeSpan.FromSeconds(30));
+            await _notificationService!.WaitForResourceAsync(applicationName, KnownResourceStates.Running).WaitAsync(_waitPeriod);
 
             return _testingClient;
         }
 
-        public async Task InitializeAsync()
+        public async ValueTask<string> GetBearerToken()
         {
-            var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>();
+            if (_testingClient is null)
+                _testingClient = await CreateHttpClient();
 
-            builder.Services.ConfigureHttpClientDefaults(c =>
-            {
-                c.AddStandardResilienceHandler();
-            });
+            if(!string.IsNullOrEmpty(_bearerToken))
+                return _bearerToken;
 
-            _app = await builder.BuildAsync();
+            var response = await _testingClient.GetAsync("/token");
 
-            _notificationService = _app.Services.GetService<ResourceNotificationService>();
+            response.EnsureSuccessStatusCode();
 
-            await _app.StartAsync();
+            var jwt = await response.Content.ReadAsStringAsync();
+
+            _testingClient.SetBearerToken(jwt);
+
+            return jwt;
         }
 
         public async Task DisposeAsync()

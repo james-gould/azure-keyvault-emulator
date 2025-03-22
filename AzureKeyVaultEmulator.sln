@@ -9,14 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
 		.gitignore = .gitignore
-		.releaserc.json = .releaserc.json
 		CHANGELOG.md = CHANGELOG.md
 		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		docker-compose.yml = docker-compose.yml
 		Dockerfile = Dockerfile
 		LICENSE = LICENSE
-		makefile = makefile
-		package.json = package.json
 		README.md = README.md
 	EndProjectSection
 EndProject

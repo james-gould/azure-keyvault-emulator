@@ -6,13 +6,18 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-	<PreserveCompilationContext>true</PreserveCompilationContext>
+    <UserSecretsId>1f5e0e4e-442f-475f-8662-94a562031d22</UserSecretsId>
+	<!--<PreserveCompilationContext>true</PreserveCompilationContext>-->
   </PropertyGroup>
 
   <ItemGroup>
 	<PackageReference Include="Aspire.Hosting.Testing" Version="9.0.0" />
     <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
     <PackageReference Include="Asp.Versioning.Http.Client" Version="8.1.0" />
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
+    <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.7.0" />
+    <PackageReference Include="Azure.Security.KeyVault.Keys" Version="4.7.0" />
+    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.7.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.14" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
@@ -35,7 +40,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj" />
-    <ProjectReference Include="..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false"/>
+    <ProjectReference Include="..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
 
 </Project>
