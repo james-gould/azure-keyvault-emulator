@@ -1,30 +1,23 @@
 ﻿using Azure;
 using Azure.Security.KeyVault.Secrets;
-using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
-using System.Net.Http.Json;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 {
     public class SecretsControllerTests(SecretsTestingFixture fixture) : IClassFixture<SecretsTestingFixture>
     {
-        private readonly string _defaultSecretName = "password";
-        private readonly string _defaultSecretValue = "myPassword";
-
-        private KeyVaultSecret? _defaultSecret = null;
-
         [Fact]
         public async Task GetSecretReturnsCorrectValueTest()
         {
             var client = await fixture.GetSecretClientAsync();
 
-            var createdSecret = await CreateSecretAsync(client);
+            var createdSecret = await fixture.CreateSecretAsync(client);
 
-            var fromEmulator = await client.GetSecretAsync(_defaultSecretName);
+            var fromEmulator = await client.GetSecretAsync(fixture.DefaultSecretName);
 
             Assert.NotNull(fromEmulator);
 
-            Assert.Equal(_defaultSecretValue, createdSecret.Value);
+            Assert.Equal(fixture.DefaultSecretValue, createdSecret.Value);
         }
 
         [Fact]
@@ -32,11 +25,11 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            var createdSecret = await client.SetSecretAsync(new KeyVaultSecret(_defaultSecretName, _defaultSecretValue));
+            var createdSecret = await client.SetSecretAsync(new KeyVaultSecret(fixture.DefaultSecretName, fixture.DefaultSecretValue));
 
             Assert.NotNull(createdSecret.Value);
 
-            var secretFromKv = await client.GetSecretAsync(_defaultSecretName, createdSecret.Value.Properties.Version);
+            var secretFromKv = await client.GetSecretAsync(fixture.DefaultSecretName, createdSecret.Value.Properties.Version);
 
             Assert.Equal(createdSecret.Value.Value, secretFromKv.Value.Value);
             Assert.Equal(createdSecret.Value.Properties.Version, secretFromKv.Value.Properties.Version);
@@ -69,9 +62,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            await CreateSecretAsync(client);
+            await fixture.CreateSecretAsync(client);
 
-            var backup = await client.BackupSecretAsync(_defaultSecretName);
+            var backup = await client.BackupSecretAsync(fixture.DefaultSecretName);
 
             Assert.NotEmpty(backup.Value);
         }
@@ -131,9 +124,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            var secret = await CreateSecretAsync(client);
+            var secret = await fixture.CreateSecretAsync(client);
 
-            var backup = await client.BackupSecretAsync(_defaultSecretName);
+            var backup = await client.BackupSecretAsync(fixture.DefaultSecretName);
 
             var restored = await client.RestoreSecretBackupAsync(backup.Value);
 
@@ -145,7 +138,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            var secret = await CreateSecretAsync(client);
+            var secret = await fixture.CreateSecretAsync(client);
 
             Assert.True(string.IsNullOrEmpty(secret.Properties.ContentType));
 
@@ -156,14 +149,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var updated = await client.UpdateSecretPropertiesAsync(secret.Properties);
 
             Assert.Equal(newContentType, updated.Value.ContentType);
-        }
-
-        private async ValueTask<KeyVaultSecret> CreateSecretAsync(SecretClient client)
-        {
-            if (_defaultSecret is not null)
-                return _defaultSecret;
-
-            return _defaultSecret = await client.SetSecretAsync(_defaultSecretName, _defaultSecretValue);
         }
     }
 }
