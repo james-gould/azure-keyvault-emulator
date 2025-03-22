@@ -2,12 +2,13 @@
 > As of `10/29/2024` [Basis Theory](https://github.com/Basis-Theory/azure-keyvault-emulator) is no longer maintaining the base repository, although the development seemed to be ceased for quite some time prior to that. Due to the ever-growing popularity of `.NET Aspire` the emulator is becoming increasingly more important; I've forked the repository with the goal to create a feature-complete, `.NET Aspire` supported emulator. <br /><br />
 > This repo has been detactched from the base repo as of `22/03/2025` due to the change in direction and aspirations for the project., but I cannot thank Basis Theory enough for the original codebase.
 
-## Azure KeyVault Emulator
+## Azure Key Vault Emulator
 
 A fully featured, emulated version of [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) product.
 
-> [!CAUTION]
-> This is not a secure space for production secrets, keys or certificates. <br /><br /> Please do not entrust the emulator with real world, high risk items.
+`.NET Aspire` has the ability to create emulated, easily referenced resources in development environments - sadly Key Vault is not one of those. To work with Key Vault in a dev-env you need to have a deployed, real world instance of the resource in an active Azure Subscription; this emulator removes that requirement.
+
+Some API functionality may not be supported while the initial development is ongoing, please refer to the roadmap below to double check if you're attempting a supported operation. The full API *will* be supported, but if you run into issues beforehand that's likely the reason why.
 
 # Roadmap
 
@@ -20,6 +21,10 @@ A fully featured, emulated version of [Azure Key Vault](https://azure.microsoft.
     - This will be an extension of the existing `Aspire.Hosting.Azure.KeyVault` package, downloadable as a separate dependency.
 
 ## Supported Operations
+
+> [!CAUTION]
+> This is not a secure space for production secrets, keys or certificates. <br /><br /> Please do not entrust the emulator with real world, high risk items.
+
 
 ### Keys
 
