@@ -1,7 +1,9 @@
 ﻿using Azure;
 using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+using Json.Patch;
 using System.Runtime.InteropServices;
+using System.Xml.Serialization;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 {
@@ -55,6 +57,64 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
                     deletedSecrets.Add(deletedSecret);
 
             Assert.Single(deletedSecrets);
+        }
+
+        [Fact]
+        public async Task PurgeDeletedSecretRemovesFromDeletedCacheTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+
+            var secretName = "purgingSecret";
+            var secretValue = "purgedValue";
+
+            var secret = await fixture.CreateSecretAsync(secretName, secretValue);
+
+            Assert.Equal(secretName, secret.Name);
+
+            var deletedOperation = await client.StartDeleteSecretAsync(secretName);
+
+            Assert.Equal(secretName, deletedOperation?.Value.Name);
+
+            var deletedSecretFromCache = await client.GetDeletedSecretAsync(secretName);
+
+            Assert.Equal(secretName, deletedSecretFromCache?.Value.Name);
+
+            await client.PurgeDeletedSecretAsync(secretName);
+
+            var deletedEndpointResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetDeletedSecretAsync(secretName));
+            var baseEndpointResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secretName));
+
+            Assert.Equal((int)HttpStatusCode.BadRequest, deletedEndpointResult.Status);
+            Assert.Equal((int)HttpStatusCode.BadRequest, baseEndpointResult.Status);
+        }
+
+        [Fact]
+        public async Task RecoverDeletedSecretRestoresToPrimaryCacheTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+
+            var secretName = "recoveredDeletedSecret";
+            var secretValue = "recoveredPassword";
+
+            var secret = await fixture.CreateSecretAsync(secretName, secretValue);
+
+            Assert.Equal(secretName, secret.Name);
+
+            var deletedOperation = await client.StartDeleteSecretAsync(secretName);
+
+            Assert.Equal(secretName, deletedOperation.Value.Name);
+
+            var recovered = await client.StartRecoverDeletedSecretAsync(secretName);
+
+            Assert.Equal(secretName, recovered.Value.Name);
+
+            var afterRecovery = await client.GetSecretAsync(secretName);
+
+            Assert.Equal(secretName, afterRecovery.Value.Name);
+
+            var deletedResult = await Assert.ThrowsAsync<RequestFailedException>(()=> client.GetDeletedSecretAsync(secretName));
+
+            Assert.Equal((int)HttpStatusCode.BadRequest, deletedResult.Status);
         }
     }
 }
