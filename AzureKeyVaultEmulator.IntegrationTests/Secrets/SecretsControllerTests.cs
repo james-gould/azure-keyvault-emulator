@@ -140,6 +140,24 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(secret.Name, restored.Value.Name);
         }
 
+        [Fact]
+        public async Task UpdateSecretAppliesChangesTest()
+        {
+            var client = await fixture.GetSecretClientAsync();
+
+            var secret = await CreateSecretAsync(client);
+
+            Assert.True(string.IsNullOrEmpty(secret.Properties.ContentType));
+
+            var newContentType = "application/json";
+
+            secret.Properties.ContentType = newContentType;
+
+            var updated = await client.UpdateSecretPropertiesAsync(secret.Properties);
+
+            Assert.Equal(newContentType, updated.Value.ContentType);
+        }
+
         private async ValueTask<KeyVaultSecret> CreateSecretAsync(SecretClient client)
         {
             if (_defaultSecret is not null)

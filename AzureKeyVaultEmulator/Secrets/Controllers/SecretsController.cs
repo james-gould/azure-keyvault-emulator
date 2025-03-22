@@ -152,13 +152,13 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion,
-            [FromBody] UpdateSecretRequest request)
+            [FromBody] SecretAttributesModel attributes)
         {
-            ArgumentNullException.ThrowIfNull(request);
+            ArgumentNullException.ThrowIfNull(attributes);
 
-            _keyVaultSecretService.UpdateSecret(name, version, request.Attributes, request.ContentType, request.Tags);
+            var updatedAttributes = _keyVaultSecretService.UpdateSecret(name, version, attributes);
 
-            return Ok();
+            return Ok(updatedAttributes);
         }
     }
 }

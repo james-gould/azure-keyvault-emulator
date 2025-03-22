@@ -9,6 +9,9 @@ namespace AzureKeyVaultEmulator.Shared.Models
 {
     public class AttributeBase
     {
+        [JsonPropertyName("contentType")]
+        public string ContentType { get; set; } = string.Empty;
+
         [JsonPropertyName("enabled")]
         public bool Enabled { get; set; } = true;
 

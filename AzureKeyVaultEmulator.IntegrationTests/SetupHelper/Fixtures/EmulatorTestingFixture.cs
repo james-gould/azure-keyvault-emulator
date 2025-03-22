@@ -18,6 +18,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
         internal ResourceNotificationService? _notificationService;
 
         private HttpClient? _testingClient;
+        private string _bearerToken = string.Empty;
 
         public async Task InitializeAsync()
         {
@@ -31,7 +32,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
             await _app.StartAsync();
         }
 
-        public async Task<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
+        public async ValueTask<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
         {
             if (_testingClient is not null)
                 return _testingClient;
@@ -54,10 +55,13 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
             return _testingClient;
         }
 
-        public async Task<string> GetBearerToken()
+        public async ValueTask<string> GetBearerToken()
         {
             if (_testingClient is null)
                 _testingClient = await CreateHttpClient();
+
+            if(!string.IsNullOrEmpty(_bearerToken))
+                return _bearerToken;
 
             var response = await _testingClient.GetAsync("/token");
 

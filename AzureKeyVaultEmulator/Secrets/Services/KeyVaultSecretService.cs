@@ -1,12 +1,8 @@
-using System;
 using System.Collections.Concurrent;
-using System.Text;
 using AzureKeyVaultEmulator.Emulator.Services;
 using AzureKeyVaultEmulator.Shared.Exceptions;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using AzureKeyVaultEmulator.Shared.Utilities;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
@@ -223,13 +219,10 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return _encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
         }
 
-        public void UpdateSecret(string name, string version, SecretAttributesModel? attributes = null, string contentType = "", Dictionary<string, string>? tags = null)
+        public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
-
-            if (tags is null)
-                tags = [];
 
             var cacheId = name.GetCacheId(version);
 
@@ -238,18 +231,14 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!exists || secret is null)
                 throw new SecretException($"Cannot find secret with name {name} and version {version}");
 
-            if (attributes is not null)
-                secret.Attributes = attributes;
-
-            if(!string.IsNullOrEmpty(contentType))
-                secret.ContentType = contentType;
-
-            if(tags is not null)
-                secret.Tags = tags;
+            if(!string.IsNullOrEmpty(attributes.ContentType))
+                secret.Attributes.ContentType = attributes.ContentType;
 
             secret.Attributes.Update();
 
             _secrets.TryUpdate(cacheId, secret, null);
+
+            return secret.Attributes;
         }
 
         private string GenerateNextLink(int maxResults)
