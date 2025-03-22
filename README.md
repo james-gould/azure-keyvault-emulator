@@ -1,9 +1,13 @@
-# MAINTENANCE NOTICE
-As of `10/29/2024` [Basis Theory](https://basistheory.com/) is no longer maintaining this repository. Due to its importance I've forked and began maintenance/enhancement of the features, including `.NET Aspire` support for local Azure Key Vault support.
+> [!IMPORTANT]
+> As of `10/29/2024` [Basis Theory](https://github.com/Basis-Theory/azure-keyvault-emulator) is no longer maintaining the base repository, although the development seemed to be ceased for quite some time prior to that. Due to the ever-growing popularity of `.NET Aspire` the emulator is becoming increasingly more important; I've forked the repository with the goal to create a feature-complete, `.NET Aspire` supported emulator. <br /><br />
+> This repo has been detactched from the base repo as of `22/03/2025` due to the change in direction and aspirations for the project., but I cannot thank Basis Theory enough for the original codebase.
 
 ## Azure KeyVault Emulator
 
-The Azure KeyVault Emulator to mock interactions with Azure KeyVault using the official Azure KeyVault client or REST API.
+A fully featured, emulated version of [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) product.
+
+> [!CAUTION]
+> This is not a secure space for production secrets, keys or certificates. <br /><br /> Please do not entrust the emulator with real world, high risk items.
 
 # Roadmap
 
