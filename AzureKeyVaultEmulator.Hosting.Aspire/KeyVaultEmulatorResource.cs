@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
     public class KeyVaultEmulatorResource 
-        : ContainerResource, IResourceWithEndpoints
+        : ContainerResource, IResourceWithEndpoints, IResourceWithConnectionString
     {
         public KeyVaultEmulatorResource(AzureKeyVaultResource innerResource) : base(innerResource.Name)
         {
@@ -19,5 +19,9 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
         private AzureKeyVaultResource _innerResource { get; set; }
 
         public override ResourceAnnotationCollection Annotations => _innerResource.Annotations;
+
+        internal EndpointReference EmulatorEndpoint => new(this, KeyVaultEmulatorContainerImageTags.Name);
+
+        public ReferenceExpression ConnectionStringExpression => ReferenceExpression.Create($"{EmulatorEndpoint.Url}");
     }
 }
