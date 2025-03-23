@@ -21,19 +21,11 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
 
             surrogateBuilder
-                //.WithHttpsEndpoint(
-                //    name: KeyVaultEmulatorContainerImageTags.Name,
-                //    port: KeyVaultEmulatorContainerImageTags.Port,
-                //    targetPort: KeyVaultEmulatorContainerImageTags.Port
-                //)
-                .WithEndpoint("emulatedEndpoint", x =>
-                {
-                    x.UriScheme = "https";
-                    x.TargetHost = "emulator.azure.vault.net";
-                    x.TargetPort = KeyVaultEmulatorContainerImageTags.Port;
-                    x.Port = KeyVaultEmulatorContainerImageTags.Port;
-                    x.Name = KeyVaultEmulatorContainerImageTags.Name;
-                })
+                .WithHttpsEndpoint(
+                    name: KeyVaultEmulatorContainerImageTags.Name,
+                    port: KeyVaultEmulatorContainerImageTags.Port,
+                    targetPort: KeyVaultEmulatorContainerImageTags.Port
+                )
                 .WithAnnotation(new ContainerImageAnnotation
                 {
                     Image = KeyVaultEmulatorContainerImageTags.Image,
