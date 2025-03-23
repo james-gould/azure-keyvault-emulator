@@ -27,7 +27,8 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                 .WithAnnotation(new ContainerImageAnnotation
                 {
                     Image = KeyVaultEmulatorContainerImageTags.Image,
-                    Tag = KeyVaultEmulatorContainerImageTags.Tag
+                    Tag = KeyVaultEmulatorContainerImageTags.Tag,
+                    Registry = KeyVaultEmulatorContainerImageTags.Registry
                 });
 
             configureContainer?.Invoke(surrogateBuilder);
