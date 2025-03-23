@@ -40,7 +40,7 @@ RUN mkdir -p /certs
 COPY --from=build /certs/emulator.pfx /certs/
 
 # # Exposes the port specified in the AzureKeyVaultEmulator.Hosting.Aspire.Extensions -> RunAsEmulator
-ENV ASPNETCORE_URLS=https://emulator.vault.azure.net:4997
+ENV ASPNETCORE_URLS=https://+:4997
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/emulator.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=emulator
 
