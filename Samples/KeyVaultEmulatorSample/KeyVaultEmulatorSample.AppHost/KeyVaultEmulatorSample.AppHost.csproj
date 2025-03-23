@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
 
@@ -12,13 +12,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.1.0" />
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.1.0" />
-    <PackageReference Include="AzureKeyVaultEmulator.Aspire.Hosting" Version="1.0.0" />
+    <!--<PackageReference Include="AzureKeyVaultEmulator.Aspire.Hosting" Version="1.0.0" />-->
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WebApiPWithEmulator\WebApiWithEmulator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AzureKeyVaultEmulator.Aspire.Hosting">
+      <HintPath>..\..\..\AzureKeyVaultEmulator.Hosting.Aspire\bin\Debug\net8.0\AzureKeyVaultEmulator.Aspire.Hosting.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

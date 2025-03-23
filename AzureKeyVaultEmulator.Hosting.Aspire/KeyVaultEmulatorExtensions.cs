@@ -21,9 +21,11 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
 
             surrogateBuilder
-                .WithEndpoint(
-                    name: KeyVaultEmulatorContainerImageTags.Name, 
-                    port: KeyVaultEmulatorContainerImageTags.Port)
+                .WithHttpsEndpoint(
+                    name: KeyVaultEmulatorContainerImageTags.Name,
+                    port: KeyVaultEmulatorContainerImageTags.Port,
+                    targetPort: KeyVaultEmulatorContainerImageTags.Port
+                )
                 .WithAnnotation(new ContainerImageAnnotation
                 {
                     Image = KeyVaultEmulatorContainerImageTags.Image,
@@ -34,6 +36,17 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             configureContainer?.Invoke(surrogateBuilder);
 
             return surrogateBuilder;
+        }
+
+        public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
+            this IResourceBuilder<AzureKeyVaultResource> builder,
+            ContainerLifetime lifetime)
+        {
+            var emulatedBuilder = RunAsEmulator(builder, null);
+
+            emulatedBuilder.WithLifetime(lifetime);
+
+            return emulatedBuilder;
         }
 
         /// <summary>
