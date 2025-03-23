@@ -15,6 +15,7 @@ var keyVault = builder
 
 builder
     .AddProject<Projects.WebApiWithEmulator>("webapiwithemulator")
-    .WithReference(keyVault);
+    .WithReference(keyVault)
+    .WaitFor(keyVault);
 
 builder.Build().Run();

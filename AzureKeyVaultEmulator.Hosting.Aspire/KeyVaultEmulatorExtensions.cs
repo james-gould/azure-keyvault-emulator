@@ -21,20 +21,11 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
 
             surrogateBuilder
-                //.WithHttpsEndpoint(
-                //    name: KeyVaultEmulatorContainerImageTags.Name,
-                //    port: KeyVaultEmulatorContainerImageTags.Port,
-                //    targetPort: KeyVaultEmulatorContainerImageTags.Port
-                //)
-                .WithExternalHttpEndpoints()
-                .WithUrlForEndpoint(
-                    endpointName: KeyVaultEmulatorContainerImageTags.Name, 
-                    callback =>
-                    {
-                        callback.Url = "https://emulator.azure.vault.net:4997";
-                        callback.DisplayText = "https://emulator.azure.vault.net:4997"; // just to confirm
-                    })
-                //.WithArgs("--hostname", "emulator.azure.vault.net")
+                .WithHttpsEndpoint(
+                    name: KeyVaultEmulatorContainerImageTags.Name,
+                    port: KeyVaultEmulatorContainerImageTags.Port,
+                    targetPort: KeyVaultEmulatorContainerImageTags.Port
+                )
                 .WithAnnotation(new ContainerImageAnnotation
                 {
                     Image = KeyVaultEmulatorContainerImageTags.Image,
@@ -56,6 +47,15 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             emulatedBuilder.WithLifetime(lifetime);
 
             return emulatedBuilder;
+        }
+
+        /// <summary>
+        /// Enforces the spoofed URL https://emulator.azure.vault.net:4997 for requests. <br/> 
+        /// Requires a local machine trust store cert to function, generate on yourself or visit the repo!
+        /// </summary>
+        public static IResourceBuilder<KeyVaultEmulatorResource> WithSpoofedUrl(this IResourceBuilder<KeyVaultEmulatorResource> builder)
+        {
+            return builder.WithEnvironment($"ConnectionStrings__{builder.Resource.Name}", "https://emulator.azure.vault.net:4997");
         }
 
         /// <summary>

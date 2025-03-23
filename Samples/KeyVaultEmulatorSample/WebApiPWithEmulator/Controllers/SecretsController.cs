@@ -14,8 +14,8 @@ namespace WebApiWithEmulator.Controllers
 
         [HttpGet("create")]
         public async Task<IActionResult> CreateSecret(
-            [FromQuery] string name = "",
-            [FromQuery] string value = "")
+            [FromQuery] string name = "test",
+            [FromQuery] string value = "123")
         {
             var secret = await _secretClient.SetSecretAsync(name, value);
 
@@ -23,7 +23,7 @@ namespace WebApiWithEmulator.Controllers
         }
 
         [HttpGet("get")]
-        public async Task<IActionResult> GetSecret([FromQuery] string name)
+        public async Task<IActionResult> GetSecret([FromQuery] string name = "test")
         {
             var secretFromContainer = await _secretClient.GetSecretAsync(name);
 

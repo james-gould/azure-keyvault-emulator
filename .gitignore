@@ -94,7 +94,4 @@ newrelic/
 # Fake GraphQL directives #
 ###########################
 _not-imported-dev.graphql
-local-certs/emulator.crt
-local-certs/emulator.key
-local-certs/emulator.pfx
 /.editorconfig

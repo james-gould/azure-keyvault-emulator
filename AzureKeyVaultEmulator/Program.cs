@@ -1,5 +1,6 @@
 using AzureKeyVaultEmulator.ServiceConfiguration;
 using AzureKeyVaultEmulator.Middleware;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddConfiguredSwaggerGen();
 builder.Services.RegisterCustomServices();
 
+// Let nginx do the HTTPS termination and forward request on
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -25,6 +32,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Azure KeyVault Emulator"));
 }
+
+app.UseHttpsRedirection();
+app.UseForwardedHeaders();
 
 app.UseMiddleware<KeyVaultErrorMiddleware>();
 
