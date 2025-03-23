@@ -9,7 +9,7 @@
     <UserSecretsId>15e07707-9815-4e77-aa15-22f94b192ae6</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.1.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0-preview.1.25173.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false" />
