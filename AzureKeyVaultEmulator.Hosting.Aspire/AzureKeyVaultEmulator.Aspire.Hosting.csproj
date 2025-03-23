@@ -11,6 +11,8 @@
     <Description>Container image support for the .NET Aspire Azure KeyVault hosting project.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/james-gould/azure-keyvault-emulator</RepositoryUrl>
+    <Copyright>James Gould - 2025</Copyright>
+	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
