@@ -26,6 +26,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                     port: KeyVaultEmulatorContainerImageTags.Port,
                     targetPort: KeyVaultEmulatorContainerImageTags.Port
                 )
+                .WithArgs("--hostname", "https://emulator.azure.vault.net")
                 .WithAnnotation(new ContainerImageAnnotation
                 {
                     Image = KeyVaultEmulatorContainerImageTags.Image,
