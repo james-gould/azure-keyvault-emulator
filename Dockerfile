@@ -5,6 +5,7 @@ WORKDIR /app
 # Copy and install the HTTPS certificates
 RUN mkdir -p /certs
 COPY local-certs/emulator.pfx /certs/
+COPY local-certs/emulator.crt /certs/
 
 # # Install CA certificates
 RUN apt-get update && apt-get install -y ca-certificates \
@@ -37,10 +38,14 @@ COPY --from=build /out ./
 
 RUN mkdir -p /certs
 
-COPY --from=build /certs/emulator.pfx /certs/
+COPY --from=build certs/ /certs/
+
+COPY --from=build certs/emulator.crt /usr/local/shared/ca-certificates/emulator.crt
+RUN update-ca-certificates
 
 # # Exposes the port specified in the AzureKeyVaultEmulator.Hosting.Aspire.Extensions -> RunAsEmulator
 ENV ASPNETCORE_URLS=https://+:4997
+ENV ASPNETCORE_HTTPS_POST=4997
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/emulator.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=emulator
 

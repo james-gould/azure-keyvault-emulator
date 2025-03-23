@@ -28,4 +28,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("/", () =>
+{
+    return "alive";
+});
+
 app.Run();
