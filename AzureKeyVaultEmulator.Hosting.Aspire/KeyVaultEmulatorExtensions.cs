@@ -29,7 +29,11 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                 .WithExternalHttpEndpoints()
                 .WithUrlForEndpoint(
                     endpointName: KeyVaultEmulatorContainerImageTags.Name, 
-                    callback => callback.Url = "https://emulator.azure.vault.net:4997")
+                    callback =>
+                    {
+                        callback.Url = "https://emulator.azure.vault.net:4997";
+                        callback.DisplayText = "https://emulator.azure.vault.net:4997"; // just to confirm
+                    })
                 //.WithArgs("--hostname", "emulator.azure.vault.net")
                 .WithAnnotation(new ContainerImageAnnotation
                 {

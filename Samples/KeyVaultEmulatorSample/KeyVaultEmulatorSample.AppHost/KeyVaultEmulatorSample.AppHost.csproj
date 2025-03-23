@@ -18,7 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AzureKeyVaultEmulator.Aspire.Hosting">
-      <HintPath>..\..\..\AzureKeyVaultEmulator.Hosting.Aspire\bin\Debug\net8.0\AzureKeyVaultEmulator.Aspire.Hosting.dll</HintPath>
+      <HintPath>..\..\..\AzureKeyVaultEmulator.Hosting.Aspire\bin\Debug\net9.0\AzureKeyVaultEmulator.Aspire.Hosting.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
