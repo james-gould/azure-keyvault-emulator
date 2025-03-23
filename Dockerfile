@@ -2,8 +2,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-
-
 # Copy and install the HTTPS certificates
 RUN mkdir -p /certs
 COPY local-certs/emulator.pfx /certs/
@@ -15,8 +13,8 @@ RUN apt-get update && apt-get install -y ca-certificates \
 
 # Import the certificate into the trusted store
 RUN apt-get install -y openssl \
-    && openssl pkcs12 -in /certs/emulator.pfx -nocerts -nodes -passin | openssl rsa -out /certs/emulator.key \
-    && openssl pkcs12 -in /certs/emulator.pfx -clcerts -nokeys -passin | openssl x509 -out /certs/emulator.crt \
+    && openssl pkcs12 -in /certs/emulator.pfx -nocerts -nodes -passin pass:emulator | openssl rsa -out /certs/emulator.key \
+    && openssl pkcs12 -in /certs/emulator.pfx -clcerts -nokeys -passin pass:emulator | openssl x509 -out /certs/emulator.crt \
     && cp /certs/emulator.crt /usr/local/share/ca-certificates/emulator.crt \
     && update-ca-certificates
 
@@ -42,7 +40,7 @@ RUN mkdir -p /certs
 COPY --from=build /certs/emulator.pfx /certs/
 
 # # Exposes the port specified in the AzureKeyVaultEmulator.Hosting.Aspire.Extensions -> RunAsEmulator
-ENV ASPNETCORE_URLS=https://+:4997
+ENV ASPNETCORE_URLS=https://emulator.vault.azure.net:4997
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/emulator.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=emulator
 
