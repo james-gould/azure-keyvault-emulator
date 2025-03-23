@@ -17,5 +17,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /out ./
 
+# Exposes the port specified in the AzureKeyVaultEmulator.Hosting.Aspire.Extensions -> RunAsEmulator
+ENV ASPNETCORE_URLS=https://+:4997
+EXPOSE 4997
+
 # Set the entry point (adjust based on your application)
 ENTRYPOINT ["dotnet", "AzureKeyVaultEmulator.dll"]
