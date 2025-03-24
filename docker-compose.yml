@@ -1,18 +1,15 @@
-version: '3.9'
-
 services:
   keyvault-emulator:
-    image: azure-keyvault-emulator:latest
+    image: jamesgoulddev/azure-keyvault-emulator:latest
     build:
       context: .
-    hostname: azure-keyvault-emulator.vault.azure.net
+    hostname: emulator.vault.azure.net
     ports:
-      - 5551:5551
-      - 5550:5550
+      - 4497:4497
     volumes:
-      - $PWD/local-certs:/https:ro
+      - ./local-certs:/https/:ro
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:5551
-      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/azure-keyvault-emulator.key
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/azure-keyvault-emulator.crt
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=https://+:4997
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/emulator.key
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/emulator.crt
