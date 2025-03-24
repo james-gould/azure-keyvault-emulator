@@ -44,7 +44,7 @@ Which will give you a result similar to:
 
 ```
 CONTAINER ID   IMAGE                                          COMMAND                  CREATED         STATUS         PORTS      NAMES
-89d8852b2d32   jamesgoulddev/azure-keyvault-emulator:latest   "dotnet AzureKeyVaul…"   4 seconds ago   Up 3 seconds   4997/tcp   agitated_sanderson
+89d8852b2d32   jamesgoulddev/azure-keyvault-emulator:latest   "dotnet AzureKeyVaulï¿½"   4 seconds ago   Up 3 seconds   4997/tcp   agitated_sanderson
 ```
 
 You'll then need to create a configuration item in your application which allows the dotnet runtime to get the `https://localhost:{port}`.
@@ -92,6 +92,8 @@ public async Task GetSecret(string name)
 The emulator is supported only in a `DEBUG` environment due to the secure nature of the product. To make life easy you can create an environment flag in your `Program.cs` to toggle the functionality off:
 
 ```csharp
+var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
+
 if(builder.Environment.IsDevelopment())
     builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, certificates: true, keys: true);
 else
