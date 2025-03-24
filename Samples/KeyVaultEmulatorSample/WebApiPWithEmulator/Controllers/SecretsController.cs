@@ -7,6 +7,7 @@ namespace WebApiWithEmulator.Controllers
     public class SecretsController : ControllerBase
     {
         private SecretClient _secretClient;
+
         public SecretsController(SecretClient secretClient)
         {
             _secretClient = secretClient;

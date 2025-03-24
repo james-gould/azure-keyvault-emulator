@@ -1,7 +1,4 @@
-using Azure.Identity;
-using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Keys;
-using Azure.Security.KeyVault.Secrets;
+using AzureKeyVaultEmulator.Aspire.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,11 +14,8 @@ builder.Services.AddSwaggerGen();
 // Injected by Aspire
 var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
 
-// Inject the ones you need, this can be tidied up/abstracted.
-// Do NOT use the Aspire KeyVault client library if you need Keys or Certificates, they aren't supported yet.
-builder.Services.AddTransient(x => new SecretClient(new Uri(vaultUri), new DefaultAzureCredential()));
-builder.Services.AddTransient(x => new KeyClient(new Uri(vaultUri), new DefaultAzureCredential()));
-builder.Services.AddTransient(x => new CertificateClient(new Uri(vaultUri), new DefaultAzureCredential()));
+// Inject the clients you need
+builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, certificates: true);
 
 var app = builder.Build();
 

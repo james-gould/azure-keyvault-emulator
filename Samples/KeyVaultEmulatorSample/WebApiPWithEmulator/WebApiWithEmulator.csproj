@@ -18,4 +18,10 @@
     <ProjectReference Include="..\KeyVaultEmulatorSample.ServiceDefaults\KeyVaultEmulatorSample.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="AzureKeyVaultEmulator.Client">
+      <HintPath>..\..\..\AzureKeyVaultEmulator.Aspire.Client\bin\Debug\net9.0\AzureKeyVaultEmulator.Client.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
