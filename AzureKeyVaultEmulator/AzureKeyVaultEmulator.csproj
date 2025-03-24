@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-	<nullable>enable</nullable>
-	<ImplicitUsings>true</ImplicitUsings>
+    <TargetFramework>net9.0</TargetFramework>
+    <nullable>enable</nullable>
+    <ImplicitUsings>true</ImplicitUsings>
+    <UserSecretsId>7a1cc440-322a-4f04-83c9-bfdb89881074</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
-
   <ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
   <ItemGroup>

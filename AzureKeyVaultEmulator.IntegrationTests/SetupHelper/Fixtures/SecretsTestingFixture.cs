@@ -1,4 +1,5 @@
-﻿using Azure.Security.KeyVault.Secrets;
+﻿using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.Shared.Constants;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures

@@ -19,13 +19,7 @@ namespace AzureKeyVaultEmulator.Emulator.Controllers
         [ProducesResponseType<string>(StatusCodes.Status200OK)]
         public IActionResult GenerateStubToken()
         {
-            var claims = new[]
-{
-                new Claim(JwtRegisteredClaimNames.Sub, "localuser"),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var jwt = _token.CreateBearerToken(claims);
+            var jwt = _token.CreateBearerToken();
 
             return Ok(jwt);
         }

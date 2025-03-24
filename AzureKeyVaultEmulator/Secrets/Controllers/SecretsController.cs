@@ -23,8 +23,8 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         }
 
         [HttpPut("{name}")]
-        [Produces("application/json")]
-        [Consumes("application/json")]
+        //[Produces("application/json")]
+        //[Consumes("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult SetSecret(

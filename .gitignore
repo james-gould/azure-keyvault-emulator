@@ -91,8 +91,10 @@ publish/
 sftp/
 newrelic/
 .idea/
+
+local-certs/emulator.*
+
 # Fake GraphQL directives #
 ###########################
 _not-imported-dev.graphql
-local-certs/local*
 /.editorconfig
