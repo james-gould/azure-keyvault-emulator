@@ -32,7 +32,7 @@ Some API functionality may not be supported while the initial development is ong
 - Get Key by Version
 - Encrypt
 - Decrypt
-- Supported [Algorithms](https://docs.microsoft.com/en-us/rest/api/keyvault/decrypt/decrypt#jsonwebkeyencryptionalgorithm)
+- Supported [Algorithms](https://learn.microsoft.com/en-us/rest/api/keyvault/keys/decrypt/decrypt?view=rest-keyvault-keys-7.4&tabs=HTTP#jsonwebkeyencryptionalgorithm)
     - `RSA1_5`
     - `RSA-OAEP`
 
