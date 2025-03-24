@@ -2,9 +2,9 @@
 
 This library simplifies the inclusion of the Azure Key Vault Emulator into your local development environment.
 
-You do not *need* to use it, but it makes life easier. Due to the constraints of Azure Key Vault and the associated client libraries, any requests that don't come from `https://*.vault.azure.net` are rejected.
+You do not *need* to use it but it makes life easier. Due to the constraints of Azure Key Vault and the associated client libraries, any requests that don't come from `https://*.vault.azure.net` are rejected.
 
-To work around you need to set `DisableChallengeResourceVerification = true` for each client. This library does that for you, and then dependency injects them.
+To work around this you need to set `DisableChallengeResourceVerification = true` for each client. This library does that for you, and then dependency injects them.
 
 # Setup
 
