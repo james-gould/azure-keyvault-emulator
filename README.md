@@ -8,13 +8,15 @@ Some API functionality may not be supported while the initial development is ong
 
 # Roadmap
 
-- Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
+- [ ] Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
     - [x] Secrets
     - [ ] Keys
     - [ ] Certificates
     - [ ] Managed HSM
-- Separate NuGet package for introducing an emulated Key Vault into your .NET Aspire projects using a Docker Container.
-    - This will be an extension of the existing `Aspire.Hosting.Azure.KeyVault` package, downloadable as a separate dependency.
+- [x] Separate NuGet package for introducing an emulated Key Vault into your .NET Aspire projects using a Docker Container.
+- [x] Separate NuGet package for easy usage of the emulator in client applications.
+- [ ] Complete `docker-compose` options for integrating the emulator into a cluster.
+    
 
 ## Supported Operations
 
