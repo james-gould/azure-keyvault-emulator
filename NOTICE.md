@@ -1,0 +1,5 @@
+> [!IMPORTANT]
+> As of `10/29/2024` [Basis Theory](https://github.com/Basis-Theory/azure-keyvault-emulator) is no longer maintaining the base repository, although the development seemed to be ceased for quite some time prior to that. Due to the ever-growing popularity of `.NET Aspire` the emulator is becoming increasingly more important; I've forked the repository with the goal to create a feature-complete, `.NET Aspire` supported emulator. <br /><br />
+> This repo has been detactched from the base repo as of `22/03/2025` due to the change in direction and aspirations for the project., but I cannot thank Basis Theory enough for the original codebase.
+
+The original license holder retains their copyright to all original source code, additions or changes beyond [this commit](https://github.com/james-gould/azure-keyvault-emulator/commit/5a9bbb94ca7f52755144fd20d7966575530e0275) are now held by James Gould, the author.

@@ -60,6 +60,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Integ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Shared", "AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj", "{337ECEEF-74A5-F1F5-57AE-8ABD750CA911}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Aspire.Hosting", "AzureKeyVaultEmulator.Hosting.Aspire\AzureKeyVaultEmulator.Aspire.Hosting.csproj", "{7C516F4C-B7C6-4CDB-8778-9A3967F561FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiWithEmulator.DebugHelper", "KeyVaultEmulatorSample\WebApiPWithEmulator\WebApiWithEmulator.DebugHelper.csproj", "{A802C874-9FE8-0962-599D-E3805D642844}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Client", "AzureKeyVaultEmulator.Aspire.Client\AzureKeyVaultEmulator.Client.csproj", "{9A57407F-B388-48F4-9722-71A686821053}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +88,18 @@ Global
 		{337ECEEF-74A5-F1F5-57AE-8ABD750CA911}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{337ECEEF-74A5-F1F5-57AE-8ABD750CA911}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{337ECEEF-74A5-F1F5-57AE-8ABD750CA911}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C516F4C-B7C6-4CDB-8778-9A3967F561FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C516F4C-B7C6-4CDB-8778-9A3967F561FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C516F4C-B7C6-4CDB-8778-9A3967F561FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C516F4C-B7C6-4CDB-8778-9A3967F561FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A802C874-9FE8-0962-599D-E3805D642844}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A802C874-9FE8-0962-599D-E3805D642844}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A802C874-9FE8-0962-599D-E3805D642844}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A802C874-9FE8-0962-599D-E3805D642844}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A57407F-B388-48F4-9722-71A686821053}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A57407F-B388-48F4-9722-71A686821053}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A57407F-B388-48F4-9722-71A686821053}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A57407F-B388-48F4-9722-71A686821053}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
