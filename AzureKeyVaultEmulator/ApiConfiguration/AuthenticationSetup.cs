@@ -38,16 +38,6 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
                             context.Response.Headers["WWW-Authenticate"] = $"Bearer authorization=\"https://azure-keyvault-emulator.vault.azure.net/{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
 
                             return Task.CompletedTask;
-                        },
-
-                        // This feels dodgy
-                        OnAuthenticationFailed = context =>
-                        {
-                            context.Success();
-
-                            Debug.WriteLine($"Forcing success() during OnAuthenticationFailed");
-
-                            return Task.CompletedTask;
                         }
                     };
                 });

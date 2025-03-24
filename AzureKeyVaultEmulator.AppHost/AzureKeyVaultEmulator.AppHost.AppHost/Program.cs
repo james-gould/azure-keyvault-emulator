@@ -3,18 +3,17 @@ using AzureKeyVaultEmulator.Shared.Constants;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var useEmulatorContainer = bool.Parse(Environment.GetEnvironmentVariable("UseEmulator") ?? string.Empty);
+var useEmulatorContainer = bool.Parse(Environment.GetEnvironmentVariable("UseEmulator") ?? "false");
+var keyVaultServiceName = "keyvault";
 
 if (useEmulatorContainer)
 {
     var keyvault = builder
-        .AddAzureKeyVault("keyvault")
-        .RunAsEmulator();
+        .AddProject<Projects.AzureKeyVaultEmulator>(keyVaultServiceName);
 
     var webApi = builder
         .AddProject<Projects.WebApiWithEmulator>("sampleApi")
-        .WithReference(keyvault);
-
+        .WithEnvironment($"ConnectionStrings__{keyVaultServiceName}", keyvault.GetEndpoint("https"));
 }
 else
 {
