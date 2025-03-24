@@ -27,7 +27,7 @@ var keyVault = builder
 ```
 
 > [!WARNING]
-> This will still attempt to provision resources (or confirm they already exist), at runtime your connection string will be a `localhost` URL. 
+> This will still attempt to provision resources (or confirm they already exist), at runtime your connection string will be a `localhost` URL. <br />
 
 To use directly without needing to set up any Azure configuration:
 
