@@ -13,8 +13,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Injected by Aspire using the name "keyvault".
-// Change this to whatever your "builder.AddAzureKeyVault("nameHere") is!
 var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
 
 // Basic Secrets only implementation

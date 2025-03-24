@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\AzureKeyVaultEmulator.Aspire.Client\AzureKeyVaultEmulator.Client.csproj" />
+    <ProjectReference Include="..\..\AzureKeyVaultEmulator.Client\AzureKeyVaultEmulator.Client.csproj" />
     <ProjectReference Include="..\..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" />
   </ItemGroup>
 
