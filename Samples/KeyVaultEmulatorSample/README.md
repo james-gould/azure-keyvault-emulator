@@ -6,6 +6,6 @@ The solution includes:
 
 - `AppHost` which orchastrates our dev-time infrastructure
 - `ServiceDefaults` which configures `OpenTelemetry` and a bunch of useful features.
-- `WebApiWithEmulator` which is a simple, `.NET 9 WebApi` project which consumes and uses the emulated key vault resource.
+- `WebApiWithEmulator` which is a simple `.NET 9 WebApi` project that consumes and uses the emulated key vault resource.
 
 No configuration is needed to run the solution, just clone it down and `F5`!
