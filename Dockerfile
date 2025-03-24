@@ -19,6 +19,7 @@ RUN apt-get install -y openssl \
     && cp /certs/emulator.crt /usr/local/share/ca-certificates/emulator.crt \
     && update-ca-certificates
 
+# to debug connection issues in container, remove this once setup correctly
 RUN apt-get update && apt-get install -y curl
 
 # Copy solution and restore dependencies
@@ -36,12 +37,9 @@ RUN dotnet publish -c Release -o /out
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_URLS=https://+:4997
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/emulator.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=emulator
-
-# Install NGINX
-RUN apt-get update && apt-get install -y nginx && apt-get clean
 
 # Copy published .NET application
 COPY --from=build /out ./
@@ -50,22 +48,17 @@ RUN mkdir -p /certs
 
 COPY --from=build certs/ /certs/
 
-# Copy certificates for NGINX
+# Copy certificates to trust store
 COPY --from=build --chmod=644 /certs/emulator.crt /usr/local/share/ca-certificates/emulator.crt
 COPY --from=build --chmod=644 /certs/ /certs/
 
 # Set correct permissions for certificates
 RUN chmod 644 -R /certs/emulator.crt 
-RUN chmod 644 -R /certs/emulator.key
 
+# Get cert in trust store installed correctly
 RUN update-ca-certificates
-
-# Copy NGINX configuration
-RUN mkdir -p /var/log/nginx
-COPY nginx.conf /etc/nginx/nginx.conf
 
 # Expose 4997 so host can reach it
 EXPOSE 4997
 
-# Run both the .NET app and NGINX
-CMD service nginx start && dotnet AzureKeyVaultEmulator.dll
+ENTRYPOINT ["dotnet", "AzureKeyVaultEmulator.dll"]

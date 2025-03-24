@@ -3,14 +3,13 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace AzureKeyVaultEmulator.Emulator.Services
 {
     public interface ITokenService
     {
-        string CreateBearerToken(IEnumerable<Claim> claims);
+        string CreateBearerToken(IEnumerable<Claim>? inboundClaims = null);
         string CreateSkipToken(int skipCount);
         int DecodeSkipToken(string skipToken);
     }
@@ -19,9 +18,18 @@ namespace AzureKeyVaultEmulator.Emulator.Services
     {
         private const string _skipClaim = "skipCount";
 
-        public string CreateBearerToken(IEnumerable<Claim> claims)
+        public string CreateBearerToken(IEnumerable<Claim>? inboundClaims = null)
         {
-            return CreateToken(claims);
+            if (inboundClaims is null)
+                inboundClaims = [];
+
+            var claims = new[]
+{
+                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, "localuser"),
+                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            return CreateToken([..inboundClaims, ..claims]);
         }
 
         public string CreateSkipToken(int skipCount)

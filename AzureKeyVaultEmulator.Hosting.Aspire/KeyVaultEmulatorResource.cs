@@ -22,6 +22,8 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
 
         internal EndpointReference EmulatorEndpoint => new(this, KeyVaultEmulatorContainerImageTags.Name);
 
-        public ReferenceExpression ConnectionStringExpression => ReferenceExpression.Create($"https://emulator.azure.vault.net:4997/");
+        public ReferenceExpression ConnectionStringExpression => ReferenceExpression.Create($"{EmulatorEndpoint.Url}");
+
+        //public ReferenceExpression ConnectionStringExpression => ReferenceExpression.Create($"https://emulator.azure.vault.net:4997/");
     }
 }
