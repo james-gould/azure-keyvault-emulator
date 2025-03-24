@@ -16,7 +16,7 @@ dotnet install doesn't exist yet
 
 Next you'll need to reference the `vaultUri` which points at the docker container.
 
-If you're using `.NET Aspire` this will in your `appsettings.json`:
+If you're using `.NET Aspire` this will appear in your `appsettings.json`:
 
 ```json
 {
@@ -33,6 +33,10 @@ If you're using `.NET Aspire` this will in your `appsettings.json`:
 }
 
 ```
+
+> [!NOTE]
+> You don't need to add this into your `appsettings.json` beforehand, Aspire will do this for you.
+
 
 If you're simply running the container locally and directly referencing it, you can find the `https://localhost:{port}` with the following:
 
