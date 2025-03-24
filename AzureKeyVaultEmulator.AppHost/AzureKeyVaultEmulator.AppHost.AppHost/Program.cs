@@ -8,15 +8,15 @@ var keyVaultServiceName = "keyvault";
 
 if (useEmulatorContainer)
 {
-    //var keyvault = builder
+    //var keyVault = builder
     //    .AddAzureKeyVault(keyVaultServiceName)
     //    .RunAsEmulator();
 
-    var keyvault = builder.AddAzureKeyVaultEmulator(keyVaultServiceName);
+    var keyVault = builder.AddAzureKeyVaultEmulator(keyVaultServiceName);
 
     var webApi = builder
-        .AddProject<Projects.WebApiWithEmulator>("sampleApi")
-        .WithReference(keyvault);
+        .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
+        .WithReference(keyVault);
 }
 else
 {
