@@ -13,8 +13,8 @@ Some API functionality may not be supported while the initial development is ong
     - [ ] Keys
     - [ ] Certificates
     - [ ] Managed HSM
-- [x] Separate NuGet package for introducing an [emulated Key Vault into your .NET Aspire](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Hosting.Aspire) projects using a Docker Container.
-- [x] Separate NuGet package for easy usage of the [emulator in client applications](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Aspire.Client).
+- [x] Separate NuGet package for introducing an [emulated Key Vault into your .NET Aspire](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Hosting.Aspire) projects.
+- [x] Separate NuGet package for easy usage of the [emulator in client applications](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Client).
 - [ ] Complete `docker-compose` options for integrating the emulator into a cluster.
     
 
