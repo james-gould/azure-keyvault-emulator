@@ -9,7 +9,7 @@ Recommended, but not required, is the [client library](https://google.com) to ma
 Install the package to your .NET Aspire `AppHost` project:
 
 ```
-> dotnet install nuget link
+dotnet install nuget link
 ```
 
 Next you can either redirect an existing `AzureKeyVaultResource` to use the emulator, or directly include it without needing any Azure configuration.

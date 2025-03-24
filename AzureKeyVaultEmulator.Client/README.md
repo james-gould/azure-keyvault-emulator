@@ -37,7 +37,7 @@ If you're using `.NET Aspire` this will in your `appsettings.json`:
 If you're simply running the container locally and directly referencing it, you can find the `https://localhost:{port}` with the following:
 
 ```
-> docker ps
+docker ps
 ```
 
 Which will give you a result similar to:
