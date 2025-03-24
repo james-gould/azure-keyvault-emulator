@@ -55,15 +55,6 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
         }
 
         /// <summary>
-        /// Enforces the spoofed URL https://emulator.azure.vault.net:4997 for requests. <br/> 
-        /// Requires a local machine trust store cert to function, generate on yourself or visit the repo!
-        /// </summary>
-        public static IResourceBuilder<KeyVaultEmulatorResource> WithSpoofedUrl(this IResourceBuilder<KeyVaultEmulatorResource> builder)
-        {
-            return builder.WithEnvironment($"ConnectionStrings__{builder.Resource.Name}", "https://emulator.azure.vault.net:4997");
-        }
-
-        /// <summary>
         /// Implements the existing extension method for the <see cref="AzureKeyVaultResource"/>. <br />
         /// Does not actually create role assignments, simply prevents build issues when opting for the emulator!
         /// </summary>
