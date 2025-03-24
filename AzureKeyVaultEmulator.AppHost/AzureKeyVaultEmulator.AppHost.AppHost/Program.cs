@@ -8,12 +8,15 @@ var keyVaultServiceName = "keyvault";
 
 if (useEmulatorContainer)
 {
-    var keyvault = builder
-        .AddProject<Projects.AzureKeyVaultEmulator>(keyVaultServiceName);
+    //var keyvault = builder
+    //    .AddAzureKeyVault(keyVaultServiceName)
+    //    .RunAsEmulator();
+
+    var keyvault = builder.AddAzureKeyVaultEmulator(keyVaultServiceName);
 
     var webApi = builder
         .AddProject<Projects.WebApiWithEmulator>("sampleApi")
-        .WithEnvironment($"ConnectionStrings__{keyVaultServiceName}", keyvault.GetEndpoint("https"));
+        .WithReference(keyvault);
 }
 else
 {

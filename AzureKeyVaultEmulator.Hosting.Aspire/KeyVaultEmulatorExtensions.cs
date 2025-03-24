@@ -2,17 +2,48 @@
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
+using AzureKeyVaultEmulator.Aspire.Hosting;
+using System.Text.Json.Serialization;
 
 namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
     public static class KeyVaultEmulatorExtensions
     {
         /// <summary>
-        /// 
+        /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="configureContainer"></param>
+        /// <param name="builder">The <see cref="IDistributedApplicationBuilder"/> to add the container to.</param>
+        /// <param name="name">The name of the resource that will output as a connection string.</param>
+        /// <param name="lifetime"></param>
         /// <returns></returns>
+        public static IResourceBuilder<KeyVaultDirectEmulatorResource> AddAzureKeyVaultEmulator(
+            this IDistributedApplicationBuilder builder, 
+            [ResourceName] string name,
+            ContainerLifetime lifetime = ContainerLifetime.Session)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var resource = new KeyVaultDirectEmulatorResource(name);
+
+            return builder
+                .AddResource(resource)
+                .WithImage(KeyVaultEmulatorContainerImageTags.Image)
+                .WithImageTag(KeyVaultEmulatorContainerImageTags.Tag)
+                .WithImageRegistry(KeyVaultEmulatorContainerImageTags.Registry)
+                .WithHttpsEndpoint(
+                    name: KeyVaultEmulatorContainerImageTags.Name,
+                    port: KeyVaultEmulatorContainerImageTags.Port,
+                    targetPort: KeyVaultEmulatorContainerImageTags.Port)
+                .WithLifetime(lifetime);
+        }
+
+        /// <summary>
+        ///  Configures a container to run the AzureKeyVaultEmulator application, overwriting the <see cref="AzureKeyVaultResource"/> builder.
+        /// </summary>
+        /// <param name="builder">The original builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
+        /// <param name="configureContainer">Provides the ability to configure the container as you need it to run.</param>
+        /// <returns>A new <see cref="IResourceBuilder{T}"/></returns>
         public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
             Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null,
@@ -27,16 +58,9 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                     port: KeyVaultEmulatorContainerImageTags.Port,
                     targetPort: KeyVaultEmulatorContainerImageTags.Port
                 )
+                .PublishAsConnectionString()
+                // The Dockerfile specifies 4997 for the emulator.
                 .WithUrl("https://localhost:4997");
-
-            // DEBUG, REMOVE ME 
-            if (actualContainer)
-                surrogateBuilder.WithAnnotation(new ContainerImageAnnotation
-                {
-                    Image = KeyVaultEmulatorContainerImageTags.Image,
-                    Tag = KeyVaultEmulatorContainerImageTags.Tag,
-                    Registry = KeyVaultEmulatorContainerImageTags.Registry
-                });
 
             configureContainer?.Invoke(surrogateBuilder);
 
