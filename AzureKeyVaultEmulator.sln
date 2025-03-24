@@ -17,19 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{EEEEDF54-ADE9-447E-8ED7-36A9E3CC0FD0}"
-	ProjectSection(SolutionItems) = preProject
-		scripts\acceptancetest.sh = scripts\acceptancetest.sh
-		scripts\dependencycheck.sh = scripts\dependencycheck.sh
-		scripts\importcert.sh = scripts\importcert.sh
-		scripts\release.sh = scripts\release.sh
-		scripts\serviceup.sh = scripts\serviceup.sh
-		scripts\startdocker.sh = scripts\startdocker.sh
-		scripts\stopdocker.sh = scripts\stopdocker.sh
-		scripts\stopservice.sh = scripts\stopservice.sh
-		scripts\verify.sh = scripts\verify.sh
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipeline", "Pipeline", "{B4453CBE-DBCF-4CBF-B6DC-B951DA62668A}"
 	ProjectSection(SolutionItems) = preProject
 		.github\CODEOWNERS = .github\CODEOWNERS
@@ -40,20 +27,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipeline", "Pipeline", "{B4
 		.github\workflows\verify.yml = .github\workflows\verify.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Checks", "Checks", "{9D107928-7669-4B0C-9291-F5318F9F334B}"
-	ProjectSection(SolutionItems) = preProject
-		scripts\checks\dockercheck.sh = scripts\checks\dockercheck.sh
-		scripts\checks\dockercomposecheck.sh = scripts\checks\dockercomposecheck.sh
-		scripts\checks\dotnetcheck.sh = scripts\checks\dotnetcheck.sh
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LocalCerts", "LocalCerts", "{89F2199D-9243-4928-85F2-D4B8D5E0FEEE}"
-	ProjectSection(SolutionItems) = preProject
-		local-certs\azure-keyvault-emulator.crt = local-certs\azure-keyvault-emulator.crt
-		local-certs\azure-keyvault-emulator.key = local-certs\azure-keyvault-emulator.key
-		local-certs\azure-keyvault-emulator.pfx = local-certs\azure-keyvault-emulator.pfx
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.AppHost", "AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj", "{5FEF252E-CD35-438F-8128-041B257E9B3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.IntegrationTests", "AzureKeyVaultEmulator.IntegrationTests\AzureKeyVaultEmulator.IntegrationTests.csproj", "{29CA2D9E-75F2-4613-B329-4DB808D28481}"
@@ -62,7 +35,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Share
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Aspire.Hosting", "AzureKeyVaultEmulator.Hosting.Aspire\AzureKeyVaultEmulator.Aspire.Hosting.csproj", "{7C516F4C-B7C6-4CDB-8778-9A3967F561FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiWithEmulator.DebugHelper", "KeyVaultEmulatorSample\WebApiPWithEmulator\WebApiWithEmulator.DebugHelper.csproj", "{A802C874-9FE8-0962-599D-E3805D642844}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiWithEmulator.DebugHelper", "WebApiWithEmulator.DebugHelper\WebApiPWithEmulator\WebApiWithEmulator.DebugHelper.csproj", "{A802C874-9FE8-0962-599D-E3805D642844}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Client", "AzureKeyVaultEmulator.Aspire.Client\AzureKeyVaultEmulator.Client.csproj", "{9A57407F-B388-48F4-9722-71A686821053}"
 EndProject
