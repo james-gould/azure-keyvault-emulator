@@ -1,4 +1,4 @@
-name: Build and Push Dev Docker Image
+name: Build and Push Latest
 
 on:
   push:
