@@ -3,7 +3,9 @@ name: Build and Push Latest
 on:
   push:
     branches:
-      - main  
+      - master
+    types:
+      - closed
 
 jobs:
   build-and-push:
