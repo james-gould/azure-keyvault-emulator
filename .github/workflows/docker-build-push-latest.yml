@@ -15,6 +15,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Install SSL Certificates
+        run: |
+          echo "Installing SSL PFX for Integration Tests"
+          sudo mkdir -p /usr/local/share/ca-certificates/extra
+          sudo cp ./local-certs/emulator.pfx /usr/local/share/ca-certificates/extra/emulator.pfx
+          sudo openssl pkcs12 -in ./local-certs/emulator.pfx -out emulator.pem -nodes
+          sudo cp emulator.pem /usr/local/share/ca-certificates/extra/emulator.crt
+
+          echo "Installing SSL CRT certificate for Integration Tests"
+          sudo cp ./local-certs/emulator.crt /usr/local/share/ca-certificates/extra/emulator.crt
+
+          # Update certificates
+          sudo update-ca-certificates
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
