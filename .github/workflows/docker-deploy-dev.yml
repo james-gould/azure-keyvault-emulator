@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - development  # Triggers when PRs are merged into "development"
+    types:
+      - closed
 
 jobs:
   build-and-push:
