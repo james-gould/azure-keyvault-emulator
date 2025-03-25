@@ -20,7 +20,7 @@ jobs:
           echo "Installing SSL PFX for Integration Tests"
           sudo mkdir -p /usr/local/share/ca-certificates/extra
           sudo cp ./local-certs/emulator.pfx /usr/local/share/ca-certificates/extra/emulator.pfx
-          sudo openssl pkcs12 -in ./local-certs/emulator.pfx -out emulator.pem -nodes
+          sudo openssl pkcs12 -in ./local-certs/emulator.pfx -out emulator.pem -nodes -password pass:emulator
           sudo cp emulator.pem /usr/local/share/ca-certificates/extra/emulator.crt
 
           echo "Installing SSL CRT certificate for Integration Tests"
