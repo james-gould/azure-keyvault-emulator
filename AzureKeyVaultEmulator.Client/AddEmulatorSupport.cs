@@ -3,6 +3,7 @@ using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace AzureKeyVaultEmulator.Aspire.Client
 {
@@ -32,7 +33,8 @@ namespace AzureKeyVaultEmulator.Aspire.Client
 #if !DEBUG
     throw new InvalidOperationException("DO NOT USE KEY VAULT EMULATOR OUTSIDE OF A DEBUG ENV");
 #endif
-            ArgumentException.ThrowIfNullOrWhiteSpace(vaultEndpoint);
+            if(string.IsNullOrEmpty(vaultEndpoint))
+                throw new ArgumentNullException(vaultEndpoint);
 
             var credential = new EmulatedTokenCredential(vaultEndpoint);
             var uri = new Uri(vaultEndpoint);
