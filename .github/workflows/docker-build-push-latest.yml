@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    
+      - name: Integration Tests
+      - run: dotnet test --verbosity minimal
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
