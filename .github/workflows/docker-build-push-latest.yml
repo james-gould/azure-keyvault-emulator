@@ -22,7 +22,7 @@ jobs:
 
       - name: Install SSL Certificates
         run: |
-          dotnet dev certs https --trust
+          dotnet dev-certs https --trust
 
       - name: Run Integration Tests
         run: |
