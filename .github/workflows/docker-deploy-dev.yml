@@ -1,7 +1,7 @@
 name: Build and Push Dev Docker Image
 
 on:
-  push:
+  pull_request:
     branches:
       - development  # Triggers when PRs are merged into "development"
     types:
