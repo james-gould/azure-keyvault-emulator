@@ -1,5 +1,9 @@
 param ($run, $push)
 
+# $PSScriptRoot local-certs/makecerts.ps1
+
+start powershell -wait {./local-certs/makecert.ps1}
+
 $tagName = "jamesgoulddev/azure-keyvault-emulator"
 $version = "latest"
 
