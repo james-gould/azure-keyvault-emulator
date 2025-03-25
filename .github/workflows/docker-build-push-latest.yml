@@ -1,11 +1,9 @@
-name: Build and Push Dev Docker Image
+name: Build and Push Latest
 
 on:
   push:
     branches:
-      - development  # Triggers when PRs are merged into "development"
-    types:
-      - closed
+      - main  
 
 jobs:
   build-and-push:
@@ -25,13 +23,12 @@ jobs:
       - name: Extract Version
         id: get_version
         run: |
-          VERSION=$(git describe --tags --always --dirty="-dev")
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          VERSION=latest
 
       - name: Build Docker Image
         run: |
-          docker build -t jamesgoulddev/azure-keyvault-emulator:dev-${VERSION} .
+          docker build -t jamesgoulddev/azure-keyvault-emulator:latest .
 
       - name: Push Docker Image
         run: |
-          docker push jamesgoulddev/azure-keyvault-emulator:dev-${VERSION}
+          docker push jamesgoulddev/azure-keyvault-emulator:latest
