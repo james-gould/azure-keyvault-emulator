@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,7 +9,7 @@
     <UserSecretsId>15e07707-9815-4e77-aa15-22f94b192ae6</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0-preview.1.25173.1" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0-preview.1.25175.1" />
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.2.0-preview.1.25173.2" />
   </ItemGroup>
   <ItemGroup>
