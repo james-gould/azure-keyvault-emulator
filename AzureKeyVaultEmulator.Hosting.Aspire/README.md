@@ -8,11 +8,13 @@ Recommended, but not required, is the [client library](https://google.com) to ma
 
 Install the package to your .NET Aspire `AppHost` project:
 
-`dotnet install nuget link`
+```
+dotnet install nuget link
+```
 
 Next you can either redirect an existing `AzureKeyVaultResource` to use the emulator, or directly include it without needing any Azure configuration.
 
-To redirect a hosted key vault:
+To redirect an existing resource:
 
 ```csharp
 var keyVaultServiceName = "keyvault";
@@ -27,7 +29,8 @@ var keyVault = builder
 ```
 
 > [!WARNING]
-> This will still attempt to provision resources (or confirm they already exist), at runtime your connection string will be a `localhost` URL. 
+> This will still attempt to provision resources (or confirm they already exist), at runtime your connection string will be a `localhost` URL. <br /><br />
+> When using the emulator no requests will be made to/from the hosted resource. This will start an empty key vault in a container.
 
 To use directly without needing to set up any Azure configuration:
 

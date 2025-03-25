@@ -8,18 +8,21 @@ Some API functionality may not be supported while the initial development is ong
 
 # Roadmap
 
-- Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
+- [ ] Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
     - [x] Secrets
     - [ ] Keys
     - [ ] Certificates
     - [ ] Managed HSM
-- Separate NuGet package for introducing an emulated Key Vault into your .NET Aspire projects using a Docker Container.
-    - This will be an extension of the existing `Aspire.Hosting.Azure.KeyVault` package, downloadable as a separate dependency.
+- [x] Separate NuGet package for introducing an [emulated Key Vault into your .NET Aspire](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Hosting.Aspire) projects.
+- [x] Separate NuGet package for easy usage of the [emulator in client applications](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Client).
+- [ ] Complete `docker-compose` options for integrating the emulator into a cluster.
+    
 
 ## Supported Operations
 
 > [!CAUTION]
-> This is not a secure space for production secrets, keys or certificates. <br /><br /> Please do not entrust the emulator with real world, high risk items.
+> This is not a secure space for production secrets, keys or certificates.
+
 
 ### Keys
 
@@ -30,7 +33,7 @@ Some API functionality may not be supported while the initial development is ong
 - Get Key by Version
 - Encrypt
 - Decrypt
-- Supported [Algorithms](https://docs.microsoft.com/en-us/rest/api/keyvault/decrypt/decrypt#jsonwebkeyencryptionalgorithm)
+- Supported [Algorithms](https://learn.microsoft.com/en-us/rest/api/keyvault/keys/decrypt/decrypt?view=rest-keyvault-keys-7.4&tabs=HTTP#jsonwebkeyencryptionalgorithm)
     - `RSA1_5`
     - `RSA-OAEP`
 

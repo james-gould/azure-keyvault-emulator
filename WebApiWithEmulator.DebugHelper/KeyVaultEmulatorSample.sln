@@ -1,12 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35913.81
+VisualStudioVersion = 17.13.35913.81 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVaultEmulatorSample.AppHost", "KeyVaultEmulatorSample.AppHost\KeyVaultEmulatorSample.AppHost.csproj", "{4F04A741-3E95-4ED8-8D78-D72B0F371923}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVaultEmulatorSample.ServiceDefaults", "KeyVaultEmulatorSample.ServiceDefaults\KeyVaultEmulatorSample.ServiceDefaults.csproj", "{92DCA993-049E-7593-0AC2-78B90324C9AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiWithEmulator", "WebApiWithEmulator\WebApiWithEmulator.csproj", "{1C795729-4773-4CDF-8DCC-15542CF6F2CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiWithEmulator", "WebApiPWithEmulator\WebApiWithEmulator.csproj", "{1C795729-4773-4CDF-8DCC-15542CF6F2CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
