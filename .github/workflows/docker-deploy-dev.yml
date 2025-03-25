@@ -15,45 +15,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install SSL Certificates
-        run: |
-      - name: Install SSL Certificates
-        run: |
-          echo "Installing SSL PFX for Integration Tests"
-          sudo mkdir -p /usr/local/share/ca-certificates/extra
-          
-          echo "copying certificates to /usr/local/share/ca-certificates/extra/"
-          sudo cp ./local-certs/emulator.pfx /usr/local/share/ca-certificates/extra/emulator.pfx
-
-          echo "pfx in ca-certificates directory having 644 perms applied"
-          sudo chmod 644 /usr/local/share/ca-certificates/extra/emulator.pfx
-
-          echo "creating emulator.pem file"
-          sudo openssl pkcs12 -in ./local-certs/emulator.pfx -out emulator.pem -nodes -password pass:emulator
-          
-
-          echo "splitting pem into key and crt"
-          sudo openssl x509 -in emulator.pem -out emulator.crt
-          sudo openssl rsa -in emulator.pem -out emulator.key
-          
-          echo "copying and applying 644 perms to emulator.crt"
-          sudo cp emulator.crt /usr/local/share/ca-certificates/extra/emulator.crt
-          sudo chmod 644 /usr/local/share/ca-certificates/extra/emulator.crt
-
-          echo "copying and applying 644 perms to emulator.key"
-          sudo cp emulator.key /usr/local/share/ca-certificates/extra/emulator.key
-          sudo chmod 644 /usr/local/share/ca-certificates/extra/emulator.key
-
-          echo "running update-ca-certificates as root to install into /etc/ssl/certs/"
-          sudo update-ca-certificates
-
-          echo "grepping /etc/ssl/certs/ for emulator"
-          ls /etc/ssl/certs/ | grep emulator
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x' # Adjust to your required .NET version
+          dotnet-version: '9.0.x'
+
+      - name: Install SSL Certificates
+        run: |
+          dotnet dev-certs https --trust
 
       - name: Run Integration Tests
         run: |
