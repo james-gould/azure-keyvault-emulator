@@ -78,14 +78,14 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
         }
 
         /// <summary>
-        /// Provides the baseline KeyVault emulator with an optionally specified <see cref="ContainerLifetime"/>
+        /// Provides the baseline KeyVault emulator with a specified <see cref="ContainerLifetime"/>
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="lifetime"></param>
         /// <returns></returns>
         public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            ContainerLifetime lifetime = ContainerLifetime.Session)
+            ContainerLifetime lifetime)
         {
             var emulatedBuilder = RunAsEmulator(builder, null);
 
