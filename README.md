@@ -35,8 +35,8 @@ var keyVault = builder
 var keyVault = builder.AddAzureKeyVaultEmulator(keyVaultServiceName);
 
 var webApi = builder
-.AddProject<Projects.MyApi>("api")
-.WithReference(keyVault); // reference as normal
+    .AddProject<Projects.MyApi>("api")
+    .WithReference(keyVault); // reference as normal
 ```
 
 3. Install the [Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package into your application using Azure Key Vault:
