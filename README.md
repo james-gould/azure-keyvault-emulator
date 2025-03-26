@@ -99,7 +99,7 @@ else
 While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/DOCKER-SETUP.md):
 
 ```
-docker pull jamesgoulddev/azure-keyvault-emualtor:latest
+docker pull jamesgoulddev/azure-keyvault-emulator:latest
 ```
 
 # Roadmap
