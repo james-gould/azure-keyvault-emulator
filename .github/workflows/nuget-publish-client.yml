@@ -26,9 +26,9 @@ jobs:
       - name: Get latest tag
         id: get_version
         run: |
-          TAG=$(git describe --tags --abbrev=0 || echo "none")
-          if [[ "$TAG" == "none" ]]; then
-            echo "No Git tag found. Please create a version tag and open another PR."
+          TAG=$(git tag -l "v*.*.*" | sort -V | tail -n 1)
+          if [[ -z "$TAG" ]]; then
+            echo "No Git tag found. Please create a version tag before merging the PR."
             exit 1
           fi
           echo "VERSION=${TAG#v}" >> $GITHUB_ENV
