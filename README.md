@@ -4,7 +4,7 @@ A fully featured, emulated version of [Azure Key Vault](https://azure.microsoft.
 
 `.NET Aspire` has the ability to create emulated, easily referenced resources in development environments - sadly Key Vault is not one of those. To work with Key Vault in a dev-env you need to have a deployed, real world instance of the resource in an active Azure Subscription; this emulator removes that requirement.
 
-The emulator does **not** connect to or update an existing Azure KeyVault resource in a real-world Azure Subscription.
+The emulator does **not** connect to or update an existing Azure KeyVault, it simply mimics the API (with identical functionality) allowing you to build applications without needing to host a real KeyVault resource.
 
 # Usage
 
