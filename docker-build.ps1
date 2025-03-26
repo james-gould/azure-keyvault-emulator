@@ -1,3 +1,5 @@
+# ./docker-build.ps1 run push
+
 param ($run, $push)
 
 start powershell -wait {./local-certs/makecert.ps1}
