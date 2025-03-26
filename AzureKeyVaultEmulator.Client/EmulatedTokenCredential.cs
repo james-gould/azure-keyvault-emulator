@@ -1,10 +1,19 @@
 ﻿using Azure.Core;
+using System;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.Aspire.Client
 {
-    public sealed class EmulatedTokenCredential(string vaultUri) : TokenCredential
+    public sealed class EmulatedTokenCredential : TokenCredential
     {
-        private string _emulatedVaultUri = vaultUri;
+        public EmulatedTokenCredential(string vaultUri)
+        {
+            _emulatedVaultUri = vaultUri;
+        }
+
+        private string _emulatedVaultUri = string.Empty;
         private string _token = string.Empty;
         private DateTimeOffset _expiry => DateTimeOffset.Now.AddDays(1);
 
@@ -32,15 +41,29 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (!string.IsNullOrEmpty(_token))
                 return _token;
 
-            ArgumentException.ThrowIfNullOrWhiteSpace(_emulatedVaultUri);
+            if(string.IsNullOrEmpty(_emulatedVaultUri))
+                throw new ArgumentNullException(nameof(_emulatedVaultUri));
 
-            using var client = new HttpClient();
+            HttpClient client = null;
 
-            var response = await client.GetAsync($"{_emulatedVaultUri}/token");
+            try
+            {
+                client = new HttpClient();
 
-            response.EnsureSuccessStatusCode();
+                var response = await client.GetAsync($"{_emulatedVaultUri}/token");
 
-            return await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
+
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                client.Dispose();
+            }
         }
     }
 }

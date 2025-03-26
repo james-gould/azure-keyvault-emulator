@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -21,6 +21,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.1.0" />
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0-preview.1.25173.1" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0-preview.1.25175.1" />
   </ItemGroup>
 </Project>

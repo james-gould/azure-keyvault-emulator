@@ -5,28 +5,6 @@ VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator", "AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj", "{ABAEE20D-4E4B-45CF-ABEA-A02263F63615}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C9BA3288-4BA1-4BA4-A7FB-3729ABFC8488}"
-	ProjectSection(SolutionItems) = preProject
-		.dockerignore = .dockerignore
-		.gitignore = .gitignore
-		CHANGELOG.md = CHANGELOG.md
-		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
-		docker-compose.yml = docker-compose.yml
-		Dockerfile = Dockerfile
-		LICENSE = LICENSE
-		README.md = README.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipeline", "Pipeline", "{B4453CBE-DBCF-4CBF-B6DC-B951DA62668A}"
-	ProjectSection(SolutionItems) = preProject
-		.github\CODEOWNERS = .github\CODEOWNERS
-		.github\dependabot.yml = .github\dependabot.yml
-		.github\ISSUE_TEMPLATE.md = .github\ISSUE_TEMPLATE.md
-		.github\workflows\pull-request.yml = .github\workflows\pull-request.yml
-		.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
-		.github\workflows\verify.yml = .github\workflows\verify.yml
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.AppHost", "AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj", "{5FEF252E-CD35-438F-8128-041B257E9B3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.IntegrationTests", "AzureKeyVaultEmulator.IntegrationTests\AzureKeyVaultEmulator.IntegrationTests.csproj", "{29CA2D9E-75F2-4613-B329-4DB808D28481}"
@@ -38,7 +16,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiWithEmulator.DebugHelper", "WebApiWithEmulator.DebugHelper\WebApiPWithEmulator\WebApiWithEmulator.DebugHelper.csproj", "{A802C874-9FE8-0962-599D-E3805D642844}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Client", "AzureKeyVaultEmulator.Client\AzureKeyVaultEmulator.Client.csproj", "{9A57407F-B388-48F4-9722-71A686821053}"
-
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,9 +54,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{9D107928-7669-4B0C-9291-F5318F9F334B} = {EEEEDF54-ADE9-447E-8ED7-36A9E3CC0FD0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5F55DDB9-3B7B-46C5-AB82-AB7A76A1B187}
