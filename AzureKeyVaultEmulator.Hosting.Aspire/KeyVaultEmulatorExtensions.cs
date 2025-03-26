@@ -9,6 +9,10 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
     public static class KeyVaultEmulatorExtensions
     {
+        // specified in the Dockerfile
+        private const string _emulatorUrl = "https://localhost:4997/";
+
+
         /// <summary>
         /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
         /// </summary>
@@ -35,7 +39,8 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                     name: KeyVaultEmulatorContainerImageTags.Name,
                     port: KeyVaultEmulatorContainerImageTags.Port,
                     targetPort: KeyVaultEmulatorContainerImageTags.Port)
-                .WithLifetime(lifetime);
+                .WithLifetime(lifetime)
+                .WithUrl(_emulatorUrl);
         }
 
         /// <summary>
@@ -65,14 +70,19 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                     targetPort: KeyVaultEmulatorContainerImageTags.Port
                 )
                 .PublishAsConnectionString()
-                // The Dockerfile specifies 4997 for the emulator.
-                .WithUrl("https://localhost:4997");
+                .WithUrl(_emulatorUrl);
 
             configureContainer?.Invoke(surrogateBuilder);
 
             return surrogateBuilder;
         }
 
+        /// <summary>
+        /// Provides the baseline KeyVault emulator with a specified <see cref="ContainerLifetime"/>
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="lifetime"></param>
+        /// <returns></returns>
         public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
             ContainerLifetime lifetime)
@@ -97,9 +107,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             this IResourceBuilder<T> builder,
             IResourceBuilder<KeyVaultEmulatorResource> target,
             params KeyVaultBuiltInRole[] roles)
-            where T : IResource
-        {
-            return builder;
-        }
+            where T : IResource 
+                => builder;
     }
 }
