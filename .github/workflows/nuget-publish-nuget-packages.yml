@@ -5,7 +5,7 @@ on:
     types:
       - closed
     branches:
-      - publish/NugetPackages 
+      - publish/NugetPackages
 
 jobs:
   publish:
