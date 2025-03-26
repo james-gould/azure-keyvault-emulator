@@ -4,6 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Title>Client support for the Azure KeyVault Emulator</Title>
     <Description>Registers and injects the Azure Clients for Azure Key Vault, targetting the Azure KeyVault emulator.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Copyright>James Gould - 2025</Copyright>
+    <PackageProjectUrl>https://github.com/james-gould/azure-keyvault-emulator</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/james-gould/azure-keyvault-emulator</RepositoryUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +18,13 @@
     <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.7.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
