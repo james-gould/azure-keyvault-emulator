@@ -9,10 +9,6 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
     public static class KeyVaultEmulatorExtensions
     {
-        // specified in the Dockerfile
-        private const string _emulatorUrl = "https://localhost:4997/";
-
-
         /// <summary>
         /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
         /// </summary>
@@ -39,8 +35,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                     name: KeyVaultEmulatorContainerImageTags.Name,
                     port: KeyVaultEmulatorContainerImageTags.Port,
                     targetPort: KeyVaultEmulatorContainerImageTags.Port)
-                .WithLifetime(lifetime)
-                .WithUrl(_emulatorUrl);
+                .WithLifetime(lifetime);
         }
 
         /// <summary>
@@ -58,8 +53,8 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
 
             surrogateBuilder
-                .WithAnnotation(new ContainerImageAnnotation 
-                { 
+                .WithAnnotation(new ContainerImageAnnotation
+                {
                     Image = KeyVaultEmulatorContainerImageTags.Image,
                     Registry = KeyVaultEmulatorContainerImageTags.Registry,
                     Tag = KeyVaultEmulatorContainerImageTags.Tag
@@ -69,8 +64,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                     port: KeyVaultEmulatorContainerImageTags.Port,
                     targetPort: KeyVaultEmulatorContainerImageTags.Port
                 )
-                .PublishAsConnectionString()
-                .WithUrl(_emulatorUrl);
+                .PublishAsConnectionString();
 
             configureContainer?.Invoke(surrogateBuilder);
 

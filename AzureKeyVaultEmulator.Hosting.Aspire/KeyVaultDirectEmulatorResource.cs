@@ -12,6 +12,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         private EndpointReference _containerEndpoint => new EndpointReference(this, KeyVaultEmulatorContainerImageTags.Name);
 
         public ReferenceExpression ConnectionStringExpression =>
-            ReferenceExpression.Create($"{_containerEndpoint.Scheme}://{_containerEndpoint.Property(EndpointProperty.HostAndPort)}");
+            ReferenceExpression.Create(
+                $"{_containerEndpoint.Scheme}://{_containerEndpoint.Property(EndpointProperty.Host)}:{_containerEndpoint.Property(EndpointProperty.Port)}");
     }
 }
