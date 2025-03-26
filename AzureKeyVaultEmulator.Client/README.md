@@ -11,7 +11,7 @@ To work around this you need to set `DisableChallengeResourceVerification = true
 First install the package to your application that needs to use Key Vault:
 
 ```
-dotnet install doesn't exist yet
+dotnet add package AzureKeyVaultEmulator.Client
 ```
 
 Next you'll need to reference the `vaultUri` which points at the docker container.

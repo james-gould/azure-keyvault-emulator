@@ -1,24 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
     <Title>Azure KeyVault Emulator for .NET Aspire</Title>
-    <Authors>James Gould</Authors>
-    <PackageProjectUrl>https://github.com/james-gould/azure-keyvault-emulator</PackageProjectUrl>
-    <Description>Container image support for the .NET Aspire Azure KeyVault hosting project.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/james-gould/azure-keyvault-emulator</RepositoryUrl>
     <Copyright>James Gould - 2025</Copyright>
+    <PackageProjectUrl>https://github.com/james-gould/azure-keyvault-emulator</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/james-gould/azure-keyvault-emulator</RepositoryUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Company>James Gould</Company>
+    <Description>.NET Aspire AppHost support for the Azure KeyVault Emulator</Description>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+	  <PackageTags>.net aspire, aspire, aspire.host, aspire.hosting</PackageTags>
   </PropertyGroup>
-  <ItemGroup>
-    <None Include="..\AzureKeyVaultEmulator.Client\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.1.0" />
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.1.0" />

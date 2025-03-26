@@ -9,6 +9,8 @@
     <PackageProjectUrl>https://github.com/james-gould/azure-keyvault-emulator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/james-gould/azure-keyvault-emulator</RepositoryUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>James Gould</Authors>
+    <PackageTags>.net aspire, aspire, aspire.client</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
