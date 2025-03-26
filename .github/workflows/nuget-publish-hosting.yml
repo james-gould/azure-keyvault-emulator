@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      PROJECT_NAME: "AzureKeyVaultEmulator.Hosting.Aspire.csproj"
+      PROJECT_NAME: "AzureKeyVaultEmulator.Aspire.Hosting.csproj"
       ROOT: "AzureKeyVaultEmulator.Hosting.Aspire"
 
     steps:
