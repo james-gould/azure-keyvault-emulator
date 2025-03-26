@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>Client support for the Azure KeyVault Emulator</Title>
+    <Description>Registers and injects the Azure Clients for Azure Key Vault, targetting the Azure KeyVault emulator.</Description>
   </PropertyGroup>
 
   <ItemGroup>
