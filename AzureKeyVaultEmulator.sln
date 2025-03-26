@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Integ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Shared", "AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj", "{337ECEEF-74A5-F1F5-57AE-8ABD750CA911}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Aspire.Hosting", "AzureKeyVaultEmulator.Hosting.Aspire\AzureKeyVaultEmulator.Aspire.Hosting.csproj", "{7C516F4C-B7C6-4CDB-8778-9A3967F561FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Aspire.Hosting", "AzureKeyVaultEmulator.Aspire.Hosting\AzureKeyVaultEmulator.Aspire.Hosting.csproj", "{7C516F4C-B7C6-4CDB-8778-9A3967F561FF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiWithEmulator.DebugHelper", "WebApiWithEmulator.DebugHelper\WebApiPWithEmulator\WebApiWithEmulator.DebugHelper.csproj", "{A802C874-9FE8-0962-599D-E3805D642844}"
 EndProject

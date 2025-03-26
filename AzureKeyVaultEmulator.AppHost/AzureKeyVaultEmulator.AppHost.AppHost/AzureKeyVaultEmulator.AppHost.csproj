@@ -13,7 +13,7 @@
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AzureKeyVaultEmulator.Hosting.Aspire\AzureKeyVaultEmulator.Aspire.Hosting.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\AzureKeyVaultEmulator.Aspire.Hosting\AzureKeyVaultEmulator.Aspire.Hosting.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\..\AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj" />
     <ProjectReference Include="..\..\WebApiWithEmulator.DebugHelper\WebApiPWithEmulator\WebApiWithEmulator.DebugHelper.csproj" />

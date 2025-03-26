@@ -14,7 +14,7 @@ jobs:
 
     env:
       PROJECT_NAME: "AzureKeyVaultEmulator.Aspire.Hosting.csproj"
-      ROOT: "AzureKeyVaultEmulator.Hosting.Aspire"
+      ROOT: "AzureKeyVaultEmulator.Aspire.Hosting"
 
     steps:
       - name: Checkout repository
