@@ -1,0 +1,51 @@
+name: Publish NuGet Package - Client
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - publish/AzureKeyVaultEmulatorClient 
+
+jobs:
+  publish:
+    if: github.event.pull_request.merged == true  # Ensures it only runs on merge
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_NAME: "AzureKeyVaultEmulator.Client.csproj"
+      ROOT: "AzureKeyVaultEmulator.Client"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch all tags
+        run: git fetch --tags
+
+      - name: Get latest tag
+        id: get_version
+        run: |
+          TAG=$(git describe --tags --abbrev=0 || echo "none")
+          if [[ "$TAG" == "none" ]]; then
+            echo "No Git tag found. Please create a version tag and open another PR."
+            exit 1
+          fi
+          echo "VERSION=${TAG#v}" >> $GITHUB_ENV
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore ${{env.ROOT}}/${{ env.PROJECT_NAME }}
+
+      - name: Build
+        run: dotnet build ${{env.ROOT}}/${{ env.PROJECT_NAME }} --configuration Release --no-restore
+
+      - name: Pack NuGet Package
+        run: dotnet pack ${{env.ROOT}}/${{ env.PROJECT_NAME }} --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
+
+      - name: Publish to NuGet
+        run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
