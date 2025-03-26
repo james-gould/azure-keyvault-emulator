@@ -6,7 +6,6 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <UserSecretsId>1f5e0e4e-442f-475f-8662-94a562031d22</UserSecretsId>
-    <!--<PreserveCompilationContext>true</PreserveCompilationContext>-->
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Testing" Version="9.1.0" />

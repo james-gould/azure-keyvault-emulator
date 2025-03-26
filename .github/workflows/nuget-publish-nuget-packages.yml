@@ -1,20 +1,16 @@
-name: Publish NuGet Package - Aspire.Hosting
+name: Publish NuGet Package - Client
 
 on:
   pull_request:
     types:
       - closed
     branches:
-      - publish/AzureKeyVaultEmulatorHosting
+      - publish/NugetPackages 
 
 jobs:
   publish:
     if: github.event.pull_request.merged == true  # Ensures it only runs on merge
     runs-on: ubuntu-latest
-
-    env:
-      PROJECT_NAME: "AzureKeyVaultEmulator.Aspire.Hosting.csproj"
-      ROOT: "AzureKeyVaultEmulator.Aspire.Hosting"
 
     steps:
       - name: Checkout repository
@@ -39,13 +35,13 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore ${{env.ROOT}}/${{ env.PROJECT_NAME }}
+        run: dotnet restore
 
       - name: Build
-        run: dotnet build ${{env.ROOT}}/${{ env.PROJECT_NAME }} --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore
 
       - name: Pack NuGet Package
-        run: dotnet pack ${{env.ROOT}}/${{ env.PROJECT_NAME }} --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
+        run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
 
       - name: Publish to NuGet
         run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
