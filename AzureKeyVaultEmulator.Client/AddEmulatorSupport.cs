@@ -30,9 +30,6 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             bool keys = false,
             bool certificates = false)
         {
-#if !DEBUG
-    throw new InvalidOperationException("DO NOT USE KEY VAULT EMULATOR OUTSIDE OF A DEBUG ENV");
-#endif
             if(string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(vaultEndpoint);
 
