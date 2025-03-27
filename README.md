@@ -4,7 +4,7 @@ A fully featured, emulated version of [Azure Key Vault](https://azure.microsoft.
 
 `.NET Aspire` has the ability to create emulated, easily referenced resources in development environments - sadly Key Vault is not one of those. To work with Key Vault in a dev-env you need to have a deployed, real world instance of the resource in an active Azure Subscription; this emulator removes that requirement.
 
-The emulator does **not** connect to or update an existing Azure KeyVault, it simply mimics the API (with identical functionality) allowing you to build applications without needing to host a real KeyVault resource.
+The emulator does **not** connect to or update an existing Azure Key Vault, it simply mimics the API (with identical functionality) allowing you to build applications without needing to host a real resource.
 
 # Usage
 
@@ -35,8 +35,8 @@ var keyVault = builder
 var keyVault = builder.AddAzureKeyVaultEmulator(keyVaultServiceName);
 
 var webApi = builder
-.AddProject<Projects.MyApi>("api")
-.WithReference(keyVault); // reference as normal
+    .AddProject<Projects.MyApi>("api")
+    .WithReference(keyVault); // reference as normal
 ```
 
 3. Install the [Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package into your application using Azure Key Vault:
@@ -78,7 +78,7 @@ public async Task<string> GetSecretValue(string name)
 
 ## Optional
 
-Configure your `Program.cs` to optionally inject the emulated or real Azure KeyVault clients depending on your current execution environment:
+Configure your `Program.cs` to optionally inject the emulated or real Azure Key Vault clients depending on your current execution environment:
 
 ```csharp
 var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
