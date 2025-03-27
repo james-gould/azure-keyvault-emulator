@@ -13,10 +13,10 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
     [Authorize]
     public class DeletedSecretsController : Controller
     {
-        private readonly IKeyVaultSecretService _keyVaultSecretService;
+        private readonly ISecretService _keyVaultSecretService;
         private readonly ITokenService _token;
 
-        public DeletedSecretsController(IKeyVaultSecretService keyVaultSecretService, ITokenService token)
+        public DeletedSecretsController(ISecretService keyVaultSecretService, ITokenService token)
         {
             _keyVaultSecretService = keyVaultSecretService;
             _token = token;

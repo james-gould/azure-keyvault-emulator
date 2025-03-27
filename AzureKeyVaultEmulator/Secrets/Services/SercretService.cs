@@ -1,12 +1,8 @@
-using System.Collections.Concurrent;
-using AzureKeyVaultEmulator.Emulator.Services;
-using AzureKeyVaultEmulator.Shared.Exceptions;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
-using AzureKeyVaultEmulator.Shared.Utilities;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
-    public class KeyVaultSecretService : IKeyVaultSecretService
+    public class SercretService : ISecretService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ITokenService _token;
@@ -15,7 +11,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         private static readonly ConcurrentDictionary<string, SecretResponse?> _secrets = new();
         private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();
 
-        public KeyVaultSecretService(
+        public SercretService(
             IHttpContextAccessor httpContextAccessor, 
             ITokenService token,
             IJweEncryptionService encryption)

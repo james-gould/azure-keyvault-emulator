@@ -1,5 +1,4 @@
-﻿using AzureKeyVaultEmulator.Shared.Models;
-using System.Net;
+﻿using System.Net;
 
 namespace AzureKeyVaultEmulator.Middleware
 {

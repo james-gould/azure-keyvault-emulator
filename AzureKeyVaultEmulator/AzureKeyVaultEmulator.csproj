@@ -5,6 +5,7 @@
     <ImplicitUsings>true</ImplicitUsings>
     <UserSecretsId>7a1cc440-322a-4f04-83c9-bfdb89881074</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>

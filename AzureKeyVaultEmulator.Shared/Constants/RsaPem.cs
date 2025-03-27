@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.Shared.Constants
 {
-    // Hardcoded here because it's a mocking tool.
-    // Means any carryover between sessioned containers will work.
-    // Also I'm lazy.
+    /// <summary>
+    /// <para>Used to encrypt data NOT used by the KeyService. </para>
+    /// <para>Allows users to persist backups over multiple sessions and still be able to restore them.</para>
+    /// </summary>
     public sealed class RsaPem
     {
         public const string FullPem = @"-----BEGIN PRIVATE KEY-----
