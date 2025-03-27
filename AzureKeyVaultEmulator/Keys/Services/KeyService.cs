@@ -1,41 +1,27 @@
-using System.Collections.Concurrent;
-using AzureKeyVaultEmulator.Keys.Factories;
-using AzureKeyVaultEmulator.Shared.Constants;
-using AzureKeyVaultEmulator.Shared.Models.Keys;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Keys.Services
 {
-    public interface IKeyVaultKeyService
-    {
-        KeyResponse? Get(string name);
-        KeyResponse? Get(string name, string version);
-        KeyResponse? CreateKey(string name, CreateKeyModel key);
-
-        KeyOperationResult? Encrypt(string name, string version, KeyOperationParameters keyOperationParameters);
-        KeyOperationResult? Decrypt(string keyName, string keyVersion, KeyOperationParameters keyOperationParameters);
-    }
-
-    public class KeyVaultKeyService : IKeyVaultKeyService
+    public class KeyService : IKeyService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private static readonly ConcurrentDictionary<string, KeyResponse> Keys = new();
+        private static readonly ConcurrentDictionary<string, KeyResponse> _keys = new();
 
-        public KeyVaultKeyService(IHttpContextAccessor httpContextAccessor)
+        public KeyService(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
 
         public KeyResponse? Get(string name)
         {
-            Keys.TryGetValue(GetCacheId(name), out var found);
+            _keys.TryGetValue(name.GetCacheId(), out var found);
 
             return found;
         }
 
         public KeyResponse? Get(string name, string version)
         {
-            Keys.TryGetValue(GetCacheId(name, version), out var found);
+            _keys.TryGetValue(name.GetCacheId(version), out var found);
 
             return found;
         }
@@ -65,15 +51,15 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = key.Tags
             };
 
-            Keys.AddOrUpdate(GetCacheId(name), response, (_, _) => response);
-            Keys.TryAdd(GetCacheId(name, version), response);
+            _keys.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
+            _keys.TryAdd(name.GetCacheId(version), response);
 
             return response;
         }
 
         public KeyOperationResult? Encrypt(string name, string version, KeyOperationParameters keyOperationParameters)
         {
-            if (!Keys.TryGetValue(GetCacheId(name, version), out var foundKey))
+            if (!_keys.TryGetValue(name.GetCacheId(version), out var foundKey))
                 throw new Exception("Key not found");
 
             var encrypted = Base64UrlEncoder.Encode(foundKey.Key.Encrypt(keyOperationParameters));
@@ -85,9 +71,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public KeyOperationResult? Decrypt(string keyName, string keyVersion, KeyOperationParameters keyOperationParameters)
+        public KeyOperationResult? Decrypt(string name, string version, KeyOperationParameters keyOperationParameters)
         {
-            if (!Keys.TryGetValue(GetCacheId(keyName, keyVersion), out var foundKey))
+            if (!_keys.TryGetValue(name.GetCacheId(version), out var foundKey))
                 throw new Exception("Key not found");
 
             var decrypted = foundKey.Key.Decrypt(keyOperationParameters);
@@ -114,7 +100,5 @@ namespace AzureKeyVaultEmulator.Keys.Services
                     throw new NotImplementedException($"KeyType {key.KeyType} is not supported");
             }
         }
-
-        private static string GetCacheId(string name, string version = "") => $"{name}{version}";
     }
 }

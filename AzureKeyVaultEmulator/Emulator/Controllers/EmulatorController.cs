@@ -1,7 +1,4 @@
-﻿using AzureKeyVaultEmulator.Emulator.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace AzureKeyVaultEmulator.Emulator.Controllers
 {
