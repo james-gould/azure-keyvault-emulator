@@ -1,6 +1,4 @@
-using AzureKeyVaultEmulator.Emulator.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
-using AzureKeyVaultEmulator.Shared.Models;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using AzureKeyVaultEmulator.Shared.Utilities.Attributes;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +11,10 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
     [Authorize]
     public class SecretsController : ControllerBase
     {
-        private readonly IKeyVaultSecretService _keyVaultSecretService;
+        private readonly ISecretService _keyVaultSecretService;
         private readonly ITokenService _token;
 
-        public SecretsController(IKeyVaultSecretService keyVaultSecretService, ITokenService token)
+        public SecretsController(ISecretService keyVaultSecretService, ITokenService token)
         {
             _keyVaultSecretService = keyVaultSecretService;
             _token = token;

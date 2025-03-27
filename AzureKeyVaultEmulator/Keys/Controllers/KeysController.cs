@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using AzureKeyVaultEmulator.Keys.Services;
-using AzureKeyVaultEmulator.Shared.Models.Keys;
-using AzureKeyVaultEmulator.Shared.Utilities.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,9 +10,9 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
     [Authorize]
     public class KeysController : ControllerBase
     {
-        private readonly IKeyVaultKeyService _keyVaultKeyService;
+        private readonly IKeyService _keyVaultKeyService;
 
-        public KeysController(IKeyVaultKeyService keyVaultKeyService)
+        public KeysController(IKeyService keyVaultKeyService)
         {
             _keyVaultKeyService = keyVaultKeyService;
         }

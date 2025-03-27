@@ -1,6 +1,5 @@
-using AzureKeyVaultEmulator.ServiceConfiguration;
 using AzureKeyVaultEmulator.Middleware;
-using Microsoft.AspNetCore.HttpOverrides;
+using AzureKeyVaultEmulator.ApiConfiguration;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -2,7 +2,7 @@
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
-    public interface IKeyVaultSecretService
+    public interface ISecretService
     {
         SecretResponse? Get(string name, string version = "");
         SecretResponse? SetSecret(string name, SetSecretModel requestBody);
