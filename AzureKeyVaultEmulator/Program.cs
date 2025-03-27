@@ -18,12 +18,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddConfiguredSwaggerGen();
 builder.Services.RegisterCustomServices();
 
-// Let nginx do the HTTPS termination and forward request on
-builder.Services.Configure<ForwardedHeadersOptions>(o =>
-{
-    o.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
-});
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
