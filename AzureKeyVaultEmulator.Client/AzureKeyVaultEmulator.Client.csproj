@@ -10,6 +10,7 @@
     <RepositoryUrl>https://github.com/james-gould/azure-keyvault-emulator</RepositoryUrl>
     <Authors>James Gould</Authors>
     <PackageTags>.net aspire, aspire, aspire.client</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
