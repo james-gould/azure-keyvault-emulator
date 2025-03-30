@@ -76,7 +76,6 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
             _rsaParameters = rsaKey.ExportParameters(true);
             KeyType = RSAKeyTypes.RSA;
 
-
             D = WebEncoders.Base64UrlEncode(_rsaParameters.D ?? []);
             Dp = WebEncoders.Base64UrlEncode(_rsaParameters.DP ?? []);
             Dq = WebEncoders.Base64UrlEncode(_rsaParameters.DQ ?? []);
