@@ -3,10 +3,11 @@ using AzureKeyVaultEmulator.Keys.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+// https://learn.microsoft.com/en-us/rest/api/keyvault/keys/operation-groups
 namespace AzureKeyVaultEmulator.Keys.Controllers
 {
     [ApiController]
-    [Route("keys/{name}")]
+    [Route("keys")]
     [Authorize]
     public class KeysController : ControllerBase
     {
@@ -17,9 +18,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             _keyVaultKeyService = keyVaultKeyService;
         }
 
-        [HttpPost("create")]
-        [Produces("application/json")]
-        [Consumes("application/json")]
+        [HttpPost("{name}/create")]
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult CreateKey(
             [RegularExpression("[a-zA-Z0-9-]+")][FromRoute] string name,
@@ -31,8 +30,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(createdKey);
         }
 
-        [HttpGet("{version}")]
-        [Produces("application/json")]
+        [HttpGet("{name}/{version}")]
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult GetKey(
             [FromRoute] string name,
@@ -46,8 +44,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(keyResult);
         }
 
-        [HttpGet]
-        [Produces("application/json")]
+        [HttpGet("{name}")]
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult GetKey(
             [FromRoute] string name,
@@ -60,9 +57,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(keyResult);
         }
 
-        [HttpPost("{version}/encrypt")]
-        [Produces("application/json")]
-        [Consumes("application/json")]
+        [HttpPost("{name}/{version}/encrypt")]
         public IActionResult Encrypt(
             [FromRoute] string name,
             [FromRoute] string version,
@@ -74,9 +69,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
-        [HttpPost("{version}/decrypt")]
-        [Produces("application/json")]
-        [Consumes("application/json")]
+        [HttpPost("{name}/{version}/decrypt")]
         public IActionResult Decrypt(
             [FromRoute] string name,
             [FromRoute] string version,
