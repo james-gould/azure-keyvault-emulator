@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen();
 var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
 
 // Inject the clients you need
-builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, certificates: true);
+builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, certificates: false);
 
 var app = builder.Build();
 

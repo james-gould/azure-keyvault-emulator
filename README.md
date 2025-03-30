@@ -8,6 +8,8 @@ The emulator does **not** connect to or update an existing Azure Key Vault, it s
 
 # Usage
 
+You can find a [sample application here](https://github.com/james-gould/azure-keyvault-emulator/tree/master/Samples/KeyVaultEmulatorSample).
+
 ## Prerequisites
 
 - [Docker](https://www.docker.com/)
