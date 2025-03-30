@@ -86,7 +86,7 @@ public async Task GetSecret(string name)
 
 # Quick Tip
 
-The emulator is supported only in a `DEBUG` environment due to the secure nature of the product. To make life easy you can create an environment flag in your `Program.cs` to toggle the functionality off:
+To make life easy you can create an environment flag in your `Program.cs` to use the Emulator in a dev environment and the hosted Vault in production:
 
 ```csharp
 var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
