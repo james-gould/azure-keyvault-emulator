@@ -56,18 +56,9 @@ dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
 dotnet_naming_rule.constant_fields_should_be_pascal_case.style    = pascal_case_style
 dotnet_naming_symbols.constant_fields.applicable_kinds   = field
+dotnet_naming_symbols.constant_fields.applicable_accessibilities   = public
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
-
-# static fields should have s_ prefix
-dotnet_naming_rule.static_fields_should_have_prefix.severity = suggestion
-dotnet_naming_rule.static_fields_should_have_prefix.symbols  = static_fields
-dotnet_naming_rule.static_fields_should_have_prefix.style    = static_prefix_style
-dotnet_naming_symbols.static_fields.applicable_kinds   = field
-dotnet_naming_symbols.static_fields.required_modifiers = static
-dotnet_naming_symbols.static_fields.applicable_accessibilities = private, internal, private_protected
-dotnet_naming_style.static_prefix_style.required_prefix = s_
-dotnet_naming_style.static_prefix_style.capitalization = camel_case
 
 # internal and private fields should be _camelCase
 dotnet_naming_rule.camel_case_for_private_internal_fields.severity = suggestion
@@ -157,11 +148,17 @@ csharp_space_between_square_brackets = false
 
 # Unused usings
 dotnet_diagnostic.IDE0005.severity = warning
+
 # CA1823: Avoid unused private fields
 dotnet_diagnostic.CA1823.severity = warning
+
 # IDE0060: Remove unused parameter
 dotnet_code_quality_unused_parameters = non_public
 dotnet_diagnostic.IDE0060.severity = warning
+
+# IDE1006: Required naming style
+dotnet_diagnostic.IDE1006.severity = warning
+
 # IDE0051: Remove unused private members
 dotnet_diagnostic.IDE0051.severity = suggestion
 # IDE0059: Unnecessary assignment to a value
