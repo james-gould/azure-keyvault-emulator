@@ -40,12 +40,10 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
         /// </summary>
         /// <param name="builder">The original builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
         /// <param name="configureContainer">Provides the ability to configure the container as you need it to run.</param>
-        /// <param name="actualContainer"></param>
         /// <returns>A new <see cref="IResourceBuilder{T}"/></returns>
         public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null,
-            bool actualContainer = false)
+            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null)
         {
             var emulatedResource = new KeyVaultEmulatorResource(builder.Resource);
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
