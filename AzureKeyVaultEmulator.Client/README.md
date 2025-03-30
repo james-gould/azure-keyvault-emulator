@@ -4,7 +4,7 @@ This library simplifies the inclusion of the Azure Key Vault Emulator into your 
 
 You do not *need* to use it but it makes life easier. Due to the constraints of Azure Key Vault and the associated client libraries, any requests that don't come from `https://*.vault.azure.net` are rejected.
 
-To work around this you need to set `DisableChallengeResourceVerification = true` for each client. This library does that for you, and then dependency injects them.
+To work around this you need to set `DisableChallengeResourceVerification = true` for each client. This library does that for you, emulates the authentication and then dependency injects the clients you need.
 
 # Setup
 
@@ -38,17 +38,10 @@ If you're using `.NET Aspire` this will appear in your `appsettings.json`:
 > You don't need to add this into your `appsettings.json` beforehand, Aspire will do this for you.
 
 
-If you're simply running the container locally and directly referencing it, you can find the `https://localhost:{port}` with the following:
+If you're simply running the container locally and directly referencing it, you can find the port for `https://localhost:{port}` with the following:
 
 ```
 docker ps
-```
-
-Which will give you a result similar to:
-
-```
-CONTAINER ID   IMAGE                                          COMMAND                  CREATED         STATUS         PORTS      NAMES
-89d8852b2d32   jamesgoulddev/azure-keyvault-emulator:latest   "dotnet AzureKeyVaul�"   4 seconds ago   Up 3 seconds   4997/tcp   agitated_sanderson
 ```
 
 You'll then need to create a configuration item in your application which allows the dotnet runtime to get the `https://localhost:{port}`.
@@ -93,7 +86,7 @@ public async Task GetSecret(string name)
 
 # Quick Tip
 
-The emulator is supported only in a `DEBUG` environment due to the secure nature of the product. To make life easy you can create an environment flag in your `Program.cs` to toggle the functionality off:
+To make life easy you can create an environment flag in your `Program.cs` to use the Emulator in a dev environment and the hosted Vault in production:
 
 ```csharp
 var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
