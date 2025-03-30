@@ -1,7 +1,8 @@
 ﻿using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
+using AzureKeyVaultEmulator.Aspire.Hosting;
 
-namespace AzureKeyVaultEmulator.Aspire.Hosting
+namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
     public static class KeyVaultEmulatorExtensions
     {
@@ -13,7 +14,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// <param name="lifetime"></param>
         /// <returns></returns>
         public static IResourceBuilder<KeyVaultDirectEmulatorResource> AddAzureKeyVaultEmulator(
-            this IDistributedApplicationBuilder builder, 
+            this IDistributedApplicationBuilder builder,
             [ResourceName] string name,
             ContainerLifetime lifetime = ContainerLifetime.Session)
         {
@@ -39,10 +40,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// </summary>
         /// <param name="builder">The original builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
         /// <param name="configureContainer">Provides the ability to configure the container as you need it to run.</param>
+        /// <param name="actualContainer"></param>
         /// <returns>A new <see cref="IResourceBuilder{T}"/></returns>
         public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null)
+            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null,
+            bool actualContainer = false)
         {
             var emulatedResource = new KeyVaultEmulatorResource(builder.Resource);
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
@@ -76,7 +79,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             this IResourceBuilder<AzureKeyVaultResource> builder,
             ContainerLifetime lifetime)
         {
-            var emulatedBuilder = builder.RunAsEmulator(null);
+            var emulatedBuilder = RunAsEmulator(builder, null);
 
             emulatedBuilder.WithLifetime(lifetime);
 
@@ -96,7 +99,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             this IResourceBuilder<T> builder,
             IResourceBuilder<KeyVaultEmulatorResource> target,
             params KeyVaultBuiltInRole[] roles)
-            where T : IResource 
+            where T : IResource
                 => builder;
     }
 }

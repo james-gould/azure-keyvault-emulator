@@ -12,7 +12,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();
 
         public SercretService(
-            IHttpContextAccessor httpContextAccessor, 
+            IHttpContextAccessor httpContextAccessor,
             ITokenService token,
             IJweEncryptionService encryption)
         {
@@ -163,7 +163,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var items = _secrets.Skip(skipCount).Take(maxResults);
 
-            if(!items.Any()) 
+            if (!items.Any())
                 return new();
 
             var requiresPaging = items.Count() >= maxResults;
@@ -225,7 +225,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!exists || secret is null)
                 throw new SecretException($"Cannot find secret with name {name} and version {version}");
 
-            if(!string.IsNullOrEmpty(attributes.ContentType))
+            if (!string.IsNullOrEmpty(attributes.ContentType))
                 secret.Attributes.ContentType = attributes.ContentType;
 
             secret.Attributes.Update();

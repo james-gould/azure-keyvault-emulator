@@ -109,7 +109,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(secretName, afterRecovery.Value.Name);
 
-            var deletedResult = await Assert.ThrowsAsync<RequestFailedException>(()=> client.GetDeletedSecretAsync(secretName));
+            var deletedResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetDeletedSecretAsync(secretName));
 
             Assert.Equal((int)HttpStatusCode.BadRequest, deletedResult.Status);
         }

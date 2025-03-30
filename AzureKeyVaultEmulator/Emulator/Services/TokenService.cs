@@ -1,8 +1,5 @@
-﻿using AzureKeyVaultEmulator.Shared.Constants;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace AzureKeyVaultEmulator.Emulator.Services
 {
@@ -24,11 +21,11 @@ namespace AzureKeyVaultEmulator.Emulator.Services
 
             var claims = new[]
 {
-                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, "localuser"),
-                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Sub, "localuser"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            return CreateToken([..inboundClaims, ..claims]);
+            return CreateToken([.. inboundClaims, .. claims]);
         }
 
         public string CreateSkipToken(int skipCount)

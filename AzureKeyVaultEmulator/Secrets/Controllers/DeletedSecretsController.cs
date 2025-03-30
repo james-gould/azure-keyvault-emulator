@@ -1,8 +1,5 @@
-﻿using AzureKeyVaultEmulator.Emulator.Services;
-using AzureKeyVaultEmulator.Secrets.Services;
-using AzureKeyVaultEmulator.Shared.Models;
+﻿using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
-using AzureKeyVaultEmulator.Shared.Utilities.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -46,7 +43,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         {
             var skipCount = 0;
 
-            if(!string.IsNullOrEmpty(skipToken))
+            if (!string.IsNullOrEmpty(skipToken))
                 skipCount = _token.DecodeSkipToken(skipToken);
 
             var deletedSecrets = _keyVaultSecretService.GetDeletedSecrets(maxResults, skipCount);

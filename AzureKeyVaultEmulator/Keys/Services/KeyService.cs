@@ -1,5 +1,3 @@
-using Microsoft.IdentityModel.Tokens;
-
 namespace AzureKeyVaultEmulator.Keys.Services
 {
     public class KeyService : IKeyService

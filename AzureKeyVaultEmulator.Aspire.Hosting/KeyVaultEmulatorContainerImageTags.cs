@@ -1,4 +1,4 @@
-﻿namespace AzureKeyVaultEmulator.Aspire.Hosting
+﻿namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
     internal static class KeyVaultEmulatorContainerImageTags
     {

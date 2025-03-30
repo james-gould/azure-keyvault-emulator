@@ -1,9 +1,7 @@
 using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
-using AzureKeyVaultEmulator.Shared.Utilities.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 
 // https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/operation-groups
 namespace AzureKeyVaultEmulator.Secrets.Controllers
@@ -102,7 +100,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         {
             int skipCount = 0;
 
-            if(!string.IsNullOrEmpty(skipToken))
+            if (!string.IsNullOrEmpty(skipToken))
                 skipCount = _token.DecodeSkipToken(skipToken);
 
             var currentVersionSet = _keyVaultSecretService.GetSecretVersions(name, maxResults, skipCount);

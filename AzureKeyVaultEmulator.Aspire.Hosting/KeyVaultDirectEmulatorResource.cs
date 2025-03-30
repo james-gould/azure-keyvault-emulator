@@ -1,4 +1,6 @@
-﻿namespace AzureKeyVaultEmulator.Aspire.Hosting
+﻿using AzureKeyVaultEmulator.Hosting.Aspire;
+
+namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     /// <summary>
     /// Used to create a named container deployment of the emulator without routing through an existing Azure resource.
