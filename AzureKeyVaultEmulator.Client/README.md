@@ -38,17 +38,10 @@ If you're using `.NET Aspire` this will appear in your `appsettings.json`:
 > You don't need to add this into your `appsettings.json` beforehand, Aspire will do this for you.
 
 
-If you're simply running the container locally and directly referencing it, you can find the `https://localhost:{port}` with the following:
+If you're simply running the container locally and directly referencing it, you can find the port for `https://localhost:{port}` with the following:
 
 ```
 docker ps
-```
-
-Which will give you a result similar to:
-
-```
-CONTAINER ID   IMAGE                                          COMMAND                  CREATED         STATUS         PORTS      NAMES
-89d8852b2d32   jamesgoulddev/azure-keyvault-emulator:latest   "dotnet AzureKeyVaul�"   4 seconds ago   Up 3 seconds   4997/tcp   agitated_sanderson
 ```
 
 You'll then need to create a configuration item in your application which allows the dotnet runtime to get the `https://localhost:{port}`.
