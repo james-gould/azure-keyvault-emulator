@@ -1,8 +1,5 @@
 ﻿using System.Security.Cryptography;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.IdentityModel.JsonWebTokens;
 using AzureKeyVaultEmulator.Shared.Constants;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using AzureKeyVaultEmulator.Shared.Utilities;
 using System.Text;

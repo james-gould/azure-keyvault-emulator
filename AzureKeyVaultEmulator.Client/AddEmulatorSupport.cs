@@ -13,10 +13,10 @@ namespace AzureKeyVaultEmulator.Aspire.Client
         /// Creates the scaffolding for AzureKeyVault support using the containerised emulator.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to inject into.</param>
-        /// <param name="vaultEndpoint">The endpoint from the for the containerised AzureKeyVaultEmulator. <br />Typically found in <see cref="IHostApplicationBuilder.Configuration.GetConnectionString(applicationName)"/></param>
-        /// <param name="secrets">Bool to create a <see cref="SecretClient"/>, defaults to <see cref="true"/></param>
-        /// <param name="keys">Bool to create a <see cref="KeyClient"/>, defaults to <see cref="false"/></param>
-        /// <param name="certificates">Bool to create a <see cref="CertificateClient"/>, defaults to <see cref="false"/></param>
+        /// <param name="vaultEndpoint"><para>The endpoint from the for the containerised AzureKeyVaultEmulator.</para> <para>Typically found in <see cref="IHostApplicationBuilder.Configuration"/></para></param>
+        /// <param name="secrets">Bool to create a <see cref="SecretClient"/>, defaults to <see langword="true"/></param>
+        /// <param name="keys">Bool to create a <see cref="KeyClient"/>, defaults to <see langword="false"/></param>
+        /// <param name="certificates">Bool to create a <see cref="CertificateClient"/>, defaults to <see langword="false"/></param>
         /// <exception cref="InvalidOperationException">
         /// Thrown if you attempt to use the Emulator outside of a DEBUG environment.
         /// </exception>

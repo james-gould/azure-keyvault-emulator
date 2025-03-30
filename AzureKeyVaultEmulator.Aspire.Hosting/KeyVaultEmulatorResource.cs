@@ -1,12 +1,6 @@
-﻿using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting.Azure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Aspire.Hosting.Azure;
 
-namespace AzureKeyVaultEmulator.Hosting.Aspire
+namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     public class KeyVaultEmulatorResource(AzureKeyVaultResource innerResource) 
             : ContainerResource(innerResource.Name), IResourceWithConnectionString

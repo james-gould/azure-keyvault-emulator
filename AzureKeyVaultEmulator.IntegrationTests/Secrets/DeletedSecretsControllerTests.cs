@@ -1,9 +1,6 @@
 ﻿using Azure;
 using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
-using Json.Patch;
-using System.Runtime.InteropServices;
-using System.Xml.Serialization;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 {

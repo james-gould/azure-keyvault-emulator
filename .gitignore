@@ -95,4 +95,3 @@ newrelic/
 # Fake GraphQL directives #
 ###########################
 _not-imported-dev.graphql
-/.editorconfig
