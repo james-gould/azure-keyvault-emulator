@@ -1,4 +1,4 @@
-using AzureKeyVaultEmulator.Hosting.Aspire;
+using AzureKeyVaultEmulator.Aspire.Hosting;
 using AzureKeyVaultEmulator.Shared.Constants;
 
 var builder = DistributedApplication.CreateBuilder(args);

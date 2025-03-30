@@ -1,4 +1,3 @@
-using Azure.Identity;
 using AzureKeyVaultEmulator.Aspire.Client;
 using Microsoft.Extensions.Azure;
 

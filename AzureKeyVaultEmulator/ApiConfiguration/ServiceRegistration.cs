@@ -1,8 +1,6 @@
 ﻿using AzureKeyVaultEmulator.Emulator.Services;
 using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AzureKeyVaultEmulator.ServiceConfiguration
 {

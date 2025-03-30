@@ -1,13 +1,8 @@
 ﻿using Asp.Versioning;
 using Asp.Versioning.Http;
 using Aspire.Hosting;
-using Azure.Core;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.Shared.Constants;
 using IdentityModel.Client;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
 {

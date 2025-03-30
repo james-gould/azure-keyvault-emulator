@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AzureKeyVaultEmulator.Shared.Constants
+﻿namespace AzureKeyVaultEmulator.Shared.Constants
 {
     // Hardcoded here because it's a mocking tool.
     // Means any carryover between sessioned containers will work.

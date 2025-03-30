@@ -1,9 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AzureKeyVaultEmulator.Shared.Utilities
 {
@@ -11,7 +6,7 @@ namespace AzureKeyVaultEmulator.Shared.Utilities
     {
         private const string apiVersion = "api-version";
         /// <summary>
-        /// Provides the nextLink property when retrieving an IEnumerable<T> from a vault. <br/>
+        /// Provides the nextLink property when retrieving an <see cref="IEnumerable{T}"/> from a vault. <br/>
         /// Used when a MaxCount optional parameter is provided.
         /// </summary>
         public static string GetNextLink(this IHttpContextAccessor context, string skipToken, int max = 25)

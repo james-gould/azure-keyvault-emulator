@@ -1,11 +1,7 @@
-﻿using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting.Azure;
+﻿using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
-using AzureKeyVaultEmulator.Aspire.Hosting;
-using System.Text.Json.Serialization;
 
-namespace AzureKeyVaultEmulator.Hosting.Aspire
+namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     public static class KeyVaultEmulatorExtensions
     {
@@ -46,8 +42,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
         /// <returns>A new <see cref="IResourceBuilder{T}"/></returns>
         public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null,
-            bool actualContainer = false)
+            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null)
         {
             var emulatedResource = new KeyVaultEmulatorResource(builder.Resource);
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
@@ -81,7 +76,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             this IResourceBuilder<AzureKeyVaultResource> builder,
             ContainerLifetime lifetime)
         {
-            var emulatedBuilder = RunAsEmulator(builder, null);
+            var emulatedBuilder = builder.RunAsEmulator(null);
 
             emulatedBuilder.WithLifetime(lifetime);
 
