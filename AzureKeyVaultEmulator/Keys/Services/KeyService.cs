@@ -324,6 +324,42 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return encryptionService.VerifyData(cachedDigest, signature);
         }
 
+        public KeyOperationResult WrapKey(string name, string version, KeyOperationParameters para)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
+            var cacheId = name.GetCacheId(version);
+
+            var key = _keys.SafeGet(cacheId);
+
+            var encrypted = key.Key.Encrypt(para);
+
+            return new KeyOperationResult
+            {
+                KeyIdentifier = key.Key.KeyIdentifier,
+                Data = EncodingUtils.Base64UrlEncode(encrypted)
+            };
+        }
+
+        public KeyOperationResult UnwrapKey(string name, string version, KeyOperationParameters para)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
+            var cacheId = name.GetCacheId(version);
+
+            var key = _keys.SafeGet(cacheId);
+
+            var decrypted = key.Key.Decrypt(para);
+
+            return new KeyOperationResult
+            {
+                KeyIdentifier = key.Key.KeyIdentifier,
+                Data = decrypted
+            };
+        }
+
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
         {
             switch (keyType)

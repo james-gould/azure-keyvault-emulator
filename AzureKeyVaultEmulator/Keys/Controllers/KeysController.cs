@@ -206,5 +206,29 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("{name}/{version}/wrapkey")]
+        public IActionResult WrapKey(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [FromBody] KeyOperationParameters para,
+            [ApiVersion] string apiVersion)
+        {
+            var result = keyService.WrapKey(name, version, para);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{name}/{version}/unwrapkey")]
+        public IActionResult UnwrapKey(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [FromBody] KeyOperationParameters para,
+            [ApiVersion] string apiVersion)
+        {
+            var result = keyService.UnwrapKey(name, version, para);
+
+            return Ok(result);
+        }
     }
 }
