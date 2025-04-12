@@ -55,7 +55,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
             if (_testingClient is null)
                 _testingClient = await CreateHttpClient();
 
-            if(!string.IsNullOrEmpty(_bearerToken))
+            if (!string.IsNullOrEmpty(_bearerToken))
                 return _bearerToken;
 
             var response = await _testingClient.GetAsync("/token");
@@ -71,10 +71,10 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
 
         public async Task DisposeAsync()
         {
-            if(_app is not null)
+            if (_app is not null)
                 await _app.DisposeAsync().ConfigureAwait(false);
 
-            if( _testingClient is not null)
+            if (_testingClient is not null)
                 _testingClient.Dispose();
         }
     }

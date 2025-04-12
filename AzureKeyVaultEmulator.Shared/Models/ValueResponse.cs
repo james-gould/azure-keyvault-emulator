@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AzureKeyVaultEmulator.Shared.Models.Secrets
+namespace AzureKeyVaultEmulator.Shared.Models
 {
-    public class BackupSecretResult
+    public class ValueResponse
     {
         [JsonPropertyName("value")]
         public string Value { get; set; } = string.Empty;

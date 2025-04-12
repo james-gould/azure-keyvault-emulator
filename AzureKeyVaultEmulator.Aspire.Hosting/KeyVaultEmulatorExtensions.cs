@@ -1,7 +1,8 @@
 ﻿using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
+using AzureKeyVaultEmulator.Aspire.Hosting;
 
-namespace AzureKeyVaultEmulator.Aspire.Hosting
+namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
     public static class KeyVaultEmulatorExtensions
     {
@@ -13,7 +14,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// <param name="lifetime"></param>
         /// <returns></returns>
         public static IResourceBuilder<KeyVaultDirectEmulatorResource> AddAzureKeyVaultEmulator(
-            this IDistributedApplicationBuilder builder, 
+            this IDistributedApplicationBuilder builder,
             [ResourceName] string name,
             ContainerLifetime lifetime = ContainerLifetime.Session)
         {
@@ -76,7 +77,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             this IResourceBuilder<AzureKeyVaultResource> builder,
             ContainerLifetime lifetime)
         {
-            var emulatedBuilder = builder.RunAsEmulator(null);
+            var emulatedBuilder = RunAsEmulator(builder, null);
 
             emulatedBuilder.WithLifetime(lifetime);
 
@@ -96,7 +97,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             this IResourceBuilder<T> builder,
             IResourceBuilder<KeyVaultEmulatorResource> target,
             params KeyVaultBuiltInRole[] roles)
-            where T : IResource 
+            where T : IResource
                 => builder;
     }
 }

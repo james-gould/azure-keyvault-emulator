@@ -1,8 +1,8 @@
 ﻿using Aspire.Hosting.Azure;
 
-namespace AzureKeyVaultEmulator.Aspire.Hosting
+namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
-    public class KeyVaultEmulatorResource(AzureKeyVaultResource innerResource) 
+    public class KeyVaultEmulatorResource(AzureKeyVaultResource innerResource)
             : ContainerResource(innerResource.Name), IResourceWithConnectionString
     {
         private AzureKeyVaultResource _innerResource => innerResource;

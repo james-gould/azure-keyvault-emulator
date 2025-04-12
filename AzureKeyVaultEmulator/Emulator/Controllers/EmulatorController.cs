@@ -1,5 +1,4 @@
-﻿using AzureKeyVaultEmulator.Emulator.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace AzureKeyVaultEmulator.Emulator.Controllers
 {

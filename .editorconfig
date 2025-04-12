@@ -149,15 +149,22 @@ csharp_space_between_square_brackets = false
 # Unused usings
 dotnet_diagnostic.IDE0005.severity = warning
 
+# Name can be simplified (useless namespace before type)
+dotnet_diagnostic.IDE0002.severity = warning
+
 # CA1823: Avoid unused private fields
 dotnet_diagnostic.CA1823.severity = warning
 
 # IDE0060: Remove unused parameter
-dotnet_code_quality_unused_parameters = non_public
+dotnet_code_quality_unused_parameters = all
 dotnet_diagnostic.IDE0060.severity = warning
 
 # IDE1006: Required naming style
 dotnet_diagnostic.IDE1006.severity = warning
+
+# IDE2000: Disallow multiple blank lines
+dotnet_style_allow_multiple_blank_lines_experimental = false
+dotnet_diagnostic.IDE2000.severity = warning
 
 # IDE0051: Remove unused private members
 dotnet_diagnostic.IDE0051.severity = suggestion

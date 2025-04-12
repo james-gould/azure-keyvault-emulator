@@ -1,8 +1,5 @@
-﻿using AzureKeyVaultEmulator.Shared.Constants;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace AzureKeyVaultEmulator.Emulator.Services
 {
@@ -11,6 +8,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
         string CreateBearerToken(IEnumerable<Claim>? inboundClaims = null);
         string CreateSkipToken(int skipCount);
         int DecodeSkipToken(string skipToken);
+        string CreateTokenWithHeaderClaim(IEnumerable<Claim> payloadClaims, string headerClaimType, string headerClaimValue);
     }
 
     public class TokenService : ITokenService
@@ -24,11 +22,11 @@ namespace AzureKeyVaultEmulator.Emulator.Services
 
             var claims = new[]
 {
-                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, "localuser"),
-                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Sub, "localuser"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            return CreateToken([..inboundClaims, ..claims]);
+            return CreateToken([.. inboundClaims, .. claims]);
         }
 
         public string CreateSkipToken(int skipCount)
@@ -50,6 +48,26 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             var validSkipClaim = int.TryParse(skipClaim.Value, out int skipCount);
 
             return validSkipClaim ? skipCount : default;
+        }
+
+        public string CreateTokenWithHeaderClaim(
+            IEnumerable<Claim> payloadClaims,
+            string headerClaimType,
+            string headerClaimValue)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: "localazurekeyvault.localhost.com",
+                audience: "localazurekeyvault.localhost.com",
+                claims: [.. payloadClaims],
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            token.Header.Add(headerClaimType, headerClaimValue);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private static string CreateToken(IEnumerable<Claim> claims)

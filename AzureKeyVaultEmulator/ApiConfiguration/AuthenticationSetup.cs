@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 
-namespace AzureKeyVaultEmulator.ServiceConfiguration
+namespace AzureKeyVaultEmulator.ApiConfiguration
 {
     public static class AuthenticationSetup
     {

@@ -1,9 +1,10 @@
-﻿using Azure.Security.KeyVault.Certificates;
+﻿using System;
+using System.Runtime.CompilerServices;
+using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 
 namespace AzureKeyVaultEmulator.Aspire.Client
 {
@@ -13,7 +14,7 @@ namespace AzureKeyVaultEmulator.Aspire.Client
         /// Creates the scaffolding for AzureKeyVault support using the containerised emulator.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to inject into.</param>
-        /// <param name="vaultEndpoint"><para>The endpoint from the for the containerised AzureKeyVaultEmulator.</para> <para>Typically found in <see cref="IHostApplicationBuilder.Configuration"/></para></param>
+        /// <param name="vaultEndpoint">The endpoint from the for the containerised AzureKeyVaultEmulator. <br />Typically found in <see cref="IHostApplicationBuilder.Configuration"/></param>
         /// <param name="secrets">Bool to create a <see cref="SecretClient"/>, defaults to <see langword="true"/></param>
         /// <param name="keys">Bool to create a <see cref="KeyClient"/>, defaults to <see langword="false"/></param>
         /// <param name="certificates">Bool to create a <see cref="CertificateClient"/>, defaults to <see langword="false"/></param>
@@ -30,7 +31,7 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             bool keys = false,
             bool certificates = false)
         {
-            if(string.IsNullOrEmpty(vaultEndpoint))
+            if (string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(vaultEndpoint);
 
             var credential = new EmulatedTokenCredential(vaultEndpoint);
@@ -44,8 +45,8 @@ namespace AzureKeyVaultEmulator.Aspire.Client
                 services.AddTransient(x =>
                     new KeyClient(uri, credential, new KeyClientOptions { DisableChallengeResourceVerification = true }));
 
-            if(certificates)
-                services.AddTransient(x => 
+            if (certificates)
+                services.AddTransient(x =>
                     new CertificateClient(uri, credential, new CertificateClientOptions { DisableChallengeResourceVerification = true }));
 
             return services;
