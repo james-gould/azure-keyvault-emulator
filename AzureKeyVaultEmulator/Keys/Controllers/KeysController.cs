@@ -65,6 +65,25 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
+        [HttpGet("{name}/versions")]
+        public IActionResult GetKeyVersions(
+            [FromRoute] string name,
+            [ApiVersion] string apiVersion,
+            [FromQuery] int maxResults = 25,
+            [FromBody] string skipToken = "")
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            int skipCount = 0;
+
+            if(!string.IsNullOrEmpty(skipToken))
+                skipCount = tokenService.DecodeSkipToken(skipToken);
+
+            var result = keyService.GetKeyVersions(name, maxResults, skipCount);
+
+            return Ok(result);
+        }
+
         [HttpPost("{name}/{version}/encrypt")]
         public IActionResult Encrypt(
             [FromRoute] string name,

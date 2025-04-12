@@ -20,5 +20,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
         KeyRotationPolicy UpdateKeyRotationPolicy(string name, KeyRotationAttributes attributes, IEnumerable<LifetimeActions> lifetimeActions);
 
         ListResult<KeyResponse> GetKeys(int maxResults = 25, int skipCount = 25);
+        ListResult<KeyResponse> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
     }
 }

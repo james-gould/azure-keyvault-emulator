@@ -158,6 +158,29 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
+        public ListResult<KeyResponse> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            if (maxResults is default(int) && skipCount is default(int))
+                return new();
+
+            var allItems = _keys.Where(x => x.Key.Contains(name));
+
+            if (!allItems.Any())
+                return new();
+
+            var maxedItems = allItems.Skip(skipCount).Take(maxResults);
+
+            var requiresPaging = maxedItems.Count() >= maxResults;
+
+            return new ListResult<KeyResponse>
+            {
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = maxedItems.Select(x => x.Value)
+            };
+        }
+
         private static JsonWebKeyModel GetJWKSFromModel(CreateKeyModel key)
         {
             switch (key.KeyType)
