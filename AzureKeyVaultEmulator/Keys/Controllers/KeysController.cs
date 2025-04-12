@@ -9,10 +9,9 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
     [ApiController]
     [Route("keys")]
     [Authorize]
-    public class KeysController(IKeyService keyService) : ControllerBase
+    public class KeysController(IKeyService keyService, ITokenService tokenService) : ControllerBase
     {
         [HttpPost("{name}/create")]
-        [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult CreateKey(
             [RegularExpression("[a-zA-Z0-9-]+")][FromRoute] string name,
             [ApiVersion] string apiVersion,
@@ -24,7 +23,6 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         }
 
         [HttpGet("{name}/{version}")]
-        [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult GetKey(
             [FromRoute] string name,
             [FromRoute] string version,
@@ -39,7 +37,6 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         }
 
         [HttpGet("{name}")]
-        [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult GetKey(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
@@ -50,6 +47,22 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
                 return NotFound();
 
             return Ok(keyResult);
+        }
+
+        [HttpGet]
+        public IActionResult GetKeys(
+            [ApiVersion] string apiVersion,
+            [FromQuery] int maxResults = 25,
+            [SkipToken] string token = "")
+        {
+            int skipCount = 0;
+
+            if (!string.IsNullOrEmpty(token))
+                skipCount = tokenService.DecodeSkipToken(token);
+
+            var result = keyService.GetKeys(maxResults, skipCount);
+
+            return Ok(result);
         }
 
         [HttpPost("{name}/{version}/encrypt")]

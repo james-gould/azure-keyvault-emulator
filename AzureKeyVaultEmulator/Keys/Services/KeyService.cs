@@ -1,8 +1,11 @@
+using AzureKeyVaultEmulator.Shared.Models.Secrets;
+
 namespace AzureKeyVaultEmulator.Keys.Services
 {
     public class KeyService(
         IHttpContextAccessor httpContextAccessor,
-        IJweEncryptionService jweEncryptionService)
+        IJweEncryptionService jweEncryptionService,
+        ITokenService tokenService)
         : IKeyService
     {
         private static readonly ConcurrentDictionary<string, KeyResponse> _keys = new();
@@ -40,7 +43,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             {
                 Key = JWKS,
                 Attributes = key.KeyAttributes,
-                Tags = key.Tags
+                Tags = key.Tags ?? []
             };
 
             _keys.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
@@ -136,7 +139,26 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return keyRotationPolicy;
         }
 
-        private JsonWebKeyModel GetJWKSFromModel(CreateKeyModel key)
+        public ListResult<KeyResponse> GetKeys(int maxResults = 25, int skipCount = 25)
+        {
+            if (maxResults is default(int) && skipCount is default(int))
+                return new();
+
+            var items = _keys.Skip(skipCount).Take(maxResults);
+
+            if (!items.Any())
+                return new();
+
+            var requiresPaging = items.Count() >= maxResults;
+
+            return new ListResult<KeyResponse>
+            {
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = items.Select(x => x.Value)
+            };
+        }
+
+        private static JsonWebKeyModel GetJWKSFromModel(CreateKeyModel key)
         {
             switch (key.KeyType)
             {
@@ -150,6 +172,13 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 default:
                     throw new NotImplementedException($"KeyType {key.KeyType} is not supported");
             }
+        }
+
+        private string GenerateNextLink(int maxResults)
+        {
+            var skipToken = tokenService.CreateSkipToken(maxResults);
+
+            return httpContextAccessor.GetNextLink(skipToken, maxResults);
         }
     }
 }

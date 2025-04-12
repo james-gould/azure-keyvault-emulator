@@ -2,24 +2,13 @@ using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
-    public class SercretService : ISecretService
+    public class SercretService(
+        IHttpContextAccessor httpContextAccessor,
+        ITokenService token,
+        IJweEncryptionService encryption) : ISecretService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ITokenService _token;
-        private readonly IJweEncryptionService _encryption;
-
         private static readonly ConcurrentDictionary<string, SecretResponse?> _secrets = new();
         private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();
-
-        public SercretService(
-            IHttpContextAccessor httpContextAccessor,
-            ITokenService token,
-            IJweEncryptionService encryption)
-        {
-            _httpContextAccessor = httpContextAccessor;
-            _token = token;
-            _encryption = encryption;
-        }
 
         public SecretResponse? Get(string name, string version = "")
         {
@@ -43,9 +32,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             var version = Guid.NewGuid().ToString();
             var secretUrl = new UriBuilder
             {
-                Scheme = _httpContextAccessor.HttpContext?.Request.Scheme,
-                Host = _httpContextAccessor.HttpContext?.Request.Host.Host,
-                Port = _httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
+                Scheme = httpContextAccessor.HttpContext?.Request.Scheme,
+                Host = httpContextAccessor.HttpContext?.Request.Host.Host,
+                Port = httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
                 Path = $"secrets/{name}/{version}"
             };
 
@@ -98,7 +87,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             return new ValueResponse
             {
-                Value = _encryption.CreateKeyVaultJwe(secret)
+                Value = encryption.CreateKeyVaultJwe(secret)
             };
         }
 
@@ -210,7 +199,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            return _encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
+            return encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
         }
 
         public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
@@ -237,9 +226,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
         private string GenerateNextLink(int maxResults)
         {
-            var skipToken = _token.CreateSkipToken(maxResults);
+            var skipToken = token.CreateSkipToken(maxResults);
 
-            return _httpContextAccessor.GetNextLink(skipToken, maxResults);
+            return httpContextAccessor.GetNextLink(skipToken, maxResults);
         }
     }
 }

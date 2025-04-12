@@ -25,6 +25,6 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         public int? KeySize { get; set; }
 
         [JsonPropertyName("tags")]
-        public object? Tags { get; set; }
+        public Dictionary<string, string>? Tags { get; set; }
     }
 }

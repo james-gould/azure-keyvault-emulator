@@ -1,4 +1,6 @@
-﻿namespace AzureKeyVaultEmulator.Keys.Services
+﻿using AzureKeyVaultEmulator.Shared.Models.Secrets;
+
+namespace AzureKeyVaultEmulator.Keys.Services
 {
     public interface IKeyService
     {
@@ -16,5 +18,7 @@
 
         KeyRotationPolicy GetKeyRotationPolicy(string name);
         KeyRotationPolicy UpdateKeyRotationPolicy(string name, KeyRotationAttributes attributes, IEnumerable<LifetimeActions> lifetimeActions);
+
+        ListResult<KeyResponse> GetKeys(int maxResults = 25, int skipCount = 25);
     }
 }
