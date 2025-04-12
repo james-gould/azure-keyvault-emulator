@@ -5,7 +5,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
     public class SercretService(
         IHttpContextAccessor httpContextAccessor,
         ITokenService token,
-        IJweEncryptionService encryption) : ISecretService
+        IEncryptionService encryption) : ISecretService
     {
         private static readonly ConcurrentDictionary<string, SecretResponse?> _secrets = new();
         private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();

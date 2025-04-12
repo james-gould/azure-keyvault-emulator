@@ -2,20 +2,30 @@
 
 namespace AzureKeyVaultEmulator.Emulator.Services
 {
-    public interface IJweEncryptionService : IDisposable
+    public interface IEncryptionService : IDisposable
     {
         string CreateKeyVaultJwe(object value);
         T DecryptFromKeyVaultJwe<T>(string jwe);
+        string SignData(string data);
     }
 
-    public class JweEncryptionService : IJweEncryptionService
+    public class EncryptionService : IEncryptionService
     {
         private readonly RSA _rsa;
 
-        public JweEncryptionService()
+        public EncryptionService()
         {
             _rsa = RSA.Create();
             _rsa.ImportFromPem(RsaPem.FullPem);
+        }
+
+        public string SignData(string data)
+        {
+            var bytes = Encoding.UTF8.GetBytes(data);
+
+            var signedBytes = _rsa.SignData(bytes, HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1);
+
+            return EncodingUtils.Base64UrlEncode(signedBytes);
         }
 
         public T DecryptFromKeyVaultJwe<T>(string jweToken)

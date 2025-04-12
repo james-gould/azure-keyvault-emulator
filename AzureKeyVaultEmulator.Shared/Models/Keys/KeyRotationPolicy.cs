@@ -1,10 +1,11 @@
 ﻿using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Constants;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 
 public sealed class KeyRotationPolicy(string keyName)
 {
-    public string Id => $"https://azurekeyvaultemulator.vault.azure.net/keys/{keyName}/rotationpolicy";
+    public string Id => $"{AuthConstants.EmulatorUri}/keys/{keyName}/rotationpolicy";
 
     [JsonPropertyName("attributes")]
     public KeyRotationAttributes? Attributes { get; set; }

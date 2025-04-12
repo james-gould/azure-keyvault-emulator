@@ -7,5 +7,7 @@ namespace AzureKeyVaultEmulator.Shared.Constants
         public const string IssuerSigningKey = "VZboShdn5FpO2b2iHA7pzhJpmc24e8u9";
 
         public static Regex JwtRegex = new Regex("(^[\\w-]*\\.[\\w-]*\\.[\\w-]*$)", RegexOptions.Compiled);
+
+        public const string EmulatorUri = "https://azurekeyvaultemulator.vault.azure.net";
     }
 }

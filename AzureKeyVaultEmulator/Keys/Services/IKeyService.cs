@@ -26,5 +26,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         ValueResponse ReleaseKey(string name, string version);
         KeyBundle ImportKey(string name, JsonWebKey key, KeyAttributesModel attributes, Dictionary<string, string> tags);
+        KeyOperationResult SignWithKey(string name, string version, string algo, string value);
     }
 }

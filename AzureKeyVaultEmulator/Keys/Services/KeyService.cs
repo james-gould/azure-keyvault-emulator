@@ -4,7 +4,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 {
     public class KeyService(
         IHttpContextAccessor httpContextAccessor,
-        IJweEncryptionService jweEncryptionService,
+        IEncryptionService encryptionService,
         ITokenService tokenService)
         : IKeyService
     {
@@ -141,7 +141,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             return new ValueResponse
             {
-                Value = jweEncryptionService.CreateKeyVaultJwe(foundKey)
+                Value = encryptionService.CreateKeyVaultJwe(foundKey)
             };
         }
 
@@ -149,7 +149,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(jweBody);
 
-            return jweEncryptionService.DecryptFromKeyVaultJwe<KeyBundle>(jweBody);
+            return encryptionService.DecryptFromKeyVaultJwe<KeyBundle>(jweBody);
         }
 
         public ValueResponse GetRandomBytes(int count)
@@ -257,7 +257,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             return new ValueResponse
             {
-                Value = jweEncryptionService.CreateKeyVaultJwe(release)
+                Value = encryptionService.CreateKeyVaultJwe(release)
             };
         }
 
@@ -284,6 +284,22 @@ namespace AzureKeyVaultEmulator.Keys.Services
             _keys.TryAdd(name.GetCacheId(version), response);
 
             return response;
+        }
+
+        public KeyOperationResult SignWithKey(string name, string version, string algo, string value)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+            ArgumentException.ThrowIfNullOrWhiteSpace(algo);
+            ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+            var key = _keys.SafeGet(name.GetCacheId(version));
+
+            return new KeyOperationResult
+            {
+                KeyIdentifier = $"{AuthConstants.EmulatorUri}/keys/{name}/{key.Key.KeyIdentifier}",
+                Data = encryptionService.SignData(value)
+            };
         }
 
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)

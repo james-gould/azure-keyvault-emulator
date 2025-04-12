@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Constants;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 
@@ -8,7 +9,7 @@ public sealed class KeyReleaseVM(string aas)
     public string AasEhd { get; set; } = aas;
 
     [JsonPropertyName("iss")]
-    public string Issuer => "https://azurekeyvaultemulator.vault.azure.net/keys";
+    public string Issuer => $"{AuthConstants.EmulatorUri}/keys";
 
     [JsonPropertyName("sgx-mrenclave")]
     public string SGXEnclave => "0000000000000000000000000000000000000000000000000000000000000000";

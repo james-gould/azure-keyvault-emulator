@@ -183,5 +183,17 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("{name}/{version}/sign")]
+        public IActionResult SignWithKey(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [FromBody] SignKeyModel model,
+            [ApiVersion] string apiVersion)
+        {
+            var result = keyService.SignWithKey(name, version, model.SigningAlgorithm, model.Value);
+
+            return Ok(result);
+        }
     }
 }
