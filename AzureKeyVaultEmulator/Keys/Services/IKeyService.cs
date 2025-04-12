@@ -1,11 +1,9 @@
-﻿using AzureKeyVaultEmulator.Shared.Models.Shared;
-
-namespace AzureKeyVaultEmulator.Keys.Services
+﻿namespace AzureKeyVaultEmulator.Keys.Services
 {
     public interface IKeyService
     {
-        KeyResponse? Get(string name);
-        KeyResponse? Get(string name, string version);
+        KeyResponse? GetKey(string name);
+        KeyResponse? GetKey(string name, string version);
         KeyResponse? CreateKey(string name, CreateKeyModel key);
 
         ValueResponse? GetRandomBytes(int count);
@@ -15,5 +13,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         ValueResponse? BackupKey(string name);
         KeyResponse? RestoreKey(string jweBody);
+
+        KeyRotationPolicy GetKeyRotationPolicy(string name);
+        KeyRotationPolicy UpdateKeyRotationPolicy(string name, KeyRotationAttributes attributes, IEnumerable<LifetimeActions> lifetimeActions);
     }
 }

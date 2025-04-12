@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AzureKeyVaultEmulator.Shared.Models.Shared
+namespace AzureKeyVaultEmulator.Shared.Models
 {
     public class ValueResponse
     {

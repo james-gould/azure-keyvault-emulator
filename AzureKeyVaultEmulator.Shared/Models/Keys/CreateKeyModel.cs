@@ -12,6 +12,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         [JsonPropertyName("attributes")]
         public KeyAttributesModel KeyAttributes { get; set; } = new();
 
+        [JsonPropertyName("release_policy")]
+        public KeyReleasePolicy? keyReleasePolicy { get; set; }
+
         [JsonPropertyName("crv")]
         public string KeyCurveName { get; set; } = string.Empty;
 

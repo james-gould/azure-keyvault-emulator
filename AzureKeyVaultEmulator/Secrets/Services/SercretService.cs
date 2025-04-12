@@ -1,5 +1,4 @@
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
-using AzureKeyVaultEmulator.Shared.Models.Shared;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {

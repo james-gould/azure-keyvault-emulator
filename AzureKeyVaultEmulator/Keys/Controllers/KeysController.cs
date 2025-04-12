@@ -30,7 +30,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string version,
             [ApiVersion] string apiVersion)
         {
-            var keyResult = keyService.Get(name, version);
+            var keyResult = keyService.GetKey(name, version);
 
             if (keyResult == null)
                 return NotFound();
@@ -44,7 +44,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var keyResult = keyService.Get(name);
+            var keyResult = keyService.GetKey(name);
 
             if (keyResult == null)
                 return NotFound();
@@ -103,6 +103,27 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [ApiVersion] string apiVersion)
         {
             var result = keyService.GetRandomBytes(count);
+
+            return Ok(result);
+        }
+
+        [HttpGet("{name}/rotationpolicy")]
+        public IActionResult GetKeyRotationPolicy(
+            [FromRoute] string name)
+        {
+            var result = keyService.GetKeyRotationPolicy(name);
+
+            return Ok(result);
+        }
+
+        [HttpPut("{name}/rotationpolicy")]
+        public IActionResult UpdateKeyRotationPolicy(
+            [FromRoute] string name,
+            [FromBody] KeyRotationAttributes attributes,
+            [FromBody] IEnumerable<LifetimeActions> lifetimeActions,
+            [ApiVersion] string apiVersion)
+        {
+            var result = keyService.UpdateKeyRotationPolicy(name, attributes, lifetimeActions);
 
             return Ok(result);
         }

@@ -1,31 +1,21 @@
-using AzureKeyVaultEmulator.Shared.Models.Shared;
-
 namespace AzureKeyVaultEmulator.Keys.Services
 {
-    public class KeyService : IKeyService
+    public class KeyService(
+        IHttpContextAccessor httpContextAccessor,
+        IJweEncryptionService jweEncryptionService)
+        : IKeyService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IJweEncryptionService _jweEncryptionService;
         private static readonly ConcurrentDictionary<string, KeyResponse> _keys = new();
+        private static readonly ConcurrentDictionary<string, KeyRotationPolicy> _keyRotations = new();
 
-        public KeyService(IHttpContextAccessor httpContextAccessor, IJweEncryptionService jweEncryptionService)
+        public KeyResponse? GetKey(string name)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _jweEncryptionService = jweEncryptionService;
+            return _keys.SafeGet(name);
         }
 
-        public KeyResponse? Get(string name)
+        public KeyResponse? GetKey(string name, string version)
         {
-            _keys.TryGetValue(name.GetCacheId(), out var found);
-
-            return found;
-        }
-
-        public KeyResponse? Get(string name, string version)
-        {
-            _keys.TryGetValue(name.GetCacheId(version), out var found);
-
-            return found;
+            return _keys.SafeGet(name.GetCacheId(version));
         }
 
         public KeyResponse? CreateKey(string name, CreateKeyModel key)
@@ -35,9 +25,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
             var version = Guid.NewGuid().ToString();
             var keyUrl = new UriBuilder
             {
-                Scheme = _httpContextAccessor.HttpContext?.Request.Scheme,
-                Host = _httpContextAccessor.HttpContext?.Request.Host.Host,
-                Port = _httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
+                Scheme = httpContextAccessor.HttpContext?.Request.Scheme,
+                Host = httpContextAccessor.HttpContext?.Request.Host.Host,
+                Port = httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
                 Path = $"keys/{name}/{version}"
             };
 
@@ -61,8 +51,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public KeyOperationResult? Encrypt(string name, string version, KeyOperationParameters keyOperationParameters)
         {
-            if (!_keys.TryGetValue(name.GetCacheId(version), out var foundKey))
-                throw new Exception("Key not found");
+            var foundKey = _keys.SafeGet(name.GetCacheId());
 
             var encrypted = Base64UrlEncoder.Encode(foundKey.Key.Encrypt(keyOperationParameters));
 
@@ -75,8 +64,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public KeyOperationResult? Decrypt(string name, string version, KeyOperationParameters keyOperationParameters)
         {
-            if (!_keys.TryGetValue(name.GetCacheId(version), out var foundKey))
-                throw new Exception("Key not found");
+            var foundKey = _keys.SafeGet(name.GetCacheId());
 
             var decrypted = foundKey.Key.Decrypt(keyOperationParameters);
 
@@ -85,6 +73,67 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 KeyIdentifier = foundKey.Key.KeyIdentifier,
                 Data = decrypted
             };
+        }
+
+        public ValueResponse? BackupKey(string name)
+        {
+            var foundKey = _keys.SafeGet(name.GetCacheId());
+
+            return new ValueResponse
+            {
+                Value = jweEncryptionService.CreateKeyVaultJwe(foundKey)
+            };
+        }
+
+        public KeyResponse? RestoreKey(string jweBody)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(jweBody);
+
+            return jweEncryptionService.DecryptFromKeyVaultJwe<KeyResponse>(jweBody);
+        }
+
+        public ValueResponse GetRandomBytes(int count)
+        {
+            if (count > 128)
+                throw new ArgumentException($"{nameof(count)} cannot exceed 128 when generating random bytes.");
+
+            var bytes = new byte[count];
+
+            Random.Shared.NextBytes(bytes);
+
+            return new ValueResponse
+            {
+                Value = EncodingUtils.Base64UrlEncode(bytes)
+            };
+        }
+
+        public KeyRotationPolicy GetKeyRotationPolicy(string name)
+        {
+            return _keyRotations.SafeGet(name.GetCacheId());
+        }
+
+        public KeyRotationPolicy UpdateKeyRotationPolicy(
+            string name,
+            KeyRotationAttributes attributes,
+            IEnumerable<LifetimeActions> lifetimeActions)
+        {
+            var key = _keys.SafeGet(name.GetCacheId());
+
+            // Policy exists against overall key, not the current (cached) version
+            var policyExists = _keyRotations.TryGetValue(name, out var keyRotationPolicy);
+
+            if (!policyExists || keyRotationPolicy is null)
+                keyRotationPolicy = new(name);
+
+            keyRotationPolicy.Attributes = attributes;
+
+            keyRotationPolicy.Attributes.Update();
+
+            keyRotationPolicy.LifetimeActions = lifetimeActions;
+
+            _keyRotations.AddOrUpdate(name, keyRotationPolicy, (_, _) => keyRotationPolicy);
+
+            return keyRotationPolicy;
         }
 
         private JsonWebKeyModel GetJWKSFromModel(CreateKeyModel key)
@@ -101,43 +150,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 default:
                     throw new NotImplementedException($"KeyType {key.KeyType} is not supported");
             }
-        }
-
-        public ValueResponse? BackupKey(string name)
-        {
-            var cachedName = name.GetCacheId();
-
-            var keyExists = _keys.TryGetValue(cachedName, out var foundKey);
-
-            if (!keyExists || foundKey is null)
-                return null;
-
-            return new ValueResponse
-            {
-                Value = _jweEncryptionService.CreateKeyVaultJwe(foundKey)
-            };
-        }
-
-        public KeyResponse? RestoreKey(string jweBody)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(jweBody);
-
-            return _jweEncryptionService.DecryptFromKeyVaultJwe<KeyResponse>(jweBody);
-        }
-
-        public ValueResponse GetRandomBytes(int count)
-        {
-            if (count > 128)
-                throw new ArgumentException($"{nameof(count)} cannot exceed 128 when generating random bytes.");
-
-            var bytes = new byte[count];
-
-            Random.Shared.NextBytes(bytes);
-
-            return new ValueResponse
-            {
-                Value = EncodingUtils.Base64UrlEncode(bytes)
-            };
         }
     }
 }
