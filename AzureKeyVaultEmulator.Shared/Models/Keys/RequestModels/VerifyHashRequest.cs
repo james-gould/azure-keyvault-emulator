@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AzureKeyVaultEmulator.Shared.Models.Keys;
+namespace AzureKeyVaultEmulator.Shared.Models.Keys.RequestModels;
 
 public sealed class VerifyHashRequest
 {

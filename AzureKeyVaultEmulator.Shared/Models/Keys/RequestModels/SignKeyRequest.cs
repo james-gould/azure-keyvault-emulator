@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AzureKeyVaultEmulator.Shared.Models.Keys;
+namespace AzureKeyVaultEmulator.Shared.Models.Keys.RequestModels;
 
-public class SignKeyModel
+public class SignKeyRequest
 {
     [JsonPropertyName("alg")]
     public required string SigningAlgorithm { get; set; }

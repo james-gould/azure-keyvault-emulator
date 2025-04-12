@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using AzureKeyVaultEmulator.Keys.Services;
+using AzureKeyVaultEmulator.Shared.Models.Keys.RequestModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -188,7 +189,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         public IActionResult SignWithKey(
             [FromRoute] string name,
             [FromRoute] string version,
-            [FromBody] SignKeyModel model,
+            [FromBody] SignKeyRequest model,
             [ApiVersion] string apiVersion)
         {
             var result = keyService.SignWithKey(name, version, model.SigningAlgorithm, model.Value);
