@@ -12,7 +12,7 @@ public sealed class ImportKeyRequest
     public bool? HSM { get; set; }
 
     [JsonPropertyName("attributes")]
-    public KeyAttributesModel? KeyAttributes { get; set; } = new();
+    public KeyAttributesModel KeyAttributes { get; set; } = new();
 
     [JsonPropertyName("release_policy")]
     public object? ReleasePolicy { get; set; }
