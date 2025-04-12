@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace AzureKeyVaultEmulator.Shared.Constants
 {
@@ -12,5 +7,7 @@ namespace AzureKeyVaultEmulator.Shared.Constants
         public const string IssuerSigningKey = "VZboShdn5FpO2b2iHA7pzhJpmc24e8u9";
 
         public static Regex JwtRegex = new Regex("(^[\\w-]*\\.[\\w-]*\\.[\\w-]*$)", RegexOptions.Compiled);
+
+        public const string EmulatorUri = "https://azurekeyvaultemulator.vault.azure.net";
     }
 }

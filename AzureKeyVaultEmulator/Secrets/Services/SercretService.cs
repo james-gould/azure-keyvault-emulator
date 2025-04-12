@@ -2,24 +2,13 @@ using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
-    public class SercretService : ISecretService
+    public class SercretService(
+        IHttpContextAccessor httpContextAccessor,
+        ITokenService token,
+        IEncryptionService encryption) : ISecretService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ITokenService _token;
-        private readonly IJweEncryptionService _encryption;
-
         private static readonly ConcurrentDictionary<string, SecretResponse?> _secrets = new();
         private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();
-
-        public SercretService(
-            IHttpContextAccessor httpContextAccessor, 
-            ITokenService token,
-            IJweEncryptionService encryption)
-        {
-            _httpContextAccessor = httpContextAccessor;
-            _token = token;
-            _encryption = encryption;
-        }
 
         public SecretResponse? Get(string name, string version = "")
         {
@@ -43,9 +32,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             var version = Guid.NewGuid().ToString();
             var secretUrl = new UriBuilder
             {
-                Scheme = _httpContextAccessor.HttpContext?.Request.Scheme,
-                Host = _httpContextAccessor.HttpContext?.Request.Host.Host,
-                Port = _httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
+                Scheme = httpContextAccessor.HttpContext?.Request.Scheme,
+                Host = httpContextAccessor.HttpContext?.Request.Host.Host,
+                Port = httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
                 Path = $"secrets/{name}/{version}"
             };
 
@@ -87,7 +76,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return deleted;
         }
 
-        public BackupSecretResult? BackupSecret(string name)
+        public ValueResponse? BackupSecret(string name)
         {
             var cacheId = name.GetCacheId();
 
@@ -96,9 +85,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!exists || secret is null)
                 throw new SecretException($"Cannot backup secret by name {name} because it does not exist");
 
-            return new BackupSecretResult
+            return new ValueResponse
             {
-                Value = _encryption.CreateKeyVaultJwe(secret)
+                Value = encryption.CreateKeyVaultJwe(secret)
             };
         }
 
@@ -163,7 +152,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var items = _secrets.Skip(skipCount).Take(maxResults);
 
-            if(!items.Any()) 
+            if (!items.Any())
                 return new();
 
             var requiresPaging = items.Count() >= maxResults;
@@ -210,7 +199,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            return _encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
+            return encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
         }
 
         public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
@@ -225,7 +214,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!exists || secret is null)
                 throw new SecretException($"Cannot find secret with name {name} and version {version}");
 
-            if(!string.IsNullOrEmpty(attributes.ContentType))
+            if (!string.IsNullOrEmpty(attributes.ContentType))
                 secret.Attributes.ContentType = attributes.ContentType;
 
             secret.Attributes.Update();
@@ -237,9 +226,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
         private string GenerateNextLink(int maxResults)
         {
-            var skipToken = _token.CreateSkipToken(maxResults);
+            var skipToken = token.CreateSkipToken(maxResults);
 
-            return _httpContextAccessor.GetNextLink(skipToken, maxResults);
+            return httpContextAccessor.GetNextLink(skipToken, maxResults);
         }
     }
 }

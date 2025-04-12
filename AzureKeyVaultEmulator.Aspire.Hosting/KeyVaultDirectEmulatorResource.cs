@@ -1,6 +1,5 @@
 ﻿using AzureKeyVaultEmulator.Hosting.Aspire;
 
-
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     /// <summary>

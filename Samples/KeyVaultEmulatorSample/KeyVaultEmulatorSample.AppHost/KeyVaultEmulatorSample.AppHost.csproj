@@ -9,11 +9,11 @@
     <UserSecretsId>895dcb97-0aff-46be-9b94-9286af97239d</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.1.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.1.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0-preview.1.25173.1" />
+    <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.2.0-preview.1.25173.1" />
     <PackageReference Include="AzureKeyVaultEmulator.Aspire.Hosting" Version="1.0.6" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WebApiWithEmulator\WebApiWithEmulator.csproj" />
+    <ProjectReference Include="..\WebApiPWithEmulator\WebApiWithEmulator.csproj" />
   </ItemGroup>
 </Project>

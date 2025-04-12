@@ -1,4 +1,3 @@
-using Azure.Identity;
 using AzureKeyVaultEmulator.Aspire.Client;
 using Microsoft.Extensions.Azure;
 
@@ -15,10 +14,7 @@ builder.Services.AddSwaggerGen();
 
 var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
 
-// Basic Secrets only implementation
-
-
-if(builder.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment())
     builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, certificates: true, keys: true);
 else
     builder.Services.AddAzureClients(client =>

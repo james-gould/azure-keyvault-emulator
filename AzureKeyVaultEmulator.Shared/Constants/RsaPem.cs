@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AzureKeyVaultEmulator.Shared.Constants
+﻿namespace AzureKeyVaultEmulator.Shared.Constants
 {
     /// <summary>
     /// <para>Used to encrypt data NOT used by the KeyService. </para>

@@ -1,5 +1,5 @@
-using AzureKeyVaultEmulator.Middleware;
 using AzureKeyVaultEmulator.ApiConfiguration;
+using AzureKeyVaultEmulator.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
