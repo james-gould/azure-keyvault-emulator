@@ -195,5 +195,16 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("{name}/{version}/verify")]
+        public IActionResult VerifyHash(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [FromBody] VerifyHashRequest req)
+        {
+            var result = keyService.VerifyDigest(name, version, req.Digest, req.Value);
+
+            return Ok(result);
+        }
     }
 }

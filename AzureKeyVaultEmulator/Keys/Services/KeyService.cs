@@ -10,6 +10,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
     {
         private static readonly ConcurrentDictionary<string, KeyBundle> _keys = new();
         private static readonly ConcurrentDictionary<string, KeyRotationPolicy> _keyRotations = new();
+        private static readonly ConcurrentDictionary<string, string> _digests = new();
 
         public KeyBundle? GetKey(string name)
         {
@@ -293,13 +294,34 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(algo);
             ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
-            var key = _keys.SafeGet(name.GetCacheId(version));
+            var cacheId = name.GetCacheId(version);
+
+            var key = _keys.SafeGet(cacheId);
+
+            var (hash, sig) = encryptionService.SignAndHashData(value);
+
+            _digests.TryAdd(cacheId, hash);
 
             return new KeyOperationResult
             {
                 KeyIdentifier = $"{AuthConstants.EmulatorUri}/keys/{name}/{key.Key.KeyIdentifier}",
-                Data = encryptionService.SignData(value)
+                Data = sig
             };
+        }
+
+        public bool VerifyDigest(string name, string version, string digest, string signature)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+            ArgumentException.ThrowIfNullOrWhiteSpace(digest);
+            ArgumentException.ThrowIfNullOrWhiteSpace(signature);
+
+            var cacheId = name.GetCacheId(version);
+
+            var key = _keys.SafeGet(cacheId);
+            var cachedDigest = _digests.SafeGet(cacheId);
+
+            return encryptionService.VerifyData(cachedDigest, signature);
         }
 
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)

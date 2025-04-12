@@ -6,12 +6,14 @@ namespace AzureKeyVaultEmulator.Emulator.Services
     {
         string CreateKeyVaultJwe(object value);
         T DecryptFromKeyVaultJwe<T>(string jwe);
-        string SignData(string data);
+        (string hash, string signed) SignAndHashData(string data);
+        bool VerifyData(string hash, string signature);
     }
 
     public class EncryptionService : IEncryptionService
     {
         private readonly RSA _rsa;
+        private readonly RSASignaturePadding _padding = RSASignaturePadding.Pkcs1;
 
         public EncryptionService()
         {
@@ -19,13 +21,27 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             _rsa.ImportFromPem(RsaPem.FullPem);
         }
 
-        public string SignData(string data)
+        public (string hash, string signed) SignAndHashData(string data)
         {
             var bytes = Encoding.UTF8.GetBytes(data);
 
-            var signedBytes = _rsa.SignData(bytes, HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1);
+            var signedBytes = _rsa.SignData(bytes, HashAlgorithmName.SHA512, _padding);
 
-            return EncodingUtils.Base64UrlEncode(signedBytes);
+            var signed = EncodingUtils.Base64UrlEncode(signedBytes);
+
+            var hashBytes = SHA512.HashData(bytes);
+
+            var hash = EncodingUtils.Base64UrlEncode(hashBytes);
+
+            return (hash, signed);
+        }
+
+        public bool VerifyData(string hash, string signature)
+        {
+            var hashBytes = Encoding.UTF8.GetBytes(hash);
+            var sigBytes = Encoding.UTF8.GetBytes(signature);
+
+            return _rsa.VerifyHash(hashBytes, sigBytes, HashAlgorithmName.SHA512, _padding);
         }
 
         public T DecryptFromKeyVaultJwe<T>(string jweToken)
