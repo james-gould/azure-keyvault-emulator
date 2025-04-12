@@ -1,4 +1,5 @@
 ﻿using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Shared;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
@@ -7,7 +8,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         SecretResponse? Get(string name, string version = "");
         SecretResponse? SetSecret(string name, SetSecretModel requestBody);
         DeletedSecretBundle? DeleteSecret(string name, string version = "");
-        BackupSecretResult? BackupSecret(string name);
+        ValueResponse? BackupSecret(string name);
         SecretResponse? GetDeletedSecret(string name);
         ListResult<SecretResponse> GetDeletedSecrets(int maxVersions = 25, int skipCount = 0);
         ListResult<SecretResponse> GetSecretVersions(string secretName, int maxResults = 25, int skipCount = 0);

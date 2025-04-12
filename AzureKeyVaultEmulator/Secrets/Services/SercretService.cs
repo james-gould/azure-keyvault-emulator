@@ -1,4 +1,5 @@
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Shared;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
@@ -87,7 +88,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return deleted;
         }
 
-        public BackupSecretResult? BackupSecret(string name)
+        public ValueResponse? BackupSecret(string name)
         {
             var cacheId = name.GetCacheId();
 
@@ -96,7 +97,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!exists || secret is null)
                 throw new SecretException($"Cannot backup secret by name {name} because it does not exist");
 
-            return new BackupSecretResult
+            return new ValueResponse
             {
                 Value = _encryption.CreateKeyVaultJwe(secret)
             };

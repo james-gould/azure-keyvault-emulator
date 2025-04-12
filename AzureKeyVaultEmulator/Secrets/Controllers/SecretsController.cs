@@ -1,5 +1,6 @@
 using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,8 +22,6 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         }
 
         [HttpPut("{name}")]
-        //[Produces("application/json")]
-        //[Consumes("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult SetSecret(
@@ -133,7 +132,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult RestoreSecret(
             [ApiVersion] string apiVersion,
-            [FromBody] BackupSecretResult? backup)
+            [FromBody] ValueResponse? backup)
         {
             ArgumentNullException.ThrowIfNull(backup);
 

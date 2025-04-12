@@ -1,13 +1,17 @@
+using AzureKeyVaultEmulator.Shared.Models.Shared;
+
 namespace AzureKeyVaultEmulator.Keys.Services
 {
     public class KeyService : IKeyService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IJweEncryptionService _jweEncryptionService;
         private static readonly ConcurrentDictionary<string, KeyResponse> _keys = new();
 
-        public KeyService(IHttpContextAccessor httpContextAccessor)
+        public KeyService(IHttpContextAccessor httpContextAccessor, IJweEncryptionService jweEncryptionService)
         {
             _httpContextAccessor = httpContextAccessor;
+            _jweEncryptionService = jweEncryptionService;
         }
 
         public KeyResponse? Get(string name)
@@ -97,6 +101,43 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 default:
                     throw new NotImplementedException($"KeyType {key.KeyType} is not supported");
             }
+        }
+
+        public ValueResponse? BackupKey(string name)
+        {
+            var cachedName = name.GetCacheId();
+
+            var keyExists = _keys.TryGetValue(cachedName, out var foundKey);
+
+            if (!keyExists || foundKey is null)
+                return null;
+
+            return new ValueResponse
+            {
+                Value = _jweEncryptionService.CreateKeyVaultJwe(foundKey)
+            };
+        }
+
+        public KeyResponse? RestoreKey(string jweBody)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(jweBody);
+
+            return _jweEncryptionService.DecryptFromKeyVaultJwe<KeyResponse>(jweBody);
+        }
+
+        public ValueResponse GetRandomBytes(int count)
+        {
+            if (count > 128)
+                throw new ArgumentException($"{nameof(count)} cannot exceed 128 when generating random bytes.");
+
+            var bytes = new byte[count];
+
+            Random.Shared.NextBytes(bytes);
+
+            return new ValueResponse
+            {
+                Value = EncodingUtils.Base64UrlEncode(bytes)
+            };
         }
     }
 }

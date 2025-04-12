@@ -82,5 +82,36 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("{name}/backup")]
+        public IActionResult BackupKey(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [ApiVersion] string apiVersion)
+        {
+            var result = _keyVaultKeyService.BackupKey(name);
+
+            return result is null ? NotFound() : Ok(result);
+        }
+
+        [HttpPost("restore")]
+        public IActionResult BackupKey(
+            [FromBody] string value,
+            [ApiVersion] string apiVersion)
+        {
+            var result = _keyVaultKeyService.BackupKey(value);
+
+            return Ok(result);
+        }
+
+        [HttpPost("rng")]
+        public IActionResult GetRandomBytes(
+            [FromBody] int count,
+            [ApiVersion] string apiVersion)
+        {
+            var result = _keyVaultKeyService.GetRandomBytes(count);
+
+            return Ok(result);
+        }
     }
 }
