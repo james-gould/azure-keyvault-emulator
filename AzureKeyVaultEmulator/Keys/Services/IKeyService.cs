@@ -23,5 +23,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         ListResult<KeyResponse> GetKeys(int maxResults = 25, int skipCount = 25);
         ListResult<KeyResponse> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
+
+        ValueResponse ReleaseKey(string name, string version);
     }
 }

@@ -220,6 +220,22 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
+        public ValueResponse ReleaseKey(string name,string version)
+        {
+            var cacheId = name.GetCacheId(version);
+
+            var key = _keys.SafeGet(cacheId);
+
+            var aasJwt = tokenService.CreateTokenWithHeaderClaim([], "keys", JsonSerializer.Serialize(key));
+
+            var release = new KeyReleaseVM(aasJwt);
+
+            return new ValueResponse
+            {
+                Value = jweEncryptionService.CreateKeyVaultJwe(release)
+            };
+        }
+
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
         {
             switch (keyType)

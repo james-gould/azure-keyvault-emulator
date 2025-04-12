@@ -160,5 +160,17 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("{name}/{version}/release")]
+        public IActionResult ReleaseKey(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [ApiVersion] string apiVersion,
+            [FromBody] ReleaseKeyRequest vm)
+        {
+            var result = keyService.ReleaseKey(name, version);
+
+            return Ok(result);
+        }
     }
 }
