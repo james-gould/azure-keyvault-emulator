@@ -39,7 +39,8 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         {
             var keyResult = _keyVaultKeyService.Get(name, version);
 
-            if (keyResult == null) return NotFound();
+            if (keyResult == null)
+                return NotFound();
 
             return Ok(keyResult);
         }
@@ -52,7 +53,8 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         {
             var keyResult = _keyVaultKeyService.Get(name);
 
-            if (keyResult == null) return NotFound();
+            if (keyResult == null)
+                return NotFound();
 
             return Ok(keyResult);
         }
