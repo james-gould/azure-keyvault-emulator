@@ -13,16 +13,23 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public KeyResponse? GetKey(string name)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
             return _keys.SafeGet(name);
         }
 
         public KeyResponse? GetKey(string name, string version)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
             return _keys.SafeGet(name.GetCacheId(version));
         }
 
         public KeyResponse? CreateKey(string name, CreateKeyModel key)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
             var JWKS = GetJWKSFromModel(key.KeySize, key.KeyType);
 
             var version = Guid.NewGuid().ToString();
@@ -54,6 +61,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
             var cacheId = name.GetCacheId(version);
 
             var key = _keys.SafeGet(cacheId);
@@ -93,6 +103,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public KeyOperationResult? Encrypt(string name, string version, KeyOperationParameters keyOperationParameters)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
             var foundKey = _keys.SafeGet(name.GetCacheId());
 
             var encrypted = Base64UrlEncoder.Encode(foundKey.Key.Encrypt(keyOperationParameters));
@@ -106,6 +119,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public KeyOperationResult? Decrypt(string name, string version, KeyOperationParameters keyOperationParameters)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
             var foundKey = _keys.SafeGet(name.GetCacheId());
 
             var decrypted = foundKey.Key.Decrypt(keyOperationParameters);
@@ -119,6 +135,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public ValueResponse? BackupKey(string name)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
             var foundKey = _keys.SafeGet(name.GetCacheId());
 
             return new ValueResponse
@@ -151,6 +169,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public KeyRotationPolicy GetKeyRotationPolicy(string name)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
             return _keyRotations.SafeGet(name.GetCacheId());
         }
 
@@ -159,6 +179,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
             KeyRotationAttributes attributes,
             IEnumerable<LifetimeActions> lifetimeActions)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
             var key = _keys.SafeGet(name.GetCacheId());
 
             // Policy exists against overall key, not the current (cached) version
@@ -222,6 +244,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public ValueResponse ReleaseKey(string name,string version)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
             var cacheId = name.GetCacheId(version);
 
             var key = _keys.SafeGet(cacheId);
