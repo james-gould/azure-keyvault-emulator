@@ -109,7 +109,8 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
         [HttpGet("{name}/rotationpolicy")]
         public IActionResult GetKeyRotationPolicy(
-            [FromRoute] string name)
+            [FromRoute] string name,
+            [ApiVersion] string apiVersion)
         {
             var result = keyService.GetKeyRotationPolicy(name);
 
