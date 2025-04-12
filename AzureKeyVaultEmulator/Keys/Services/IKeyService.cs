@@ -32,5 +32,10 @@ namespace AzureKeyVaultEmulator.Keys.Services
         KeyOperationResult WrapKey(string name, string version, KeyOperationParameters para);
         KeyOperationResult UnwrapKey(string name, string version, KeyOperationParameters para);
 
+        DeletedKeyBundle DeleteKey(string name);
+        KeyBundle GetDeletedKey(string name);
+        ListResult<KeyBundle> GetDeletedKeys(int maxResults = 25, int skipCount = 25);
+        void PurgeDeletedKey(string name);
+        KeyBundle RecoverDeletedKey(string name);
     }
 }

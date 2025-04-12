@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Keys.Services
@@ -11,6 +12,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
         private static readonly ConcurrentDictionary<string, KeyBundle> _keys = new();
         private static readonly ConcurrentDictionary<string, KeyRotationPolicy> _keyRotations = new();
         private static readonly ConcurrentDictionary<string, string> _digests = new();
+
+        private static readonly ConcurrentDictionary<string, KeyBundle> _deletedKeys = new();
 
         public KeyBundle? GetKey(string name)
         {
@@ -358,6 +361,81 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 KeyIdentifier = key.Key.KeyIdentifier,
                 Data = decrypted
             };
+        }
+
+        public DeletedKeyBundle DeleteKey(string name)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var keys = _keys.Where(x => x.Key.Contains(name));
+
+            if (!keys.Any())
+                throw new InvalidOperationException($"Cannot find any keys with name: {name}");
+
+            _ = keys.Select(x => _keys.Remove(x.Key, out _));
+
+            keys.Select(x => _deletedKeys.TryAdd(x.Key, x.Value));
+
+            var topLevel = keys.First().Value;
+
+            return new DeletedKeyBundle
+            {
+                Attributes = topLevel.Attributes,
+                RecoveryId = $"/deletedkeys/{name}/recover",
+                Tags = topLevel.Tags,
+                Key = new JsonWebKey(JsonSerializer.Serialize(topLevel.Key)),
+            };
+        }
+
+        public KeyBundle GetDeletedKey(string name)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            return _deletedKeys.SafeGet(name);
+        }
+
+        public ListResult<KeyBundle> GetDeletedKeys(int maxResults = 25, int skipCount = 25)
+        {
+            if (maxResults is default(int) && skipCount is default(int))
+                return new();
+
+            var allItems = _deletedKeys.ToList();
+
+            if (!allItems.Any())
+                return new();
+
+            var maxedItems = allItems.Skip(skipCount).Take(maxResults);
+
+            var requiresPaging = maxedItems.Count() >= maxResults;
+
+            return new ListResult<KeyBundle>
+            {
+                NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+                Values = maxedItems.Select(x => x.Value)
+            };
+        }
+
+        public void PurgeDeletedKey(string name)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            // to ensure it exists in our deleted keys first
+            _deletedKeys.SafeGet(name);
+
+            _deletedKeys.Remove(name, out _);
+        }
+
+        public KeyBundle RecoverDeletedKey(string name)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var toBeRestored = _deletedKeys.SafeGet(name);
+
+            _deletedKeys.Remove(name, out _);
+
+            _keys.TryAdd(name, toBeRestored);
+
+            return toBeRestored;
         }
 
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
