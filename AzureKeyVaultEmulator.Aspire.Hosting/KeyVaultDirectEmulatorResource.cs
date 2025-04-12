@@ -6,9 +6,10 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
     /// Used to create a named container deployment of the emulator without routing through an existing Azure resource.
     /// </summary>
     /// <param name="name"></param>
-    public sealed class KeyVaultDirectEmulatorResource(string name) : ContainerResource(name), IResourceWithConnectionString
+    public sealed class KeyVaultDirectEmulatorResource(string name)
+        : ContainerResource(name), IResourceWithConnectionString
     {
-        private EndpointReference _containerEndpoint => new EndpointReference(this, KeyVaultEmulatorContainerImageTags.Name);
+        private EndpointReference _containerEndpoint => new (this, KeyVaultEmulatorContainerImageTags.Name);
 
         public ReferenceExpression ConnectionStringExpression =>
             ReferenceExpression.Create(

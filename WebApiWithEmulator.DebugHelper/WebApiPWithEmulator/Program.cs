@@ -1,5 +1,4 @@
 using AzureKeyVaultEmulator.Aspire.Client;
-using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,17 +13,7 @@ builder.Services.AddSwaggerGen();
 
 var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
 
-if (builder.Environment.IsDevelopment())
-    builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, certificates: true, keys: true);
-else
-    builder.Services.AddAzureClients(client =>
-    {
-        var asUri = new Uri(vaultUri);
-
-        client.AddSecretClient(asUri);
-        client.AddKeyClient(asUri);
-        client.AddCertificateClient(asUri);
-    });
+builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, certificates: true, keys: true);
 
 var app = builder.Build();
 

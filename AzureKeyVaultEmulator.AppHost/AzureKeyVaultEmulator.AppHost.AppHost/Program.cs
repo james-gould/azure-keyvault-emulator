@@ -16,7 +16,8 @@ if (useEmulatorContainer)
 
     var webApi = builder
         .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
-        .WithReference(keyVault);
+        .WithReference(keyVault)
+        .WaitFor(keyVault);
 }
 else
 {
