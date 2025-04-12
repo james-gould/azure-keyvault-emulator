@@ -45,7 +45,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
                 BaseAddress = endpoint
             };
 
-            await _notificationService!.WaitForResourceAsync(applicationName, KnownResourceStates.Running).WaitAsync(_waitPeriod);
+            await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
 
             return _testingClient;
         }

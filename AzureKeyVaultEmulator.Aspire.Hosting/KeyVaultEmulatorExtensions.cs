@@ -60,7 +60,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                     port: KeyVaultEmulatorContainerImageTags.Port,
                     targetPort: KeyVaultEmulatorContainerImageTags.Port
                 )
-                .WithUrl(emulatedResource.ConnectionStringExpression);
+                .WithUrl("https://localhost:4997");
 
             configureContainer?.Invoke(surrogateBuilder);
 
