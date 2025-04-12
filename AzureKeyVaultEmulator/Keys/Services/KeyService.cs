@@ -264,7 +264,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         public KeyBundle ImportKey(
             string name,
             JsonWebKey key,
-            KeyAttributesModel? attributes,
+            KeyAttributesModel attributes,
             Dictionary<string, string> tags)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -276,7 +276,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             var response = new KeyBundle
             {
                 Key = jsonWebKey,
-                Attributes = attributes ?? new(),
+                Attributes = attributes,
                 Tags = tags
             };
 

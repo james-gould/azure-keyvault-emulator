@@ -25,6 +25,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
         ListResult<KeyBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
 
         ValueResponse ReleaseKey(string name, string version);
-        KeyBundle ImportKey(string name, JsonWebKey key, KeyAttributesModel? attributes, Dictionary<string, string> tags);
+        KeyBundle ImportKey(string name, JsonWebKey key, KeyAttributesModel attributes, Dictionary<string, string> tags);
     }
 }
