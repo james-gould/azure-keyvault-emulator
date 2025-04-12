@@ -172,5 +172,16 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("{name}")]
+        public IActionResult ImportKey(
+            [FromRoute] string name,
+            [ApiVersion] string apiVersion,
+            [FromBody] ImportKeyRequest req)
+        {
+            var result = keyService.ImportKey(name, req.Key, req.KeyAttributes, req.Tags);
+
+            return Ok(result);
+        }
     }
 }

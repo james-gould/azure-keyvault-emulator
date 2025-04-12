@@ -4,11 +4,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
 {
     public interface IKeyService
     {
-        KeyResponse? GetKey(string name);
-        KeyResponse? GetKey(string name, string version);
-        KeyResponse? CreateKey(string name, CreateKeyModel key);
+        KeyBundle? GetKey(string name);
+        KeyBundle? GetKey(string name, string version);
+        KeyBundle? CreateKey(string name, CreateKeyModel key);
         KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes);
-        KeyResponse? RotateKey(string name, string version);
+        KeyBundle? RotateKey(string name, string version);
 
         ValueResponse? GetRandomBytes(int count);
 
@@ -16,14 +16,15 @@ namespace AzureKeyVaultEmulator.Keys.Services
         KeyOperationResult? Decrypt(string keyName, string keyVersion, KeyOperationParameters keyOperationParameters);
 
         ValueResponse? BackupKey(string name);
-        KeyResponse? RestoreKey(string jweBody);
+        KeyBundle? RestoreKey(string jweBody);
 
         KeyRotationPolicy GetKeyRotationPolicy(string name);
         KeyRotationPolicy UpdateKeyRotationPolicy(string name, KeyRotationAttributes attributes, IEnumerable<LifetimeActions> lifetimeActions);
 
-        ListResult<KeyResponse> GetKeys(int maxResults = 25, int skipCount = 25);
-        ListResult<KeyResponse> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
+        ListResult<KeyBundle> GetKeys(int maxResults = 25, int skipCount = 25);
+        ListResult<KeyBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
 
         ValueResponse ReleaseKey(string name, string version);
+        KeyBundle ImportKey(string name, JsonWebKey key, KeyAttributesModel? attributes, Dictionary<string, string> tags);
     }
 }

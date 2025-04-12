@@ -8,17 +8,17 @@ namespace AzureKeyVaultEmulator.Keys.Services
         ITokenService tokenService)
         : IKeyService
     {
-        private static readonly ConcurrentDictionary<string, KeyResponse> _keys = new();
+        private static readonly ConcurrentDictionary<string, KeyBundle> _keys = new();
         private static readonly ConcurrentDictionary<string, KeyRotationPolicy> _keyRotations = new();
 
-        public KeyResponse? GetKey(string name)
+        public KeyBundle? GetKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             return _keys.SafeGet(name);
         }
 
-        public KeyResponse? GetKey(string name, string version)
+        public KeyBundle? GetKey(string name, string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -26,7 +26,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return _keys.SafeGet(name.GetCacheId(version));
         }
 
-        public KeyResponse? CreateKey(string name, CreateKeyModel key)
+        public KeyBundle? CreateKey(string name, CreateKeyModel key)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -46,7 +46,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             JWKS.KeyIdentifier = keyUrl.Uri.ToString();
             JWKS.KeyOperations = key.KeyOperations;
 
-            var response = new KeyResponse
+            var response = new KeyBundle
             {
                 Key = JWKS,
                 Attributes = key.KeyAttributes,
@@ -80,7 +80,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return key.Attributes;
         }
 
-        public KeyResponse? RotateKey(string name, string version)
+        public KeyBundle? RotateKey(string name, string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -89,7 +89,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var key = _keys.SafeGet(cacheId);
 
-            var newKey = new KeyResponse
+            var newKey = new KeyBundle
             {
                 Attributes = key.Attributes,
                 Key = GetJWKSFromModel(key.Key.GetKeySize(), key.Key.KeyType),
@@ -145,11 +145,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public KeyResponse? RestoreKey(string jweBody)
+        public KeyBundle? RestoreKey(string jweBody)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(jweBody);
 
-            return jweEncryptionService.DecryptFromKeyVaultJwe<KeyResponse>(jweBody);
+            return jweEncryptionService.DecryptFromKeyVaultJwe<KeyBundle>(jweBody);
         }
 
         public ValueResponse GetRandomBytes(int count)
@@ -200,7 +200,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return keyRotationPolicy;
         }
 
-        public ListResult<KeyResponse> GetKeys(int maxResults = 25, int skipCount = 25)
+        public ListResult<KeyBundle> GetKeys(int maxResults = 25, int skipCount = 25)
         {
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
@@ -212,14 +212,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var requiresPaging = items.Count() >= maxResults;
 
-            return new ListResult<KeyResponse>
+            return new ListResult<KeyBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
                 Values = items.Select(x => x.Value)
             };
         }
 
-        public ListResult<KeyResponse> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25)
+        public ListResult<KeyBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -235,7 +235,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var requiresPaging = maxedItems.Count() >= maxResults;
 
-            return new ListResult<KeyResponse>
+            return new ListResult<KeyBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
                 Values = maxedItems.Select(x => x.Value)
@@ -259,6 +259,31 @@ namespace AzureKeyVaultEmulator.Keys.Services
             {
                 Value = jweEncryptionService.CreateKeyVaultJwe(release)
             };
+        }
+
+        public KeyBundle ImportKey(
+            string name,
+            JsonWebKey key,
+            KeyAttributesModel? attributes,
+            Dictionary<string, string> tags)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var version = Guid.NewGuid().ToString();
+
+            var jsonWebKey = new JsonWebKeyModel(key, name, version, httpContextAccessor.HttpContext);
+
+            var response = new KeyBundle
+            {
+                Key = jsonWebKey,
+                Attributes = attributes ?? new(),
+                Tags = tags
+            };
+
+            _keys.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
+            _keys.TryAdd(name.GetCacheId(version), response);
+
+            return response;
         }
 
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
