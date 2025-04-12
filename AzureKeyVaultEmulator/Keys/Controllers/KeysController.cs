@@ -9,15 +9,8 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
     [ApiController]
     [Route("keys")]
     [Authorize]
-    public class KeysController : ControllerBase
+    public class KeysController(IKeyService keyService) : ControllerBase
     {
-        private readonly IKeyService _keyVaultKeyService;
-
-        public KeysController(IKeyService keyVaultKeyService)
-        {
-            _keyVaultKeyService = keyVaultKeyService;
-        }
-
         [HttpPost("{name}/create")]
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public IActionResult CreateKey(
@@ -25,7 +18,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [ApiVersion] string apiVersion,
             [FromBody] CreateKeyModel requestBody)
         {
-            var createdKey = _keyVaultKeyService.CreateKey(name, requestBody);
+            var createdKey = keyService.CreateKey(name, requestBody);
 
             return Ok(createdKey);
         }
@@ -37,7 +30,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string version,
             [ApiVersion] string apiVersion)
         {
-            var keyResult = _keyVaultKeyService.Get(name, version);
+            var keyResult = keyService.Get(name, version);
 
             if (keyResult == null)
                 return NotFound();
@@ -51,7 +44,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var keyResult = _keyVaultKeyService.Get(name);
+            var keyResult = keyService.Get(name);
 
             if (keyResult == null)
                 return NotFound();
@@ -66,7 +59,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [ApiVersion] string apiVersion,
             [FromBody] KeyOperationParameters keyOperationParameters)
         {
-            var result = _keyVaultKeyService.Encrypt(name, version, keyOperationParameters);
+            var result = keyService.Encrypt(name, version, keyOperationParameters);
 
             return Ok(result);
         }
@@ -78,7 +71,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [ApiVersion] string apiVersion,
             [FromBody] KeyOperationParameters keyOperationParameters)
         {
-            var result = _keyVaultKeyService.Decrypt(name, version, keyOperationParameters);
+            var result = keyService.Decrypt(name, version, keyOperationParameters);
 
             return Ok(result);
         }
@@ -89,7 +82,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string version,
             [ApiVersion] string apiVersion)
         {
-            var result = _keyVaultKeyService.BackupKey(name);
+            var result = keyService.BackupKey(name);
 
             return result is null ? NotFound() : Ok(result);
         }
@@ -99,7 +92,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromBody] string value,
             [ApiVersion] string apiVersion)
         {
-            var result = _keyVaultKeyService.BackupKey(value);
+            var result = keyService.BackupKey(value);
 
             return Ok(result);
         }
@@ -109,7 +102,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromBody] int count,
             [ApiVersion] string apiVersion)
         {
-            var result = _keyVaultKeyService.GetRandomBytes(count);
+            var result = keyService.GetRandomBytes(count);
 
             return Ok(result);
         }

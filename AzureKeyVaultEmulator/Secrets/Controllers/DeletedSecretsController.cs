@@ -8,17 +8,8 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
     [ApiController]
     [Route("deletedsecrets")]
     [Authorize]
-    public class DeletedSecretsController : Controller
+    public class DeletedSecretsController(ISecretService secretService, ITokenService tokenService) : Controller
     {
-        private readonly ISecretService _keyVaultSecretService;
-        private readonly ITokenService _token;
-
-        public DeletedSecretsController(ISecretService keyVaultSecretService, ITokenService token)
-        {
-            _keyVaultSecretService = keyVaultSecretService;
-            _token = token;
-        }
-
         [HttpGet("{name}")]
         [Produces("application/json")]
         [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
@@ -27,7 +18,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var bundle = _keyVaultSecretService.GetDeletedSecret(name);
+            var bundle = secretService.GetDeletedSecret(name);
 
             return Ok(bundle);
         }
@@ -44,9 +35,9 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             var skipCount = 0;
 
             if (!string.IsNullOrEmpty(skipToken))
-                skipCount = _token.DecodeSkipToken(skipToken);
+                skipCount = tokenService.DecodeSkipToken(skipToken);
 
-            var deletedSecrets = _keyVaultSecretService.GetDeletedSecrets(maxResults, skipCount);
+            var deletedSecrets = secretService.GetDeletedSecrets(maxResults, skipCount);
 
             return Ok(deletedSecrets);
         }
@@ -59,7 +50,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            _keyVaultSecretService.PurgeDeletedSecret(name);
+            secretService.PurgeDeletedSecret(name);
 
             return NoContent();
         }
@@ -72,7 +63,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var secret = _keyVaultSecretService.RecoverDeletedSecret(name);
+            var secret = secretService.RecoverDeletedSecret(name);
 
             return Ok(secret);
         }
