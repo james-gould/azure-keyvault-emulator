@@ -7,6 +7,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         KeyResponse? GetKey(string name);
         KeyResponse? GetKey(string name, string version);
         KeyResponse? CreateKey(string name, CreateKeyModel key);
+        KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes);
 
         ValueResponse? GetRandomBytes(int count);
 

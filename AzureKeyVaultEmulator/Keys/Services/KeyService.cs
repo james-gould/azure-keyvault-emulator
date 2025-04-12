@@ -52,6 +52,24 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return response;
         }
 
+        public KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes)
+        {
+            var cacheId = name.GetCacheId(version);
+
+            var key = _keys.SafeGet(cacheId);
+
+            if (string.IsNullOrEmpty(attributes.ContentType))
+                key.Attributes.ContentType = attributes.ContentType;
+
+            key.Attributes.RecoverableDays = attributes.RecoverableDays;
+
+            key.Attributes.Update();
+
+            _keys.TryUpdate(cacheId, key, key);
+
+            return key.Attributes;
+        }
+
         public KeyOperationResult? Encrypt(string name, string version, KeyOperationParameters keyOperationParameters)
         {
             var foundKey = _keys.SafeGet(name.GetCacheId());
