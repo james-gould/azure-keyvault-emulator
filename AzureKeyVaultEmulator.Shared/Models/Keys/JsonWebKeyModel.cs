@@ -120,5 +120,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
             rsaAlg.ImportParameters(_rsaParameters);
             return Encoding.UTF8.GetString(rsaAlg.Decrypt(Encoding.UTF8.GetBytes(ciphertext), padding));
         }
+
+        public int GetKeySize() => _rsaKey.KeySize;
     }
 }

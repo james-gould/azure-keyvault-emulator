@@ -22,7 +22,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         public List<string> KeyOperations { get; set; } = [];
 
         [JsonPropertyName("key_size")]
-        public int? KeySize { get; set; }
+        public int KeySize { get; set; } = 2048;
 
         [JsonPropertyName("tags")]
         public Dictionary<string, string>? Tags { get; set; }

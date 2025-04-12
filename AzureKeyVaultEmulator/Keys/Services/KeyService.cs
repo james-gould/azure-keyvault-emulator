@@ -23,7 +23,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public KeyResponse? CreateKey(string name, CreateKeyModel key)
         {
-            var JWKS = GetJWKSFromModel(key);
+            var JWKS = GetJWKSFromModel(key.KeySize, key.KeyType);
 
             var version = Guid.NewGuid().ToString();
             var keyUrl = new UriBuilder
@@ -68,6 +68,27 @@ namespace AzureKeyVaultEmulator.Keys.Services
             _keys.TryUpdate(cacheId, key, key);
 
             return key.Attributes;
+        }
+
+        public KeyResponse? RotateKey(string name, string version)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
+            var cacheId = name.GetCacheId(version);
+
+            var key = _keys.SafeGet(cacheId);
+
+            var newKey = new KeyResponse
+            {
+                Attributes = key.Attributes,
+                Key = GetJWKSFromModel(key.Key.GetKeySize(), key.Key.KeyType),
+                Tags = key.Tags
+            };
+
+            _keys.TryUpdate(cacheId, newKey, key);
+
+            return newKey;
         }
 
         public KeyOperationResult? Encrypt(string name, string version, KeyOperationParameters keyOperationParameters)
@@ -199,19 +220,19 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        private static JsonWebKeyModel GetJWKSFromModel(CreateKeyModel key)
+        private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
         {
-            switch (key.KeyType)
+            switch (keyType)
             {
                 case RSAKeyTypes.RSA:
-                    var rsaKey = RsaKeyFactory.CreateRsaKey(key.KeySize);
+                    var rsaKey = RsaKeyFactory.CreateRsaKey(keySize);
                     return new JsonWebKeyModel(rsaKey);
 
                 case RSAKeyTypes.EC:
                     throw new NotImplementedException("Elliptic Curve keys are not currently supported.");
 
                 default:
-                    throw new NotImplementedException($"KeyType {key.KeyType} is not supported");
+                    throw new NotImplementedException($"Key type {keyType} is not supported");
             }
         }
 
