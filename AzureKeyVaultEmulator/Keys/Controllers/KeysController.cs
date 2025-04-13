@@ -99,7 +99,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromQuery] int maxResults = 25,
-            [FromBody] string skipToken = "")
+            [SkipToken] string skipToken = "")
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 

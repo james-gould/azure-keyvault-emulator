@@ -100,8 +100,27 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         List<string> matchingKeys = [];
 
-        await foreach (var key in client.GetPropertiesOfKeysAsync())
+        await foreach (var key in client.GetPropertiesOfKeysAsync(fixture.CancellationToken))
             if(!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
+                matchingKeys.Add(key.Name);
+
+        Assert.Equal(executionCount + 1, matchingKeys.Count);
+    }
+
+    [Fact]
+    public async Task GetOneHundredKeyVersionsCyclesThroughLink()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var executionCount = await RequestSetup
+            .CreateMultiple(51, 300, i => client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken));
+
+        List<string> matchingKeys = [];
+
+        await foreach (var key in client.GetPropertiesOfKeyVersionsAsync(keyName))
+            if (!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
                 matchingKeys.Add(key.Name);
 
         Assert.Equal(executionCount + 1, matchingKeys.Count);
