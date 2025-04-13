@@ -50,14 +50,30 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(keyResult);
         }
 
+        // Azure.Security.KeyVault.Keys v4.7.0 doesn't provide {name}/{version}
+        // But the REST API spec expects it. One of the two is out of date:
+        // https://learn.microsoft.com/en-us/rest/api/keyvault/keys/update-key/update-key
+
         [HttpPatch("{name}/{version}")]
-        public IActionResult UpdateKey(
+        public IActionResult UpdateKeyWithVersion(
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion,
             [FromBody] UpdateKeyRequest request)
         {
             var result = keyService.UpdateKey(name, version, request.Attributes, request.Tags);
+
+            return Ok(result);
+        }
+
+        
+        [HttpPatch("{name}")]
+        public IActionResult UpdateKeyWithoutVersion(
+            [FromRoute] string name,
+            [ApiVersion] string apiVersion,
+            [FromBody] UpdateKeyRequest request)
+        {
+            var result = keyService.UpdateKey(name, "", request.Attributes, request.Tags);
 
             return Ok(result);
         }

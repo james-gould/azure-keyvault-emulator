@@ -9,4 +9,10 @@ public sealed class UpdateKeyRequest
 
     [JsonPropertyName("tags")]
     public Dictionary<string, string> Tags { get; set; } = [];
+
+    [JsonPropertyName("key_ops")]
+    public IEnumerable<string> KeyOperations { get; set; } = [];
+
+    [JsonPropertyName("release_policy")]
+    public KeyReleasePolicy KeyReleasePolicy { get; set; } = new();
 }

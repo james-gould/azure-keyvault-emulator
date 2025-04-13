@@ -70,7 +70,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var shouldBeUpdated = (await client.GetKeyAsync(keyName, disabledKeyWithTags.Properties.Version)).Value;
 
-        Assert.NotEqual(createdKey.Properties?.Version, shouldBeUpdated.Properties.Version);
+        Assert.Equal(createdKey.Properties?.Version, shouldBeUpdated.Properties.Version);
         Assert.KeyHasTag(shouldBeUpdated, tagKey, tagValue);
     }
 }

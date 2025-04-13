@@ -70,7 +70,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
             Dictionary<string, string> tags)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
+            // See KeyController.cs inline doc for exclusion reason
+            //ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
             var cacheId = name.GetCacheId(version);
 
