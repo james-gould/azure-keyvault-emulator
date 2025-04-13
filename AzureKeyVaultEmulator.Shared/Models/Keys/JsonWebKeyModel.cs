@@ -1,8 +1,10 @@
-using AzureKeyVaultEmulator.Shared.Constants;
-using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Constants;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
@@ -74,8 +76,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         {
             _rsaKey = rsaKey;
             _rsaParameters = rsaKey.ExportParameters(true);
-            KeyType = "RSA";
-
+            KeyType = RSAKeyTypes.RSA;
 
             D = WebEncoders.Base64UrlEncode(_rsaParameters.D ?? []);
             Dp = WebEncoders.Base64UrlEncode(_rsaParameters.DP ?? []);
@@ -86,6 +87,36 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
             P = WebEncoders.Base64UrlEncode(_rsaParameters.P ?? []);
             Q = WebEncoders.Base64UrlEncode(_rsaParameters.Q ?? []);
             Qi = WebEncoders.Base64UrlEncode(_rsaParameters.InverseQ ?? []);
+        }
+
+        public JsonWebKeyModel(JsonWebKey key, string name, string version, HttpContext? reqContext)
+        {
+            _rsaKey = RSA.Create();
+            _rsaParameters = _rsaKey.ExportParameters(true);
+            KeyType = key.Kty;
+
+            var keyUrl = new UriBuilder
+            {
+                Scheme = reqContext?.Request.Scheme,
+                Host = reqContext?.Request.Host.Host,
+                Port = reqContext?.Request.Host.Port ?? -1,
+                Path = $"keys/{name}/{version}"
+            };
+
+            D = key.D;
+            Dp = key.DP;
+            Dq = key.DQ;
+            E = key.E;
+            D = key.D;
+            N = key.N;
+            P = key.P;
+            Q = key.Q;
+            Qi = key.QI;
+
+            KeyOperations = [.. key.KeyOps];
+            KeyName = name;
+            KeyVersion = version;
+            KeyIdentifier = keyUrl.Uri.ToString();
         }
 
         public byte[] Encrypt(KeyOperationParameters data)
@@ -121,5 +152,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
             rsaAlg.ImportParameters(_rsaParameters);
             return Encoding.UTF8.GetString(rsaAlg.Decrypt(Encoding.UTF8.GetBytes(ciphertext), padding));
         }
+
+        public int GetKeySize() => _rsaKey.KeySize;
     }
 }

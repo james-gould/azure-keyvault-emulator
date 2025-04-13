@@ -11,14 +11,9 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0-preview.1.25173.1" />
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.2.0-preview.1.25173.1" />
-    <!--<PackageReference Include="AzureKeyVaultEmulator.Aspire.Hosting" Version="1.0.0" />-->
+    <PackageReference Include="AzureKeyVaultEmulator.Aspire.Hosting" Version="1.0.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WebApiPWithEmulator\WebApiWithEmulator.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="AzureKeyVaultEmulator.Aspire.Hosting">
-      <HintPath>..\..\..\AzureKeyVaultEmulator.Hosting.Aspire\bin\Debug\net9.0\AzureKeyVaultEmulator.Aspire.Hosting.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

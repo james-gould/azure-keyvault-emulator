@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
-using System.Diagnostics;
 
-namespace AzureKeyVaultEmulator.ServiceConfiguration
+namespace AzureKeyVaultEmulator.ApiConfiguration
 {
     public static class AuthenticationSetup
     {
@@ -35,7 +33,7 @@ namespace AzureKeyVaultEmulator.ServiceConfiguration
                             var requestHostSplit = context.Request.Host.ToString().Split(".", 2);
                             var scope = $"https://{requestHostSplit[^1]}/.default";
                             context.Response.Headers.Remove("WWW-Authenticate");
-                            context.Response.Headers["WWW-Authenticate"] = $"Bearer authorization=\"https://azure-keyvault-emulator.vault.azure.net/{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
+                            context.Response.Headers["WWW-Authenticate"] = $"Bearer authorization=\"{AuthConstants.EmulatorUri}{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
 
                             return Task.CompletedTask;
                         }

@@ -1,8 +1,8 @@
-﻿using Azure.Core;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 
 namespace AzureKeyVaultEmulator.Aspire.Client
 {
@@ -41,7 +41,7 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (!string.IsNullOrEmpty(_token))
                 return _token;
 
-            if(string.IsNullOrEmpty(_emulatedVaultUri))
+            if (string.IsNullOrEmpty(_emulatedVaultUri))
                 throw new ArgumentNullException(nameof(_emulatedVaultUri));
 
             HttpClient client = null;

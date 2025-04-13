@@ -1,9 +1,6 @@
-﻿using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting.Azure;
+﻿using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
 using AzureKeyVaultEmulator.Aspire.Hosting;
-using System.Text.Json.Serialization;
 
 namespace AzureKeyVaultEmulator.Hosting.Aspire
 {
@@ -17,7 +14,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
         /// <param name="lifetime"></param>
         /// <returns></returns>
         public static IResourceBuilder<KeyVaultDirectEmulatorResource> AddAzureKeyVaultEmulator(
-            this IDistributedApplicationBuilder builder, 
+            this IDistributedApplicationBuilder builder,
             [ResourceName] string name,
             ContainerLifetime lifetime = ContainerLifetime.Session)
         {
@@ -46,8 +43,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
         /// <returns>A new <see cref="IResourceBuilder{T}"/></returns>
         public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null,
-            bool actualContainer = false)
+            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null)
         {
             var emulatedResource = new KeyVaultEmulatorResource(builder.Resource);
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
@@ -64,7 +60,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
                     port: KeyVaultEmulatorContainerImageTags.Port,
                     targetPort: KeyVaultEmulatorContainerImageTags.Port
                 )
-                .PublishAsConnectionString();
+                .WithUrl("https://localhost:4997");
 
             configureContainer?.Invoke(surrogateBuilder);
 
@@ -101,7 +97,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             this IResourceBuilder<T> builder,
             IResourceBuilder<KeyVaultEmulatorResource> target,
             params KeyVaultBuiltInRole[] roles)
-            where T : IResource 
+            where T : IResource
                 => builder;
     }
 }

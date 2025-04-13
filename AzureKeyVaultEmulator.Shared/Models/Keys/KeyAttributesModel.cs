@@ -1,4 +1,3 @@
-using AzureKeyVaultEmulator.Shared.Models;
 using System.Text.Json.Serialization;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys

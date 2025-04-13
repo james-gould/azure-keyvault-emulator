@@ -1,9 +1,6 @@
 ﻿using Azure;
 using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
-using Json.Patch;
-using System.Runtime.InteropServices;
-using System.Xml.Serialization;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 {
@@ -112,7 +109,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(secretName, afterRecovery.Value.Name);
 
-            var deletedResult = await Assert.ThrowsAsync<RequestFailedException>(()=> client.GetDeletedSecretAsync(secretName));
+            var deletedResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetDeletedSecretAsync(secretName));
 
             Assert.Equal((int)HttpStatusCode.BadRequest, deletedResult.Status);
         }

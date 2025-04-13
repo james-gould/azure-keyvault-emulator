@@ -1,6 +1,4 @@
-﻿using Google.Protobuf;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Text;
+﻿using System.Text;
 
 namespace AzureKeyVaultEmulator.Shared.Utilities
 {
