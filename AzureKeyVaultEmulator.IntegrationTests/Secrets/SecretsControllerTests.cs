@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Security.KeyVault.Secrets;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
@@ -77,11 +78,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var client = await fixture.GetSecretClientAsync();
 
             var secretName = "multipleSecrets";
-            var copies = Random.Shared.Next(30, 100);
-            var tasks = Enumerable.Range(0, copies)
-                                  .Select(i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
-            await Task.WhenAll(tasks);
+            var executionCount = await RequestSetup
+                .CreateMultiple(30, 100, i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
             var properties = client.GetPropertiesOfSecretVersionsAsync(secretName, fixture.CancellationToken);
 
@@ -94,7 +93,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             }
 
             // Creating secret adds base secret + versioned one
-            Assert.Equal(copies + 1, versions.Count);
+            Assert.Equal(executionCount + 1, versions.Count);
         }
 
         [Fact]
@@ -102,12 +101,10 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetSecretClientAsync();
 
-            var multipleCount = Random.Shared.Next(51, 300);
             var secretName = "mulitudeTesting";
-            var tasks = Enumerable.Range(0, multipleCount)
-                                  .Select(i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
-            await Task.WhenAll(tasks);
+            var executionCount = await RequestSetup
+                .CreateMultiple(51, 300, i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
             var testSecrets = new List<SecretProperties?>();
 
@@ -117,7 +114,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
                 if (secret.Name.Equals(secretName, StringComparison.CurrentCultureIgnoreCase))
                     testSecrets.Add(secret);
 
-            Assert.Equal(multipleCount + 1, testSecrets.Count);
+            Assert.Equal(executionCount + 1, testSecrets.Count);
         }
 
         [Fact]

@@ -1,37 +1,30 @@
-﻿namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper
+﻿using Azure;
+
+namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper
 {
     public static class RequestSetup
     {
-        public static StringContent CreateSecretModel(
-            string value,
-            string contentType = "text/plain",
-            bool enabled = true,
-            int expiration = int.MaxValue,
-            int notBefore = int.MinValue)
+        /// <summary>
+        /// Executes <paramref name="execution"/> between <paramref name="lower"/> and <paramref name="upper"/> times.
+        /// </summary>
+        /// <typeparam name="T">The the underlying KeyVault type to execute a request for.</typeparam>
+        /// <param name="lower">The lower bound for execution count.</param>
+        /// <param name="upper">The upper limit for execution count.</param>
+        /// <param name="execution">The func to execute.</param>
+        /// <returns>The underlying name of the <typeparamref name="T"/> response type.</returns>
+        public static async Task<int> CreateMultiple<T>(
+            int lower, int upper,
+            Func<int, Task<Response<T>>> execution)
         {
-            var secret = new SetSecretModel
-            {
-                Value = value,
-                ContentType = contentType,
-                Tags = [],
-                SecretAttributes = new SecretAttributesModel
-                {
-                    Enabled = enabled,
-                    Expiration = expiration,
-                    NotBefore = notBefore
-                }
-            };
+            var executionCount = Random.Shared.Next(lower, upper);
 
-            return secret.CreateRequestModel();
-        }
+            var tasks = Enumerable
+                .Range(0, executionCount)
+                .Select(i => execution(i));
 
-        private static StringContent CreateRequestModel<TModel>(this TModel model) where TModel : ICreateItem
-        {
-            ArgumentNullException.ThrowIfNull(model);
+            await Task.WhenAll(tasks);
 
-            var json = JsonSerializer.Serialize(model);
-
-            return new StringContent(json, Encoding.UTF8, "application/json");
+            return executionCount;
         }
     }
 }

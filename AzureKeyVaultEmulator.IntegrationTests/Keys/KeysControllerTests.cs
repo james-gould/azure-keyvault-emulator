@@ -1,4 +1,5 @@
-﻿using Azure.Security.KeyVault.Keys;
+﻿using Azure;
+using Azure.Security.KeyVault.Keys;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Keys;
@@ -38,6 +39,18 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     }
 
     [Fact]
+    public async Task GetKeyThrowsWhenNoKeyExists()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = Guid.NewGuid().ToString("n");
+
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetKeyAsync(keyName));
+
+        Assert.Equal((int)HttpStatusCode.BadRequest, exception.Status);
+    }
+
+    [Fact]
     public async Task CreatingKeyProvidesVersionByDefault()
     {
         var createdKey = await fixture.CreateKeyAsync("dummyKey");
@@ -72,5 +85,11 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         Assert.Equal(createdKey.Properties?.Version, shouldBeUpdated.Properties.Version);
         Assert.KeyHasTag(shouldBeUpdated, tagKey, tagValue);
+    }
+
+    [Fact]
+    public async Task GetOneHundredKeysCyclesThroughLink()
+    {
+
     }
 }
