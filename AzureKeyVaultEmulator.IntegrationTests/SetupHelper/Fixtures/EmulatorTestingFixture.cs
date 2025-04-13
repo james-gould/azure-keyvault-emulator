@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+﻿using System.Collections.Concurrent;
+using Asp.Versioning;
 using Asp.Versioning.Http;
 using Aspire.Hosting;
 using AzureKeyVaultEmulator.Shared.Constants;
@@ -15,6 +16,13 @@ public class EmulatorTestingFixture : IAsyncLifetime
 
     private HttpClient? _testingClient;
     private string _bearerToken = string.Empty;
+
+    private CancellationTokenSource _cancellationTokenSource = new(TimeSpan.FromSeconds(30));
+    public CancellationToken CancellationToken => _cancellationTokenSource.Token;
+
+    // Used to ensure no duplicates are used during high concurrency testing
+    private readonly ConcurrentBag<string> _spentGuids = [];
+    public string FreshGeneratedGuid => GetCleanGuid();
 
     public async Task InitializeAsync()
     {
@@ -83,6 +91,20 @@ public class EmulatorTestingFixture : IAsyncLifetime
         _testingClient.SetBearerToken(_bearerToken);
 
         return _bearerToken;
+    }
+
+    private string GetCleanGuid()
+    {
+        var guid = Guid.NewGuid().ToString("n");
+
+        var exists = _spentGuids.FirstOrDefault(x => x.Equals(guid, StringComparison.InvariantCultureIgnoreCase));
+
+        if (exists is not null)
+            throw new InvalidOperationException($"GUID clash during generation");
+
+        _spentGuids.Add(guid);
+
+        return guid;
     }
 
     public async Task DisposeAsync()

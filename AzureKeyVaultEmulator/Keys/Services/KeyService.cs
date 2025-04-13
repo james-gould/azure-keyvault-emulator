@@ -214,7 +214,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return keyRotationPolicy;
         }
 
-        public ListResult<KeyBundle> GetKeys(int maxResults = 25, int skipCount = 25)
+        public ListResult<KeyItemBundle> GetKeys(int maxResults = 25, int skipCount = 25)
         {
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
@@ -226,14 +226,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var requiresPaging = items.Count() >= maxResults;
 
-            return new ListResult<KeyBundle>
+            return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items.Select(x => x.Value)
+                Values = items.Select(x => ToKeyItemBundle(x.Value))
             };
         }
 
-        public ListResult<KeyBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25)
+        public ListResult<KeyItemBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -249,10 +249,10 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var requiresPaging = maxedItems.Count() >= maxResults;
 
-            return new ListResult<KeyBundle>
+            return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems.Select(x => x.Value)
+                Values = maxedItems.Select(x => ToKeyItemBundle(x.Value))
             };
         }
 
@@ -446,6 +446,17 @@ namespace AzureKeyVaultEmulator.Keys.Services
             _keys.TryAdd(name, toBeRestored);
 
             return toBeRestored;
+        }
+
+        private KeyItemBundle ToKeyItemBundle(KeyBundle bundle)
+        {
+            return new KeyItemBundle
+            {
+                KeyAttributes = bundle.Attributes,
+                KeyId = bundle.Key.KeyIdentifier,
+                Managed = false,
+                Tags = bundle.Tags
+            };
         }
 
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)

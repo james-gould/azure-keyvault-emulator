@@ -2,8 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 using AzureKeyVaultEmulator.Shared.Constants;
+using AzureKeyVaultEmulator.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
@@ -78,15 +78,15 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
             _rsaParameters = rsaKey.ExportParameters(true);
             KeyType = RSAKeyTypes.RSA;
 
-            D = WebEncoders.Base64UrlEncode(_rsaParameters.D ?? []);
-            Dp = WebEncoders.Base64UrlEncode(_rsaParameters.DP ?? []);
-            Dq = WebEncoders.Base64UrlEncode(_rsaParameters.DQ ?? []);
-            E = WebEncoders.Base64UrlEncode(_rsaParameters.Exponent ?? []);
-            D = WebEncoders.Base64UrlEncode(_rsaParameters.D ?? []);
-            N = WebEncoders.Base64UrlEncode(_rsaParameters.Modulus ?? []);
-            P = WebEncoders.Base64UrlEncode(_rsaParameters.P ?? []);
-            Q = WebEncoders.Base64UrlEncode(_rsaParameters.Q ?? []);
-            Qi = WebEncoders.Base64UrlEncode(_rsaParameters.InverseQ ?? []);
+            D = EncodingUtils.Base64UrlEncode(_rsaParameters.D ?? []);
+            Dp = EncodingUtils.Base64UrlEncode(_rsaParameters.DP ?? []);
+            Dq = EncodingUtils.Base64UrlEncode(_rsaParameters.DQ ?? []);
+            E = EncodingUtils.Base64UrlEncode(_rsaParameters.Exponent ?? []);
+            D = EncodingUtils.Base64UrlEncode(_rsaParameters.D ?? []);
+            N = EncodingUtils.Base64UrlEncode(_rsaParameters.Modulus ?? []);
+            P = EncodingUtils.Base64UrlEncode(_rsaParameters.P ?? []);
+            Q = EncodingUtils.Base64UrlEncode(_rsaParameters.Q ?? []);
+            Qi = EncodingUtils.Base64UrlEncode(_rsaParameters.InverseQ ?? []);
         }
 
         public JsonWebKeyModel(JsonWebKey key, string name, string version, HttpContext? reqContext)

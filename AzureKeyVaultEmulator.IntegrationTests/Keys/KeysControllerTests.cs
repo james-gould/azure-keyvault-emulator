@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Security.KeyVault.Keys;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Keys;
@@ -43,7 +44,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = Guid.NewGuid().ToString("n");
+        var keyName = fixture.FreshGeneratedGuid;
 
         var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetKeyAsync(keyName));
 
@@ -64,8 +65,8 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var client = await fixture.GetKeyClientAsync();
 
         var keyName = "updatedKey";
-        var tagKey = Guid.NewGuid().ToString("n");
-        var tagValue = Guid.NewGuid().ToString("n");
+        var tagKey = fixture.FreshGeneratedGuid;
+        var tagValue = fixture.FreshGeneratedGuid;
 
         var createdKey = await fixture.CreateKeyAsync(keyName);
 
@@ -90,6 +91,19 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact]
     public async Task GetOneHundredKeysCyclesThroughLink()
     {
+        var client = await fixture.GetKeyClientAsync();
 
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var executionCount = await RequestSetup
+            .CreateMultiple(51, 300, i => client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken));
+
+        List<string> matchingKeys = [];
+
+        await foreach (var key in client.GetPropertiesOfKeysAsync())
+            if(!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
+                matchingKeys.Add(key.Name);
+
+        Assert.Equal(executionCount + 1, matchingKeys.Count);
     }
 }

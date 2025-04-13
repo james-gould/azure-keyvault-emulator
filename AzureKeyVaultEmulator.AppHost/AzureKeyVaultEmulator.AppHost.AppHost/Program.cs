@@ -21,12 +21,7 @@ if (useDeployedDockerContainer)
 }
 else
 {
-    var keyVault = builder.AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName);
-
-builder
-    .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
-    .WithReference(keyVault)
-    .WaitFor(keyVault);
+    builder.AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName);
 }
 
 builder.Build().Run();

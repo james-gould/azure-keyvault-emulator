@@ -21,8 +21,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
         KeyRotationPolicy GetKeyRotationPolicy(string name);
         KeyRotationPolicy UpdateKeyRotationPolicy(string name, KeyRotationAttributes attributes, IEnumerable<LifetimeActions> lifetimeActions);
 
-        ListResult<KeyBundle> GetKeys(int maxResults = 25, int skipCount = 25);
-        ListResult<KeyBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
+        ListResult<KeyItemBundle> GetKeys(int maxResults = 25, int skipCount = 25);
+        ListResult<KeyItemBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
 
         ValueResponse ReleaseKey(string name, string version);
         KeyBundle ImportKey(string name, JsonWebKey key, KeyAttributesModel attributes, Dictionary<string, string> tags);
