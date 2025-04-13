@@ -4,78 +4,94 @@ using Aspire.Hosting;
 using AzureKeyVaultEmulator.Shared.Constants;
 using IdentityModel.Client;
 
-namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures
+namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+
+public class EmulatorTestingFixture : IAsyncLifetime
 {
-    public class EmulatorTestingFixture : IAsyncLifetime
+    internal readonly TimeSpan _waitPeriod = TimeSpan.FromSeconds(30);
+    internal DistributedApplication? _app;
+    internal ResourceNotificationService? _notificationService;
+    private ClientSetupVM? _setupModel;
+
+    private HttpClient? _testingClient;
+    private string _bearerToken = string.Empty;
+
+    public async Task InitializeAsync()
     {
-        internal readonly TimeSpan _waitPeriod = TimeSpan.FromSeconds(30);
-        internal DistributedApplication? _app;
-        internal ResourceNotificationService? _notificationService;
+        var builder = await DistributedApplicationTestingBuilder
+            .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>([], (x, y) => x.DisableDashboard = true);
 
-        private HttpClient? _testingClient;
-        private string _bearerToken = string.Empty;
+        _app = await builder.BuildAsync();
 
-        public async Task InitializeAsync()
-        {
-            var builder = await DistributedApplicationTestingBuilder
-                .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>([], (x, y) => x.DisableDashboard = true);
+        _notificationService = _app.Services.GetService<ResourceNotificationService>();
 
-            _app = await builder.BuildAsync();
+        await _app.StartAsync();
+    }
 
-            _notificationService = _app.Services.GetService<ResourceNotificationService>();
-
-            await _app.StartAsync();
-        }
-
-        public async ValueTask<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
-        {
-            if (_testingClient is not null)
-                return _testingClient;
-
-            // Requires extension of testing library to include this
-            var opt = new ApiVersionHandler(new QueryStringApiVersionWriter(), new ApiVersion(version))
-            {
-                InnerHandler = new HttpClientHandler()
-            };
-
-            var endpoint = _app!.GetEndpoint(applicationName);
-
-            _testingClient = new HttpClient(opt)
-            {
-                BaseAddress = endpoint
-            };
-
-            await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
-
+    public async ValueTask<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
+    {
+        if (_testingClient is not null)
             return _testingClient;
-        }
 
-        public async ValueTask<string> GetBearerToken()
+        // Requires extension of testing library to include this
+        var opt = new ApiVersionHandler(new QueryStringApiVersionWriter(), new ApiVersion(version))
         {
-            if (_testingClient is null)
-                _testingClient = await CreateHttpClient();
+            InnerHandler = new HttpClientHandler()
+        };
 
-            if (!string.IsNullOrEmpty(_bearerToken))
-                return _bearerToken;
+        var endpoint = _app!.GetEndpoint(applicationName);
 
-            var response = await _testingClient.GetAsync("/token");
-
-            response.EnsureSuccessStatusCode();
-
-            var jwt = await response.Content.ReadAsStringAsync();
-
-            _testingClient.SetBearerToken(jwt);
-
-            return jwt;
-        }
-
-        public async Task DisposeAsync()
+        _testingClient = new HttpClient(opt)
         {
-            if (_app is not null)
-                await _app.DisposeAsync().ConfigureAwait(false);
+            BaseAddress = endpoint
+        };
 
-            if (_testingClient is not null)
-                _testingClient.Dispose();
-        }
+        await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
+
+        return _testingClient;
+    }
+
+    internal async ValueTask<ClientSetupVM> GetClientSetupModelAsync(string applicationName = AspireConstants.EmulatorServiceName)
+    {
+        if (_setupModel is not null)
+            return _setupModel;
+
+        var vaultEndpoint = _app!.GetEndpoint(applicationName);
+
+        await _notificationService!.WaitForResourceAsync(applicationName).WaitAsync(_waitPeriod);
+
+        var emulatedBearerToken = await GetBearerToken();
+
+        var cred = new EmulatedTokenCredential(emulatedBearerToken);
+
+        return _setupModel = new ClientSetupVM(vaultEndpoint, cred);
+    }
+
+    public async ValueTask<string> GetBearerToken()
+    {
+        if (_testingClient is null)
+            _testingClient = await CreateHttpClient();
+
+        if (!string.IsNullOrEmpty(_bearerToken))
+            return _bearerToken;
+
+        var response = await _testingClient.GetAsync("/token");
+
+        response.EnsureSuccessStatusCode();
+
+        var jwt = await response.Content.ReadAsStringAsync();
+
+        _testingClient.SetBearerToken(jwt);
+
+        return jwt;
+    }
+
+    public async Task DisposeAsync()
+    {
+        if (_app is not null)
+            await _app.DisposeAsync().ConfigureAwait(false);
+
+        if (_testingClient is not null)
+            _testingClient.Dispose();
     }
 }
