@@ -42,7 +42,8 @@ public class SecretsTestingFixture : EmulatorTestingFixture
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(secretName);
         ArgumentException.ThrowIfNullOrWhiteSpace(secretValue);
-        ArgumentNullException.ThrowIfNull(_secretClient);
+
+        _secretClient = await GetSecretClientAsync();
 
         return await _secretClient.SetSecretAsync(secretName, secretValue, CancellationToken);
     }

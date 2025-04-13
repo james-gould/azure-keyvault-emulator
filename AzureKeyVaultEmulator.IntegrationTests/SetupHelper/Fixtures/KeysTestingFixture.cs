@@ -6,6 +6,8 @@ public sealed class KeysTestingFixture : EmulatorTestingFixture
 {
     private KeyClient? _client;
 
+    public readonly string DefaultKeyName = "algKey";
+
     public async ValueTask<KeyClient> GetKeyClientAsync()
     {
         if (_client is not null)
@@ -19,5 +21,14 @@ public sealed class KeysTestingFixture : EmulatorTestingFixture
         };
 
          return _client = new KeyClient(setup.VaultUri, setup.Credential, opt);
+    }
+
+    public async Task<KeyVaultKey> CreateKeyAsync()
+    {
+        var client = await GetKeyClientAsync();
+
+        var result = await client.CreateKeyAsync(DefaultKeyName, KeyType.Rsa);
+
+        return result.Value;
     }
 }
