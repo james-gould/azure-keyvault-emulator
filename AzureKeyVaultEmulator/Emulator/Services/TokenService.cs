@@ -55,7 +55,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             string headerClaimType,
             string headerClaimValue)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey));
+            var key = AuthConstants.SigningKey;
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -72,7 +72,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
 
         private static string CreateToken(IEnumerable<Claim> claims)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey));
+            var key = AuthConstants.SigningKey;
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
