@@ -63,7 +63,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return response;
         }
 
-        public KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes)
+        public KeyAttributesModel? UpdateKey(
+            string name,
+            string version,
+            KeyAttributesModel attributes,
+            Dictionary<string, string> tags)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -75,7 +79,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (string.IsNullOrEmpty(attributes.ContentType))
                 key.Attributes.ContentType = attributes.ContentType;
 
+            key.Attributes = attributes;
             key.Attributes.RecoverableDays = attributes.RecoverableDays;
+
+            foreach(var tag in tags)
+                key.Tags.TryAdd(tag.Key, tag.Value);
 
             key.Attributes.Update();
 

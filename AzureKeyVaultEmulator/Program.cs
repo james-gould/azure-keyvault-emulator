@@ -31,9 +31,6 @@ app.UseForwardedHeaders();
 
 app.UseMiddleware<KeyVaultErrorMiddleware>();
 
-// Must appear before Auth middleware so we always have a Bearer token set
-//app.UseMiddleware<ForcedBearerTokenMiddleware>();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

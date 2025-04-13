@@ -50,6 +50,18 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(keyResult);
         }
 
+        [HttpPatch("{name}/{version}")]
+        public IActionResult UpdateKey(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [ApiVersion] string apiVersion,
+            [FromBody] UpdateKeyRequest request)
+        {
+            var result = keyService.UpdateKey(name, version, request.Attributes, request.Tags);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         public IActionResult GetKeys(
             [ApiVersion] string apiVersion,

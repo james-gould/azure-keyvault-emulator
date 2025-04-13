@@ -6,7 +6,8 @@ public sealed class KeysTestingFixture : EmulatorTestingFixture
 {
     private KeyClient? _client;
 
-    public readonly string DefaultKeyName = "algKey";
+    public const string DefaultKeyName = "algKey";
+    private KeyType _defaultType = KeyType.Rsa;
 
     public async ValueTask<KeyClient> GetKeyClientAsync()
     {
@@ -23,11 +24,16 @@ public sealed class KeysTestingFixture : EmulatorTestingFixture
          return _client = new KeyClient(setup.VaultUri, setup.Credential, opt);
     }
 
-    public async Task<KeyVaultKey> CreateKeyAsync()
+    public async Task<KeyVaultKey> CreateKeyAsync(string name = DefaultKeyName, KeyType? type = null)
     {
         var client = await GetKeyClientAsync();
 
-        var result = await client.CreateKeyAsync(DefaultKeyName, KeyType.Rsa);
+        type ??= _defaultType;
+
+        var result = await client.CreateKeyAsync(name, type.Value);
+
+        if(result?.Value is null)
+            throw new InvalidOperationException($"Failed to create Key in {nameof(KeysTestingFixture)}");
 
         return result.Value;
     }
