@@ -1,4 +1,5 @@
 ﻿using Azure;
+using AzureKeyVaultEmulator.Shared.Utilities;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper
 {
@@ -25,6 +26,24 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper
             await Task.WhenAll(tasks);
 
             return executionCount;
+        }
+
+        public static string CreateRandomData(int size = 512)
+        {
+            byte[] bytes = new byte[size];
+
+            Random.Shared.NextBytes(bytes);
+
+            return EncodingUtils.Base64UrlEncode(bytes);
+        }
+
+        public static byte[] CreateRandomBytes(int size = 512)
+        {
+            byte[] bytes = new byte[size];
+
+            Random.Shared.NextBytes(bytes);
+
+            return bytes;
         }
     }
 }

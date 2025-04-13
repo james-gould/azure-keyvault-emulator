@@ -122,7 +122,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var foundKey = _keys.SafeGet(name.GetCacheId());
 
-            var encrypted = Base64UrlEncoder.Encode(foundKey.Key.Encrypt(keyOperationParameters));
+            var encrypted = EncodingUtils.Base64UrlEncode(foundKey.Key.Encrypt(keyOperationParameters));
 
             return new KeyOperationResult
             {

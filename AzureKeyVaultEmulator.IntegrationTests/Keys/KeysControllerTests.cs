@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Security.KeyVault.Keys;
+using Azure.Security.KeyVault.Keys.Cryptography;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
@@ -124,5 +125,53 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
                 matchingKeys.Add(key.Name);
 
         Assert.Equal(executionCount + 1, matchingKeys.Count);
+    }
+
+    [Fact]
+    public async Task EncryptDataWillSucceed()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken)).Value;
+
+        Assert.Equal(keyName, key.Name);
+
+        var data = RequestSetup.CreateRandomBytes(128);
+
+        var encrypted = await client
+            .GetCryptographyClient(keyName, key.Properties.Version)
+            .EncryptAsync(EncryptionAlgorithm.RsaOaep, data, fixture.CancellationToken);
+
+        Assert.Equal(key.Key.Id, encrypted.KeyId);
+        Assert.NotEqual(encrypted.Ciphertext, data);
+    }
+
+    [Fact]
+    public async Task DecryptDataWillReverseEncryption()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken)).Value;
+
+        Assert.Equal(keyName, key.Name);
+
+        var data = RequestSetup.CreateRandomBytes(128);
+
+        var algo = EncryptionAlgorithm.RsaOaep;
+
+        var cryptoClient = client.GetCryptographyClient(keyName, key.Properties.Version);
+
+        var encrypted = await cryptoClient.EncryptAsync(algo, data, fixture.CancellationToken);
+
+        Assert.NotEqual(data, encrypted.Ciphertext);
+
+        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext, fixture.CancellationToken);
+
+        Assert.NotEqual(decrypted.Plaintext, encrypted.Ciphertext);
+        Assert.Equal(decrypted.Plaintext, data);
     }
 }
