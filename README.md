@@ -108,7 +108,7 @@ Some API functionality may not be supported while the initial development is ong
 
 - [ ] Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
     - [x] Secrets
-    - [ ] Keys
+    - [x] Keys
     - [ ] Certificates
     - [ ] Managed HSM
 - [x] Separate NuGet package for introducing an [emulated Key Vault into your .NET Aspire](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Hosting.Aspire) projects.
