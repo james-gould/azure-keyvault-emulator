@@ -153,11 +153,10 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         [HttpPut("{name}/rotationpolicy")]
         public IActionResult UpdateKeyRotationPolicy(
             [FromRoute] string name,
-            [FromBody] KeyRotationAttributes attributes,
-            [FromBody] IEnumerable<LifetimeActions> lifetimeActions,
+            [FromBody] KeyRotationPolicy policy,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.UpdateKeyRotationPolicy(name, attributes, lifetimeActions);
+            var result = keyService.UpdateKeyRotationPolicy(name, policy.Attributes, policy.LifetimeActions);
 
             return Ok(result);
         }

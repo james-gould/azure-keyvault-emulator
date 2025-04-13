@@ -8,7 +8,7 @@ public sealed class KeyRotationPolicy(string keyName)
     public string Id => $"{AuthConstants.EmulatorUri}/keys/{keyName}/rotationpolicy";
 
     [JsonPropertyName("attributes")]
-    public KeyRotationAttributes? Attributes { get; set; }
+    public KeyRotationAttributes Attributes { get; set; } = new();
 
     public IEnumerable<LifetimeActions> LifetimeActions { get; set; } = [];
 }

@@ -5,9 +5,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>15e07707-9815-4e77-aa15-22f94b192ae6</UserSecretsId>
     <IsPackable>false</IsPackable>
+    <IsAspireHost>true</IsAspireHost>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0" />
