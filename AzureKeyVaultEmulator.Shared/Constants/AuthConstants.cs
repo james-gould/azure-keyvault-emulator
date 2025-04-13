@@ -8,6 +8,6 @@ namespace AzureKeyVaultEmulator.Shared.Constants
 
         public static Regex JwtRegex = new Regex("(^[\\w-]*\\.[\\w-]*\\.[\\w-]*$)", RegexOptions.Compiled);
 
-        public const string EmulatorUri = "https://azurekeyvaultemulator.vault.azure.net";
+        public const string EmulatorUri = "https://azure-keyvault-emulator.vault.azure.net";
     }
 }
