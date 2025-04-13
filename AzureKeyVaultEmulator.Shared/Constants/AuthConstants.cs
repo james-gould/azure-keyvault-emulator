@@ -12,6 +12,8 @@ namespace AzureKeyVaultEmulator.Shared.Constants
 
         public const string EmulatorUri = "https://azure-keyvault-emulator.vault.azure.net";
 
+        public const string EmulatorIss = "localazurekeyvault.localhost.com";
+
         public static readonly SymmetricSecurityKey SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_issuerSigningKey));
     }
 }

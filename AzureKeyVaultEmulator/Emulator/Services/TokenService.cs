@@ -59,8 +59,8 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "localazurekeyvault.localhost.com",
-                audience: "localazurekeyvault.localhost.com",
+                issuer: AuthConstants.EmulatorIss,
+                audience: AuthConstants.EmulatorIss,
                 claims: [.. payloadClaims],
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);

@@ -23,6 +23,8 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
                         ValidateLifetime = false,
                         ValidateIssuerSigningKey = false,
 
+                        ValidIssuers = [AuthConstants.EmulatorIss],
+                        ValidAudiences = [AuthConstants.EmulatorIss],
                         IssuerSigningKey = AuthConstants.SigningKey,
                         SignatureValidator = (token, parameters) => new JsonWebToken(token),
                     };
