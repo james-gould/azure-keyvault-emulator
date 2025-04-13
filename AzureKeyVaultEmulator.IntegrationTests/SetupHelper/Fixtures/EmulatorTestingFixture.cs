@@ -69,21 +69,20 @@ public class EmulatorTestingFixture : IAsyncLifetime
 
     public async ValueTask<string> GetBearerToken()
     {
-        if (_testingClient is null)
-            _testingClient = await CreateHttpClient();
-
         if (!string.IsNullOrEmpty(_bearerToken))
             return _bearerToken;
+
+        _testingClient ??= await CreateHttpClient();
 
         var response = await _testingClient.GetAsync("/token");
 
         response.EnsureSuccessStatusCode();
 
-        var jwt = await response.Content.ReadAsStringAsync();
+        _bearerToken = await response.Content.ReadAsStringAsync();
 
-        _testingClient.SetBearerToken(jwt);
+        _testingClient.SetBearerToken(_bearerToken);
 
-        return jwt;
+        return _bearerToken;
     }
 
     public async Task DisposeAsync()
