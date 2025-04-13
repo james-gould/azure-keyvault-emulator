@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0" />
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.2.0" />
+    <!--<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />-->
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\AzureKeyVaultEmulator.Aspire.Hosting\AzureKeyVaultEmulator.Aspire.Hosting.csproj" IsAspireProjectResource="false" />
