@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Shared.Models.Keys.RequestModels;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +13,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
     {
         [HttpPost("{name}/create")]
         public IActionResult CreateKey(
-            [RegularExpression("[a-zA-Z0-9-]+")][FromRoute] string name,
+            [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromBody] CreateKeyModel requestBody)
         {
