@@ -128,28 +128,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     }
 
     [Fact]
-    public async Task EncryptDataWillSucceed()
-    {
-        var client = await fixture.GetKeyClientAsync();
-
-        var keyName = fixture.FreshGeneratedGuid;
-
-        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken)).Value;
-
-        Assert.Equal(keyName, key.Name);
-
-        var data = RequestSetup.CreateRandomBytes(128);
-
-        var encrypted = await client
-            .GetCryptographyClient(keyName, key.Properties.Version)
-            .EncryptAsync(EncryptionAlgorithm.RsaOaep, data, fixture.CancellationToken);
-
-        Assert.Equal(key.Key.Id, encrypted.KeyId);
-        Assert.NotEqual(encrypted.Ciphertext, data);
-    }
-
-    [Fact]
-    public async Task DecryptDataWillReverseEncryption()
+    public async Task EncryptAndDecryptWithKeySucceeds()
     {
         var client = await fixture.GetKeyClientAsync();
 
