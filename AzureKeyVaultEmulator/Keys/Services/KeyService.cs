@@ -11,7 +11,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
     {
         private static readonly ConcurrentDictionary<string, KeyBundle> _keys = new();
         private static readonly ConcurrentDictionary<string, KeyRotationPolicy> _keyRotations = new();
-        private static readonly ConcurrentDictionary<string, string> _digests = new();
 
         private static readonly ConcurrentDictionary<string, KeyBundle> _deletedKeys = new();
 
@@ -300,24 +299,22 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return response;
         }
 
-        public KeyOperationResult SignWithKey(string name, string version, string algo, string value)
+        public KeyOperationResult SignWithKey(string name, string version, string algo, string digest)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(algo);
-            ArgumentException.ThrowIfNullOrWhiteSpace(value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(digest);
 
             var cacheId = name.GetCacheId(version);
 
             var key = _keys.SafeGet(cacheId);
 
-            var (hash, sig) = encryptionService.SignAndHashData(value);
-
-            _digests.TryAdd(cacheId, hash);
+            var signature = encryptionService.SignWithKey(digest);
 
             return new KeyOperationResult
             {
                 KeyIdentifier = key.Key.KeyIdentifier,
-                Data = sig
+                Data = signature
             };
         }
 
@@ -327,14 +324,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
             ArgumentException.ThrowIfNullOrWhiteSpace(signature);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = _keys.SafeGet(cacheId);
-            var cachedDigest = _digests.SafeGet(cacheId);
+            // Key unused here because we are signing with global RSA.
+            // Might be worth breaking this out in the future to allow for direct key signing
+            // Would be better behaviour, but maybe too much for a mocking tool :)
+            var key = _keys.SafeGet(name.GetCacheId(version));
 
             return new ValueModel<bool>
             {
-                Value = encryptionService.VerifyData(cachedDigest, signature)
+                Value = encryptionService.VerifyData(digest, signature)
             };
         }
 
