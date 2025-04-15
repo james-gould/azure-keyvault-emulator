@@ -171,4 +171,17 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         Assert.KeysAreEqual(created, restoredKey);
     }
+
+    [Theory]
+    [InlineData(100)]
+    [InlineData(110)]
+    [InlineData(120)]
+    public async Task GetRandomBytesMatchesRequestedLength(int length)
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var bytes = await client.GetRandomBytesAsync(length);
+
+        Assert.Equal(length, bytes?.Value?.Length);
+    }
 }

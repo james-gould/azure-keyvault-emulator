@@ -156,16 +156,6 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
-        [HttpPost("rng")]
-        public IActionResult GetRandomBytes(
-            [FromBody] int count,
-            [ApiVersion] string apiVersion)
-        {
-            var result = keyService.GetRandomBytes(count);
-
-            return Ok(result);
-        }
-
         [HttpGet("{name}/rotationpolicy")]
         public IActionResult GetKeyRotationPolicy(
             [FromRoute] string name,
