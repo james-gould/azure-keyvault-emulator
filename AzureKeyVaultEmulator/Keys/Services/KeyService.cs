@@ -147,13 +147,13 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public ValueModel? BackupKey(string name)
+        public ValueModel<string>? BackupKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             var foundKey = _keys.SafeGet(name.GetCacheId());
 
-            return new ValueModel
+            return new ValueModel<string>
             {
                 Value = encryptionService.CreateKeyVaultJwe(foundKey)
             };
@@ -166,7 +166,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return encryptionService.DecryptFromKeyVaultJwe<KeyBundle>(jweBody);
         }
 
-        public ValueModel GetRandomBytes(int count)
+        public ValueModel<string> GetRandomBytes(int count)
         {
             if (count > 128)
                 throw new ArgumentException($"{nameof(count)} cannot exceed 128 when generating random bytes.");
@@ -175,7 +175,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             Random.Shared.NextBytes(bytes);
 
-            return new ValueModel
+            return new ValueModel<string>
             {
                 Value = EncodingUtils.Base64UrlEncode(bytes)
             };
@@ -256,7 +256,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public ValueModel ReleaseKey(string name,string version)
+        public ValueModel<string> ReleaseKey(string name,string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -269,7 +269,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var release = new KeyReleaseVM(aasJwt);
 
-            return new ValueModel
+            return new ValueModel<string>
             {
                 Value = encryptionService.CreateKeyVaultJwe(release)
             };
@@ -303,7 +303,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
         public KeyOperationResult SignWithKey(string name, string version, string algo, string value)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
             ArgumentException.ThrowIfNullOrWhiteSpace(algo);
             ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
@@ -317,15 +316,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             return new KeyOperationResult
             {
-                KeyIdentifier = $"{AuthConstants.EmulatorUri}/keys/{name}/{key.Key.KeyIdentifier}",
+                KeyIdentifier = key.Key.KeyIdentifier,
                 Data = sig
             };
         }
 
-        public bool VerifyDigest(string name, string version, string digest, string signature)
+        public ValueModel<bool> VerifyDigest(string name, string version, string digest, string signature)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
             ArgumentException.ThrowIfNullOrWhiteSpace(signature);
 
@@ -334,7 +332,10 @@ namespace AzureKeyVaultEmulator.Keys.Services
             var key = _keys.SafeGet(cacheId);
             var cachedDigest = _digests.SafeGet(cacheId);
 
-            return encryptionService.VerifyData(cachedDigest, signature);
+            return new ValueModel<bool>
+            {
+                Value = encryptionService.VerifyData(cachedDigest, signature)
+            };
         }
 
         public KeyOperationResult WrapKey(string name, string version, KeyOperationParameters para)

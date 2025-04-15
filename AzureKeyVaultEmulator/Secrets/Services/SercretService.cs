@@ -76,7 +76,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return deleted;
         }
 
-        public ValueModel? BackupSecret(string name)
+        public ValueModel<string>? BackupSecret(string name)
         {
             var cacheId = name.GetCacheId();
 
@@ -85,7 +85,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!exists || secret is null)
                 throw new SecretException($"Cannot backup secret by name {name} because it does not exist");
 
-            return new ValueModel
+            return new ValueModel<string>
             {
                 Value = encryption.CreateKeyVaultJwe(secret)
             };

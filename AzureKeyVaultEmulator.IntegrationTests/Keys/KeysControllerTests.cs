@@ -1,8 +1,10 @@
-﻿using Azure;
+﻿using System.Security.Cryptography;
+using Azure;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+using AzureKeyVaultEmulator.Shared.Utilities;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Keys;
 
@@ -234,5 +236,35 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         // Requires JWE decoding
         //var imported = (await client.ImportKeyAsync(null)).Value;
+    }
+
+    [Fact]
+    public async Task SignAndVerifyWithKeySucceeds()
+    {
+        // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Keys_4.7.0/sdk/keyvault/Azure.Security.KeyVault.Keys/samples/Sample5_SignVerify.md
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var key = await fixture.CreateKeyAsync(keyName);
+
+        var bearerToken = await fixture.GetBearerToken();
+
+        var cryptoProvider = new CryptographyClient(key.Id, new EmulatedTokenCredential(bearerToken));
+
+        Assert.NotEqual(string.Empty, cryptoProvider.KeyId);
+
+        var data = RequestSetup.CreateRandomBytes(64);
+        var digest = SHA256.HashData(data);
+
+        var signAlgorithm = SignatureAlgorithm.RS256;
+
+        var signResult = await cryptoProvider.SignAsync(signAlgorithm, digest);
+
+        var t = EncodingUtils.Base64UrlEncode(signResult.Signature);
+
+        var verifyResult = await cryptoProvider.VerifyAsync(signAlgorithm, digest, signResult.Signature);
+
+        Assert.True(verifyResult.IsValid);
     }
 }

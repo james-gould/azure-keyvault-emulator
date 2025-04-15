@@ -148,7 +148,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
         [HttpPost("restore")]
         public IActionResult RestoreKey(
-            [FromBody] ValueModel backedUpKey,
+            [FromBody] ValueModel<string> backedUpKey,
             [ApiVersion]string apiVersion)
         {
             var result = keyService.RestoreKey(backedUpKey.Value);
@@ -200,6 +200,17 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
+        [HttpPost("{name}/sign")]
+        public IActionResult SignWithKey(
+            [FromRoute] string name,
+            [FromBody] SignKeyRequest model,
+            [ApiVersion] string apiVersion)
+        {
+            var result = keyService.SignWithKey(name, string.Empty, model.SigningAlgorithm, model.Value);
+
+            return Ok(result);
+        }
+
         [HttpPost("{name}/{version}/sign")]
         public IActionResult SignWithKey(
             [FromRoute] string name,
@@ -219,6 +230,16 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromBody] VerifyHashRequest req)
         {
             var result = keyService.VerifyDigest(name, version, req.Digest, req.Value);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{name}/verify")]
+        public IActionResult VerifyHash(
+            [FromRoute] string name,
+            [FromBody] VerifyHashRequest req)
+        {
+            var result = keyService.VerifyDigest(name, string.Empty, req.Digest, req.Value);
 
             return Ok(result);
         }
