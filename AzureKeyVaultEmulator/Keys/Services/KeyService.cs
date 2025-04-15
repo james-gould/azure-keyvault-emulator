@@ -147,13 +147,13 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public ValueResponse? BackupKey(string name)
+        public ValueModel? BackupKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             var foundKey = _keys.SafeGet(name.GetCacheId());
 
-            return new ValueResponse
+            return new ValueModel
             {
                 Value = encryptionService.CreateKeyVaultJwe(foundKey)
             };
@@ -166,7 +166,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return encryptionService.DecryptFromKeyVaultJwe<KeyBundle>(jweBody);
         }
 
-        public ValueResponse GetRandomBytes(int count)
+        public ValueModel GetRandomBytes(int count)
         {
             if (count > 128)
                 throw new ArgumentException($"{nameof(count)} cannot exceed 128 when generating random bytes.");
@@ -175,7 +175,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             Random.Shared.NextBytes(bytes);
 
-            return new ValueResponse
+            return new ValueModel
             {
                 Value = EncodingUtils.Base64UrlEncode(bytes)
             };
@@ -256,7 +256,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public ValueResponse ReleaseKey(string name,string version)
+        public ValueModel ReleaseKey(string name,string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -269,7 +269,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var release = new KeyReleaseVM(aasJwt);
 
-            return new ValueResponse
+            return new ValueModel
             {
                 Value = encryptionService.CreateKeyVaultJwe(release)
             };

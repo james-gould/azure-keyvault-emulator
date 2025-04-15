@@ -140,7 +140,6 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         [HttpPost("{name}/backup")]
         public IActionResult BackupKey(
             [FromRoute] string name,
-            [FromRoute] string version,
             [ApiVersion] string apiVersion)
         {
             var result = keyService.BackupKey(name);
@@ -149,11 +148,11 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         }
 
         [HttpPost("restore")]
-        public IActionResult BackupKey(
-            [FromBody] string value,
-            [ApiVersion] string apiVersion)
+        public IActionResult RestoreKey(
+            [FromBody] ValueModel backedUpKey,
+            [ApiVersion]string apiVersion)
         {
-            var result = keyService.BackupKey(value);
+            var result = keyService.RestoreKey(backedUpKey.Value);
 
             return Ok(result);
         }

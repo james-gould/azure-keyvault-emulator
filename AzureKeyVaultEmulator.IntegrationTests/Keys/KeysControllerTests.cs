@@ -153,4 +153,22 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.NotEqual(decrypted.Plaintext, encrypted.Ciphertext);
         Assert.Equal(decrypted.Plaintext, data);
     }
+
+    [Fact]
+    public async Task BackingUpAndRestoringKeySucceeds()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var created = await fixture.CreateKeyAsync(keyName);
+
+        var backedUpKey = (await client.BackupKeyAsync(keyName)).Value;
+
+        Assert.NotEmpty(backedUpKey);
+
+        var restoredKey = (await client.RestoreKeyBackupAsync(backedUpKey)).Value;
+
+        Assert.KeysAreEqual(created, restoredKey);
+    }
 }

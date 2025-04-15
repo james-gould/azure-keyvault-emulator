@@ -10,12 +10,12 @@ namespace AzureKeyVaultEmulator.Keys.Services
         KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes, Dictionary<string, string> tags);
         KeyBundle? RotateKey(string name, string version);
 
-        ValueResponse? GetRandomBytes(int count);
+        ValueModel? GetRandomBytes(int count);
 
         KeyOperationResult? Encrypt(string name, string version, KeyOperationParameters keyOperationParameters);
         KeyOperationResult? Decrypt(string keyName, string keyVersion, KeyOperationParameters keyOperationParameters);
 
-        ValueResponse? BackupKey(string name);
+        ValueModel? BackupKey(string name);
         KeyBundle? RestoreKey(string jweBody);
 
         KeyRotationPolicy GetKeyRotationPolicy(string name);
@@ -24,7 +24,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         ListResult<KeyItemBundle> GetKeys(int maxResults = 25, int skipCount = 25);
         ListResult<KeyItemBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
 
-        ValueResponse ReleaseKey(string name, string version);
+        ValueModel ReleaseKey(string name, string version);
         KeyBundle ImportKey(string name, JsonWebKey key, KeyAttributesModel attributes, Dictionary<string, string> tags);
         KeyOperationResult SignWithKey(string name, string version, string algo, string value);
         bool VerifyDigest(string name, string version, string digest, string signature);
