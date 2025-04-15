@@ -264,4 +264,16 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         Assert.True(verifyResult.IsValid);
     }
+
+    [Fact]
+    public async Task WrappingAndUnwrappingKeyWillSucceed()
+    {
+        // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Keys_4.7.0/sdk/keyvault/Azure.Security.KeyVault.Keys/samples/Sample6_WrapUnwrap.md
+
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var key = await fixture.CreateKeyAsync(keyName);
+    }
 }
