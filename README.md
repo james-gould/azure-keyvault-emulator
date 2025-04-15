@@ -100,9 +100,7 @@ else
 ```
 
 > [!NOTE]
-> There's a [pending PR](https://github.com/dotnet/aspire/pull/8408) to add support for the `KeyClient` and `CertificateClient` into the new `Aspire.Azure.Security.Client` package.
-> <br />
-> Support for these 2 clients is expected in `.NET Aspire 9.3`.
+> There's a [pending PR](https://github.com/dotnet/aspire/pull/8408) to add support for the `KeyClient` and `CertificateClient` into the new `Aspire.Azure.Security.Client` package. Support for these 2 clients is expected in `.NET Aspire 9.3`.
 
 While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/DOCKER-SETUP.md):
 
