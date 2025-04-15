@@ -176,12 +176,40 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [InlineData(100)]
     [InlineData(110)]
     [InlineData(120)]
-    public async Task GetRandomBytesMatchesRequestedLength(int length)
+    public async Task GetRandomBytesWillMatchRequestedLength(int length)
     {
         var client = await fixture.GetKeyClientAsync();
 
         var bytes = await client.GetRandomBytesAsync(length);
 
         Assert.Equal(length, bytes?.Value?.Length);
+    }
+
+    [Fact]
+    public async Task CreatingRotationPolicyWillPersistAgainstKey()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var key = await fixture.CreateKeyAsync(keyName);
+
+        var exception = await Assert
+            .ThrowsAsync<RequestFailedException>(() => client.GetKeyRotationPolicyAsync(keyName));
+
+        Assert.Equal((int)HttpStatusCode.BadRequest, exception.Status);
+
+        var policy = new KeyRotationPolicy
+        {
+            ExpiresIn = "P30M"
+        };
+
+        var createdPolicy = (await client.UpdateKeyRotationPolicyAsync(keyName, policy)).Value;
+
+        Assert.Equal(policy.ExpiresIn, createdPolicy.ExpiresIn);
+
+        var afterCreation = (await client.GetKeyRotationPolicyAsync(keyName)).Value;
+
+        Assert.Equal(afterCreation.ExpiresIn, policy.ExpiresIn);
     }
 }

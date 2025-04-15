@@ -201,13 +201,13 @@ namespace AzureKeyVaultEmulator.Keys.Services
             var policyExists = _keyRotations.TryGetValue(name, out var keyRotationPolicy);
 
             if (!policyExists || keyRotationPolicy is null)
-                keyRotationPolicy = new(name);
+                keyRotationPolicy = new();
 
             keyRotationPolicy.Attributes = attributes;
+            keyRotationPolicy.LifetimeActions = lifetimeActions;
 
             keyRotationPolicy.Attributes.Update();
-
-            keyRotationPolicy.LifetimeActions = lifetimeActions;
+            keyRotationPolicy.SetIdFromKeyName(name);
 
             _keyRotations.AddOrUpdate(name, keyRotationPolicy, (_, _) => keyRotationPolicy);
 
