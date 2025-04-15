@@ -231,5 +231,8 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         // TODO: requires JWE decoding and validation
         Assert.NotEqual(string.Empty, releasedKey.Value);
+
+        // Requires JWE decoding
+        //var imported = (await client.ImportKeyAsync(null)).Value;
     }
 }
