@@ -212,4 +212,24 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         Assert.Equal(afterCreation.ExpiresIn, policy.ExpiresIn);
     }
+
+    [Fact]
+    public async Task ReleasingKeyWillCreatePublicKeyHeader()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var key = await fixture.CreateKeyAsync(keyName);
+
+        ReleaseKeyOptions opt = new(keyName, "https://doesntmatter.com")
+        {
+            Version = key.Properties.Version
+        };
+
+        var releasedKey = (await client.ReleaseKeyAsync(opt)).Value;
+
+        // TODO: requires JWE decoding and validation
+        Assert.NotEqual(string.Empty, releasedKey.Value);
+    }
 }
