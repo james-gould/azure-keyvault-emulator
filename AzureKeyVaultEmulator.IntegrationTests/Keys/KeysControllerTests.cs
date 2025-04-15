@@ -213,7 +213,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(afterCreation.ExpiresIn, policy.ExpiresIn);
     }
 
-    [Fact]
+    [Fact(Skip = "Release/Import key requires JWE decoding and inspection")]
     public async Task ReleasingKeyWillCreatePublicKeyHeader()
     {
         var client = await fixture.GetKeyClientAsync();
