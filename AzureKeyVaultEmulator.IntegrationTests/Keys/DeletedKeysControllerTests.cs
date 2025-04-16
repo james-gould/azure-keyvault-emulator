@@ -44,4 +44,26 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
 
         Assert.Equal(executionCount + 1, detectedDeletedKeys.Count);
     }
+
+    [Fact]
+    public async Task PurgeDeletedKeyRemovedFromDeletedStore()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var createdKey = await fixture.CreateKeyAsync(keyName);
+
+        var deleteOperation = await client.StartDeleteKeyAsync(keyName);
+
+        var deletedKey = await client.GetDeletedKeyAsync(keyName);
+
+        Assert.KeysAreEqual(createdKey, deletedKey);
+
+        var purgeResult = await client.PurgeDeletedKeyAsync(keyName);
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetDeletedKeyAsync(keyName));
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetKeyAsync(keyName));
+    }
 }
