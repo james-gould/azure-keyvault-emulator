@@ -2,7 +2,7 @@
 
 A fully featured, emulated version of [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) product.
 
-`.NET Aspire` has the ability to create emulated, easily referenced resources in development environments - sadly Key Vault is not one of those. To work with Key Vault in a dev-env you need to have a deployed, real world instance of the resource in an active Azure Subscription; this emulator removes that requirement.
+`.NET Aspire` has the ability to create emulated, easily referenced resources in development environments - unfortunately Key Vault is not one of those. To work with Key Vault in a dev-env you need to have a deployed, real world instance of the resource in an active Azure Subscription; this emulator removes that requirement.
 
 The emulator does **not** connect to or update an existing Azure Key Vault, it simply mimics the API (with identical functionality) allowing you to build applications without needing to host a real resource.
 
@@ -38,6 +38,9 @@ var webApi = builder
     .AddProject<Projects.MyApi>("api")
     .WithReference(keyVault); // reference as normal
 ```
+
+> [!WARNING]
+> Using `.WaitForCompletion(keyVault)` will hang the `AppHost` indefinitely, use `.WaitFor(keyVault)`. 
 
 3. Install the [Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package into your application using Azure Key Vault:
 
@@ -96,6 +99,9 @@ else
     });
 ```
 
+> [!NOTE]
+> There's a [pending PR](https://github.com/dotnet/aspire/pull/8408) to add support for the `KeyClient` and `CertificateClient` into the new `Aspire.Azure.Security.Client` package. Support for these 2 clients is expected in `.NET Aspire 9.3`.
+
 While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/DOCKER-SETUP.md):
 
 ```
@@ -108,45 +114,9 @@ Some API functionality may not be supported while the initial development is ong
 
 - [ ] Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
     - [x] Secrets
-    - [ ] Keys
+    - [x] Keys
     - [ ] Certificates
     - [ ] Managed HSM
 - [x] Separate NuGet package for introducing an [emulated Key Vault into your .NET Aspire](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Hosting.Aspire) projects.
 - [x] Separate NuGet package for easy usage of the [emulator in client applications](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Client).
 - [ ] Complete `docker-compose` options for integrating the emulator into a cluster.
-    
-
-## Supported Operations
-
-> [!CAUTION]
-> This is not a secure space for production secrets, keys or certificates.
-
-
-### Keys
-
-#### RSA
-
-- Create Key
-- Get Key
-- Get Key by Version
-- Encrypt
-- Decrypt
-- Supported [Algorithms](https://learn.microsoft.com/en-us/rest/api/keyvault/keys/decrypt/decrypt?view=rest-keyvault-keys-7.4&tabs=HTTP#jsonwebkeyencryptionalgorithm)
-    - `RSA1_5`
-    - `RSA-OAEP`
-
-### Secrets
-
-- Set Secret
-- Get Secret
-- Get Secret by Version
-- Delete Secret
-- Backup Secret
-- Get Secret Versions
-- Get Secrets
-- Restore Secret
-- Update Secret
-- Get Deleted Secret
-- Get Deleted Secrets
-- Purge Deleted Secret
-- Recover Deleted Secret
