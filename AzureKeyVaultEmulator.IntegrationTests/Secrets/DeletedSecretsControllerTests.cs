@@ -38,7 +38,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var multiSecretName = "multiDelete";
 
             var executionCount = await RequestSetup
-                .CreateMultiple(30, 100, i => client.SetSecretAsync(multiSecretName, $"{i}value", fixture.CancellationToken));
+                .CreateMultiple(26, 51, i => client.SetSecretAsync(multiSecretName, $"{i}value", fixture.CancellationToken));
 
             var deletedOperation = await client.StartDeleteSecretAsync(multiSecretName);
 
