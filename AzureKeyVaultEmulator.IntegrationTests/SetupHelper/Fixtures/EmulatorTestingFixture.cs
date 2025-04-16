@@ -22,7 +22,7 @@ public class EmulatorTestingFixture : IAsyncLifetime
 
     // Used to ensure no duplicates are used during high concurrency testing
     private readonly ConcurrentBag<string> _spentGuids = [];
-    public string FreshGeneratedGuid => GetCleanGuid();
+    public string FreshlyGeneratedGuid => GetCleanGuid();
 
     public async Task InitializeAsync()
     {

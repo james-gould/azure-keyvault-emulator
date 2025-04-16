@@ -46,7 +46,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetKeyAsync(keyName));
 
@@ -67,8 +67,8 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var client = await fixture.GetKeyClientAsync();
 
         var keyName = "updatedKey";
-        var tagKey = fixture.FreshGeneratedGuid;
-        var tagValue = fixture.FreshGeneratedGuid;
+        var tagKey = fixture.FreshlyGeneratedGuid;
+        var tagValue = fixture.FreshlyGeneratedGuid;
 
         var createdKey = await fixture.CreateKeyAsync(keyName);
 
@@ -95,7 +95,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var createdKey = await fixture.CreateKeyAsync(keyName);
 
@@ -119,7 +119,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
             .CreateMultiple(51, 300, i => client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken));
@@ -138,7 +138,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
             .CreateMultiple(51, 300, i => client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken));
@@ -157,7 +157,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken)).Value;
 
@@ -184,7 +184,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var created = await fixture.CreateKeyAsync(keyName);
 
@@ -215,7 +215,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var key = await fixture.CreateKeyAsync(keyName);
 
@@ -243,7 +243,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var key = await fixture.CreateKeyAsync(keyName);
 
@@ -267,7 +267,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Keys_4.7.0/sdk/keyvault/Azure.Security.KeyVault.Keys/samples/Sample5_SignVerify.md
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var key = await fixture.CreateKeyAsync(keyName);
 
@@ -292,7 +292,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var key = await fixture.CreateKeyAsync(keyName);
 

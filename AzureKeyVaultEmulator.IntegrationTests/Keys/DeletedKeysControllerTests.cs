@@ -11,7 +11,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var createdKey = await fixture.CreateKeyAsync(keyName);
 
@@ -29,7 +29,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await
             RequestSetup.CreateMultiple(26, 51, y => client.CreateKeyAsync(keyName, KeyType.Rsa));
@@ -50,7 +50,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     {
         var client = await fixture.GetKeyClientAsync();
 
-        var keyName = fixture.FreshGeneratedGuid;
+        var keyName = fixture.FreshlyGeneratedGuid;
 
         var createdKey = await fixture.CreateKeyAsync(keyName);
 
@@ -65,5 +65,31 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
         await Assert.ThrowsRequestFailedAsync(() => client.GetDeletedKeyAsync(keyName));
 
         await Assert.ThrowsRequestFailedAsync(() => client.GetKeyAsync(keyName));
+    }
+
+    [Fact]
+    public async Task RestoreKeyRemovesFromDeletedStore()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var createdKey = await fixture.CreateKeyAsync(keyName);
+
+        await client.StartDeleteKeyAsync(keyName);
+
+        var deletedKey = (await client.GetDeletedKeyAsync(keyName)).Value;
+
+        Assert.KeysAreEqual(deletedKey, createdKey);
+
+        var restoredKey = (await client.StartRecoverDeletedKeyAsync(keyName)).Value;
+
+        Assert.KeysAreEqual(createdKey, restoredKey);
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetDeletedKeyAsync(keyName));
+
+        var fromMainStore = (await client.GetKeyAsync(keyName)).Value;
+
+        Assert.KeysAreEqual(createdKey, fromMainStore);
     }
 }
