@@ -2,6 +2,8 @@
 using Asp.Versioning;
 using Asp.Versioning.Http;
 using Aspire.Hosting;
+using Azure.Core;
+using Azure.Core.Pipeline;
 using AzureKeyVaultEmulator.Shared.Constants;
 using IdentityModel.Client;
 
@@ -12,6 +14,11 @@ public class EmulatorTestingFixture : IAsyncLifetime
     internal readonly TimeSpan _waitPeriod = TimeSpan.FromSeconds(30);
     internal DistributedApplication? _app;
     internal ResourceNotificationService? _notificationService;
+
+    internal readonly RetryPolicy _clientRetryPolicy = new(
+        maxRetries: 5,
+        DelayStrategy.CreateExponentialDelayStrategy(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(10)));
+        
     private ClientSetupVM? _setupModel;
 
     private HttpClient? _testingClient;
@@ -35,6 +42,11 @@ public class EmulatorTestingFixture : IAsyncLifetime
 
         await _app.StartAsync();
     }
+
+    public async ValueTask<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
+    {
+        if (_testingClient is not null)
+            return _testingClient;
 
     public async ValueTask<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
     {
@@ -74,6 +86,19 @@ public class EmulatorTestingFixture : IAsyncLifetime
 
         return _setupModel = new ClientSetupVM(vaultEndpoint, cred);
     }
+
+    public async ValueTask<string> GetBearerTokenAsync()
+    {
+        if (!string.IsNullOrEmpty(_bearerToken))
+            return _bearerToken;
+
+        _testingClient ??= await CreateHttpClient();
+
+        var response = await _testingClient.GetAsync("/token");
+
+        response.EnsureSuccessStatusCode();
+
+        _bearerToken = await response.Content.ReadAsStringAsync();
 
     public async ValueTask<string> GetBearerTokenAsync()
     {
