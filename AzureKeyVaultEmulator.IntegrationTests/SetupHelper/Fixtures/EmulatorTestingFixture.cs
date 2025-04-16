@@ -48,11 +48,6 @@ public class EmulatorTestingFixture : IAsyncLifetime
         if (_testingClient is not null)
             return _testingClient;
 
-    public async ValueTask<HttpClient> CreateHttpClient(double version = 7.5, string applicationName = AspireConstants.EmulatorServiceName)
-    {
-        if (_testingClient is not null)
-            return _testingClient;
-
         // Requires extension of testing library to include this
         var opt = new ApiVersionHandler(new QueryStringApiVersionWriter(), new ApiVersion(version))
         {
@@ -86,19 +81,6 @@ public class EmulatorTestingFixture : IAsyncLifetime
 
         return _setupModel = new ClientSetupVM(vaultEndpoint, cred);
     }
-
-    public async ValueTask<string> GetBearerTokenAsync()
-    {
-        if (!string.IsNullOrEmpty(_bearerToken))
-            return _bearerToken;
-
-        _testingClient ??= await CreateHttpClient();
-
-        var response = await _testingClient.GetAsync("/token");
-
-        response.EnsureSuccessStatusCode();
-
-        _bearerToken = await response.Content.ReadAsStringAsync();
 
     public async ValueTask<string> GetBearerTokenAsync()
     {
