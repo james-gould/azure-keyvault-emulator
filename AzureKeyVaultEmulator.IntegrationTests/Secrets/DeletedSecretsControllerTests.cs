@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Security.KeyVault.Secrets;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
@@ -35,11 +36,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var client = await fixture.GetSecretClientAsync();
 
             var multiSecretName = "multiDelete";
-            var multitude = Random.Shared.Next(30, 100);
 
-            var tasks = Enumerable.Range(0, multitude).Select(i => client.SetSecretAsync(multiSecretName, $"{i}value"));
-
-            await Task.WhenAll(tasks);
+            var executionCount = await RequestSetup
+                .CreateMultiple(30, 100, i => client.SetSecretAsync(multiSecretName, $"{i}value", fixture.CancellationToken));
 
             var deletedOperation = await client.StartDeleteSecretAsync(multiSecretName);
 

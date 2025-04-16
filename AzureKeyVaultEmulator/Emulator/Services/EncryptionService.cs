@@ -6,14 +6,16 @@ namespace AzureKeyVaultEmulator.Emulator.Services
     {
         string CreateKeyVaultJwe(object value);
         T DecryptFromKeyVaultJwe<T>(string jwe);
-        (string hash, string signed) SignAndHashData(string data);
+        string SignWithKey(string data);
         bool VerifyData(string hash, string signature);
     }
 
     public class EncryptionService : IEncryptionService
     {
         private readonly RSA _rsa;
+
         private readonly RSASignaturePadding _padding = RSASignaturePadding.Pkcs1;
+        private readonly HashAlgorithmName _hashingAlgorithm = HashAlgorithmName.SHA256;
 
         public EncryptionService()
         {
@@ -21,27 +23,21 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             _rsa.ImportFromPem(RsaPem.FullPem);
         }
 
-        public (string hash, string signed) SignAndHashData(string data)
+        public string SignWithKey(string data)
         {
-            var bytes = Encoding.UTF8.GetBytes(data);
+            var bytes = data.Base64UrlDecode();
 
-            var signedBytes = _rsa.SignData(bytes, HashAlgorithmName.SHA512, _padding);
+            var signedBytes = _rsa.SignData(bytes, _hashingAlgorithm, _padding);
 
-            var signed = EncodingUtils.Base64UrlEncode(signedBytes);
-
-            var hashBytes = SHA512.HashData(bytes);
-
-            var hash = EncodingUtils.Base64UrlEncode(hashBytes);
-
-            return (hash, signed);
+            return signedBytes.Base64UrlEncode();
         }
 
-        public bool VerifyData(string hash, string signature)
+        public bool VerifyData(string digest, string signature)
         {
-            var hashBytes = Encoding.UTF8.GetBytes(hash);
-            var sigBytes = Encoding.UTF8.GetBytes(signature);
+            var hashBytes = digest.Base64UrlDecode();
+            var sigBytes = signature.Base64UrlDecode();
 
-            return _rsa.VerifyHash(hashBytes, sigBytes, HashAlgorithmName.SHA512, _padding);
+            return _rsa.VerifyHash(hashBytes, sigBytes, _hashingAlgorithm, _padding);
         }
 
         public T DecryptFromKeyVaultJwe<T>(string jweToken)

@@ -3,14 +3,18 @@ using AzureKeyVaultEmulator.Shared.Constants;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 
-public sealed class KeyRotationPolicy(string keyName)
+public sealed class KeyRotationPolicy
 {
-    public string Id => $"{AuthConstants.EmulatorUri}/keys/{keyName}/rotationpolicy";
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
     public KeyRotationAttributes Attributes { get; set; } = new();
 
     public IEnumerable<LifetimeActions> LifetimeActions { get; set; } = [];
+
+    public void SetIdFromKeyName(string keyName)
+        => Id = $"{AuthConstants.EmulatorUri}/keys/{keyName}/rotationpolicy";
 }
 
 public class KeyRotationAttributes

@@ -2,9 +2,9 @@
 
 namespace AzureKeyVaultEmulator.Shared.Models
 {
-    public class ValueResponse
+    public class ValueModel<T>
     {
         [JsonPropertyName("value")]
-        public string Value { get; set; } = string.Empty;
+        public required T Value { get; set; }
     }
 }

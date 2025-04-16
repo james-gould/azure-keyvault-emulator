@@ -122,7 +122,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult RestoreSecret(
             [ApiVersion] string apiVersion,
-            [FromBody] ValueResponse? backup)
+            [FromBody] ValueModel<string>? backup)
         {
             ArgumentNullException.ThrowIfNull(backup);
 
