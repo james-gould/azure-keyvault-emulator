@@ -18,7 +18,8 @@ public class SecretsTestingFixture : EmulatorTestingFixture
 
         var options = new SecretClientOptions
         {
-            DisableChallengeResourceVerification = true
+            DisableChallengeResourceVerification = true,
+            RetryPolicy = _clientRetryPolicy
         };
 
         var setupModel = await GetClientSetupModelAsync();

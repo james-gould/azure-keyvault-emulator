@@ -19,7 +19,8 @@ public sealed class KeysTestingFixture : EmulatorTestingFixture
 
         var opt = new KeyClientOptions
         {
-            DisableChallengeResourceVerification = true
+            DisableChallengeResourceVerification = true,
+            RetryPolicy = _clientRetryPolicy
         };
 
          return _client = new KeyClient(setup.VaultUri, setup.Credential, opt);
