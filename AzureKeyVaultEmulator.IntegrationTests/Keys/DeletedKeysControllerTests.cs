@@ -5,8 +5,20 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Keys;
 public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : IClassFixture<KeysTestingFixture>
 {
     [Fact]
-    public async Task Test()
+    public async Task GetDeletedKeyReturnsFromDeletedKeyStore()
     {
-        await fixture.GetKeyClientAsync();
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var createdKey = await fixture.CreateKeyAsync(keyName);
+
+        var deletedKey = (await client.StartDeleteKeyAsync(keyName)).Value;
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetKeyAsync(keyName));
+
+        var fromDeletedStore = await client.GetDeletedKeyAsync(keyName);
+
+        Assert.KeysAreEqual(createdKey, deletedKey);
     }
 }
