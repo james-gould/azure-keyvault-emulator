@@ -375,23 +375,28 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
+            var parentKey = _keys.SafeGet(name.GetCacheId());
+
             var keys = _keys.Where(x => x.Key.Contains(name));
 
             if (!keys.Any())
                 throw new InvalidOperationException($"Cannot find any keys with name: {name}");
 
-            _ = keys.Select(x => _keys.Remove(x.Key, out _));
+            foreach (var item in keys)
+            {
+                _keys.Remove(item.Key, out _);
+                _deletedKeys.TryAdd(name.GetCacheId(item.Value.Key.KeyVersion), item.Value);
+            }
 
-            keys.Select(x => _deletedKeys.TryAdd(x.Key, x.Value));
-
-            var topLevel = keys.First().Value;
-
+            _deletedKeys.TryAdd(name.GetCacheId(), parentKey);
+            
             return new DeletedKeyBundle
             {
-                Attributes = topLevel.Attributes,
-                RecoveryId = $"/deletedkeys/{name}/recover",
-                Tags = topLevel.Tags,
-                Key = new JsonWebKey(JsonSerializer.Serialize(topLevel.Key)),
+                Kid = parentKey.Key.KeyIdentifier,
+                Attributes = parentKey.Attributes,
+                RecoveryId = $"{AuthConstants.EmulatorUri}/deletedkeys/{name}",
+                Tags = parentKey.Tags,
+                Key = new JsonWebKey(JsonSerializer.Serialize(parentKey.Key)),
             };
         }
 

@@ -77,6 +77,16 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
+        [HttpDelete("{name}")]
+        public IActionResult DeleteKey(
+            [FromRoute] string name,
+            [ApiVersion] string apiVersion)
+        {
+            var result = keyService.DeleteKey(name);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         public IActionResult GetKeys(
             [ApiVersion] string apiVersion,

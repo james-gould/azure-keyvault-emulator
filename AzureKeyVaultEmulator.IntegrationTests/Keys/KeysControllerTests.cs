@@ -91,7 +91,31 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     }
 
     [Fact]
-    public async Task GetOneHundredKeysCyclesThroughLink()
+    public async Task DeletingKeyWillRemoveItFromMainStore()
+    {
+        var client = await fixture.GetKeyClientAsync();
+
+        var keyName = fixture.FreshGeneratedGuid;
+
+        var createdKey = await fixture.CreateKeyAsync(keyName);
+
+        var keyFromMainStore = await client.GetKeyAsync(keyName);
+
+        Assert.KeysAreEqual(createdKey, keyFromMainStore);
+
+        var deletedKey = await client.StartDeleteKeyAsync(keyName);
+
+        Assert.NotNull(deletedKey?.Value.DeletedOn);
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetKeyAsync(keyName));
+
+        var fromDeletedStore = await client.GetDeletedKeyAsync(keyName);
+
+        Assert.KeysAreEqual(createdKey, fromDeletedStore);
+    }
+
+    [Fact]
+    public async Task GetOneHundredKeysShouldCycleThroughLink()
     {
         var client = await fixture.GetKeyClientAsync();
 
