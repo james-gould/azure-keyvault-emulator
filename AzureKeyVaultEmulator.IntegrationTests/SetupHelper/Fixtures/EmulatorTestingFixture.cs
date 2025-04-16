@@ -68,14 +68,14 @@ public class EmulatorTestingFixture : IAsyncLifetime
 
         await _notificationService!.WaitForResourceAsync(applicationName).WaitAsync(_waitPeriod);
 
-        var emulatedBearerToken = await GetBearerToken();
+        var emulatedBearerToken = await GetBearerTokenAsync();
 
         var cred = new EmulatedTokenCredential(emulatedBearerToken);
 
         return _setupModel = new ClientSetupVM(vaultEndpoint, cred);
     }
 
-    public async ValueTask<string> GetBearerToken()
+    public async ValueTask<string> GetBearerTokenAsync()
     {
         if (!string.IsNullOrEmpty(_bearerToken))
             return _bearerToken;

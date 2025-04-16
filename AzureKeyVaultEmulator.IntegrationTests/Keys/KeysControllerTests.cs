@@ -247,11 +247,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var key = await fixture.CreateKeyAsync(keyName);
 
-        var bearerToken = await fixture.GetBearerToken();
-
-        var cryptoProvider = new CryptographyClient(key.Id, new EmulatedTokenCredential(bearerToken));
-
-        Assert.NotEqual(string.Empty, cryptoProvider.KeyId);
+        var cryptoProvider = await fixture.GetCryptographyClientAsync(key);
 
         var data = RequestSetup.CreateRandomBytes(64);
         var digest = SHA256.HashData(data);
@@ -275,5 +271,19 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshGeneratedGuid;
 
         var key = await fixture.CreateKeyAsync(keyName);
+
+        var crypto = await fixture.GetCryptographyClientAsync(key);
+
+        var unwrappedKey = Aes.Create().Key;
+
+        var wrapAlgo = KeyWrapAlgorithm.RsaOaep;
+
+        var wrappedResult = await crypto.WrapKeyAsync(wrapAlgo, unwrappedKey);
+
+        Assert.NotEqual(unwrappedKey, wrappedResult.EncryptedKey);
+
+        var unwrapResult = await crypto.UnwrapKeyAsync(wrapAlgo, wrappedResult.EncryptedKey);
+
+        Assert.Equal(unwrappedKey, unwrapResult.Key);
     }
 }

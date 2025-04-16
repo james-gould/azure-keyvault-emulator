@@ -1,4 +1,5 @@
 ﻿using Azure.Security.KeyVault.Keys;
+using Azure.Security.KeyVault.Keys.Cryptography;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
@@ -22,6 +23,17 @@ public sealed class KeysTestingFixture : EmulatorTestingFixture
         };
 
          return _client = new KeyClient(setup.VaultUri, setup.Credential, opt);
+    }
+
+    public async Task<CryptographyClient> GetCryptographyClientAsync(KeyVaultKey key)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+
+        var bearer = await GetBearerTokenAsync();
+
+        var cred = new EmulatedTokenCredential(bearer);
+
+        return new CryptographyClient(key.Id, cred);
     }
 
     public async Task<KeyVaultKey> CreateKeyAsync(string name = DefaultKeyName, KeyType? type = null)
