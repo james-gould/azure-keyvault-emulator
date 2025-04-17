@@ -1,4 +1,5 @@
-﻿using AzureKeyVaultEmulator.Keys.Services;
+﻿using AzureKeyVaultEmulator.Certificates.Services;
+using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
 
 namespace AzureKeyVaultEmulator.ApiConfiguration
@@ -9,6 +10,7 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
         {
             services.AddSingleton<IKeyService, KeyService>();
             services.AddSingleton<ISecretService, SercretService>();
+            services.AddSingleton<ICertificateService, CertificateService>();
 
             services.AddSingleton<IEncryptionService, EncryptionService>();
             services.AddTransient<ITokenService, TokenService>();

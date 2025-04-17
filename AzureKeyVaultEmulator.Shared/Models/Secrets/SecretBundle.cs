@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 {
-    public sealed class SecretResponse : ResponseBase
+    public sealed class SecretBundle : ResponseBase
     {
         [JsonPropertyName("id")]
         public Uri? Id { get; set; }

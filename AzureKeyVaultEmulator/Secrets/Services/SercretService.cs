@@ -7,10 +7,10 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         ITokenService token,
         IEncryptionService encryption) : ISecretService
     {
-        private static readonly ConcurrentDictionary<string, SecretResponse?> _secrets = new();
-        private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();
+        private static readonly ConcurrentDictionary<string, SecretBundle?> _secrets = new();
+        private static readonly ConcurrentDictionary<string, SecretBundle?> _deletedSecrets = new();
 
-        public SecretResponse? Get(string name, string version = "")
+        public SecretBundle? Get(string name, string version = "")
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -24,7 +24,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return secret;
         }
 
-        public SecretResponse? SetSecret(string name, SetSecretModel secret)
+        public SecretBundle? SetSecret(string name, SetSecretModel secret)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNull(secret);
@@ -38,7 +38,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Path = $"secrets/{name}/{version}"
             };
 
-            var response = new SecretResponse
+            var response = new SecretBundle
             {
                 Id = secretUrl.Uri,
                 Value = secret.Value,
@@ -91,7 +91,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             };
         }
 
-        public SecretResponse? GetDeletedSecret(string name)
+        public SecretBundle? GetDeletedSecret(string name)
         {
             var cacheId = name.GetCacheId();
 
@@ -103,7 +103,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return secret;
         }
 
-        public ListResult<SecretResponse> GetDeletedSecrets(int maxResults = 25, int skipCount = 0)
+        public ListResult<SecretBundle> GetDeletedSecrets(int maxResults = 25, int skipCount = 0)
         {
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
@@ -115,14 +115,14 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var requiresPaging = items.Count() >= maxResults;
 
-            return new ListResult<SecretResponse>
+            return new ListResult<SecretBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
                 Values = items.Select(kvp => kvp.Value)
             };
         }
 
-        public ListResult<SecretResponse> GetSecretVersions(string secretName, int maxResults = 25, int skipCount = 0)
+        public ListResult<SecretBundle> GetSecretVersions(string secretName, int maxResults = 25, int skipCount = 0)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(secretName);
 
@@ -138,14 +138,14 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var requiresPaging = maxedItems.Count() >= maxResults;
 
-            return new ListResult<SecretResponse>
+            return new ListResult<SecretBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
                 Values = maxedItems.Select(x => x.Value)
             };
         }
 
-        public ListResult<SecretResponse> GetSecrets(int maxResults = 25, int skipCount = 0)
+        public ListResult<SecretBundle> GetSecrets(int maxResults = 25, int skipCount = 0)
         {
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
@@ -157,7 +157,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var requiresPaging = items.Count() >= maxResults;
 
-            return new ListResult<SecretResponse>
+            return new ListResult<SecretBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
                 Values = items.Select(x => x.Value)
@@ -176,7 +176,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             _deletedSecrets.Remove(name, out _);
         }
 
-        public SecretResponse? RecoverDeletedSecret(string name)
+        public SecretBundle? RecoverDeletedSecret(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -195,11 +195,11 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return secret;
         }
 
-        public SecretResponse? RestoreSecret(string encodedSecretId)
+        public SecretBundle? RestoreSecret(string encodedSecretId)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            return encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
+            return encryption.DecryptFromKeyVaultJwe<SecretBundle?>(encodedSecretId);
         }
 
         public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
