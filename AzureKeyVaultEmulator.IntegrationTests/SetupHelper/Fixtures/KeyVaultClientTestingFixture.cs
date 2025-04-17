@@ -9,7 +9,8 @@ using IdentityModel.Client;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
-public class EmulatorTestingFixture : IAsyncLifetime
+public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
+    where TClient : class
 {
     internal readonly TimeSpan _waitPeriod = TimeSpan.FromSeconds(30);
     internal DistributedApplication? _app;
@@ -30,6 +31,8 @@ public class EmulatorTestingFixture : IAsyncLifetime
     // Used to ensure no duplicates are used during high concurrency testing
     private readonly ConcurrentBag<string> _spentGuids = [];
     public string FreshlyGeneratedGuid => GetCleanGuid();
+
+    public abstract ValueTask<TClient> GetClientAsync();
 
     public async Task InitializeAsync()
     {

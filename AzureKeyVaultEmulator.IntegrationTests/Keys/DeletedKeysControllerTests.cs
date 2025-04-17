@@ -9,7 +9,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     [Fact]
     public async Task GetDeletedKeyReturnsFromDeletedKeyStore()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -27,7 +27,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     [Fact]
     public async Task GetDeletedKeysWillCycleLink()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -48,7 +48,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     [Fact]
     public async Task PurgeDeletedKeyRemovedFromDeletedStore()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -70,7 +70,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     [Fact]
     public async Task RestoreKeyRemovesFromDeletedStore()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 

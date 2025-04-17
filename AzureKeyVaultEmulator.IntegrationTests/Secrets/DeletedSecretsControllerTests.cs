@@ -10,7 +10,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task GetDeletedSecretReturnsPreviousDeletedSecretTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "getDeletedSecretName";
             var secretValue = "getSelectedSecretPassword";
@@ -33,7 +33,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task GetDeletedSecretsPagesForCorrectCountTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var multiSecretName = "multiDelete";
 
@@ -58,7 +58,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task PurgeDeletedSecretRemovesFromDeletedCacheTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "purgingSecret";
             var secretValue = "purgedValue";
@@ -87,7 +87,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task RecoverDeletedSecretRestoresToPrimaryCacheTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "recoveredDeletedSecret";
             var secretValue = "recoveredPassword";
