@@ -19,9 +19,10 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
 
     public async ValueTask<X509Certificate2> CreateCertificateAsync(string name, string? password = null)
     {
-        if (string.IsNullOrEmpty(name))
-            name = FreshlyGeneratedGuid;
+        var client = await GetClientAsync();
 
-        return X509CertificateLoader.
+        var createdCertificate = (await client.StartCreateCertificateAsync(name, CertificatePolicy.Default)).Value;
+
+        return X509CertificateLoader.LoadCertificate(createdCertificate.Cer);
     }
 }
