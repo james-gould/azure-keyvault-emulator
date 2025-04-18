@@ -9,6 +9,12 @@ public sealed class CertificatePolicy
     [JsonPropertyName("id")]
     public string Identifier { get; set; } = string.Empty;
 
+    [JsonPropertyName("subject")]
+    public string? Subject { get; set; }
+
+    [JsonPropertyName("issuer")]
+    public Issuer? Issuer { get; set; }
+
     [JsonPropertyName("attributes")]
     public CertificateAttributesModel CertificateAttributes { get; set; } = new();
 

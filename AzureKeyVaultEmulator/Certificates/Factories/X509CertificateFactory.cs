@@ -35,9 +35,9 @@ public static class X509CertificateFactory
         if (policy is null || policy.CertificateProperties is null)
             return null;
 
-        var builder = new SubjectAlternativeNameBuilder();
-
         var sans = policy.CertificateProperties.SubjectAlternativeNames;
+
+        var builder = new SubjectAlternativeNameBuilder();
 
         foreach(var ns in sans.DnsNames)
             builder.AddDnsName(ns);

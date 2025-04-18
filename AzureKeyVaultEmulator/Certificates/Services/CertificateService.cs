@@ -29,7 +29,7 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         attributes.NotBefore = certificate.NotBefore.ToUnixTimeSeconds();
         attributes.Expiration = certificate.NotAfter.ToUnixTimeSeconds();
 
-        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, OperationConstants.Pending, "certificates");
+        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, OperationConstants.Completed, "certificates");
 
         var bundle = new CertificateBundle
         {

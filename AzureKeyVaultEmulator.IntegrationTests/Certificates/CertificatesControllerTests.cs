@@ -94,7 +94,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var cert = await client.GetCertAsync(certName);
 
-        Assert.NotNull(cert?.Policy?.SubjectAlternativeNames);
+        Assert.NotNull(cert.Policy.SubjectAlternativeNames);
+
+        Assert.Equal(AuthConstants.EmulatorIss, cert.Policy.IssuerName);
 
         var certSan = cert!.Policy.SubjectAlternativeNames!;
 
