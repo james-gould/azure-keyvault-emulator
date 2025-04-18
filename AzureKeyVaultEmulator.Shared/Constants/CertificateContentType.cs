@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using AzureKeyVaultEmulator.Shared.Models.Certificates;
 
 namespace AzureKeyVaultEmulator.Shared.Constants;
 
@@ -32,13 +33,28 @@ public static class CertificateContentType
         return $"application/{_contentTypes[contentType]}";
     }
 
-    public static X509ContentType FromApplicationContentType(this string contentType)
+    public static X509ContentType FromApplicationContentType(this string? contentType)
     {
+        if (string.IsNullOrWhiteSpace(contentType))
+            return X509ContentType.Unknown;
+
         var matches = _typeRegex.Matches(contentType);
 
         if(matches.Count == 0)
             return X509ContentType.Unknown;
 
         return _contentTypes.Where(x => x.Value == matches[0].Value).FirstOrDefault().Key;
+    }
+
+    /// <summary>
+    /// Wrapper to ensure the content type matches an expected type for the response client.
+    /// </summary>
+    /// <param name="contentType">The content type provided by the <see cref="CertificatePolicy"/>.</param>
+    /// <returns>An application/{contentType} which meets the specs required by the CertificateClient.</returns>
+    public static string ParseCertContentType(this string? contentType)
+    {
+        var from = contentType.FromApplicationContentType();
+
+        return from.ToApplicationContentType();
     }
 }

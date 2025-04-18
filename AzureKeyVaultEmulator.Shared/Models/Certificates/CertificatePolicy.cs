@@ -7,7 +7,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 public sealed class CertificatePolicy
 {
     [JsonPropertyName("id")]
-    public required string Identifier { get; set; }
+    public string Identifier { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
     public CertificateAttributesModel? CertificateAttributes { get; set; }

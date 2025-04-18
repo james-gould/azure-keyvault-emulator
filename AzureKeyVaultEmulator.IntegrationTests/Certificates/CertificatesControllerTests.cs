@@ -16,11 +16,13 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         await Assert.ThrowsRequestFailedAsync(() => client.GetCertificateAsync(certName));
 
-        var operation = await client.StartCreateCertificateAsync(certName, new CertificatePolicy
+        var policy = new CertificatePolicy
         {
             ContentType = CertificateContentType.Pkcs12,
             KeySize = 2048
-        });
+        };
+
+        var operation = await client.StartCreateCertificateAsync(certName, policy, enabled: true);
 
         Assert.NotNull(operation);
 

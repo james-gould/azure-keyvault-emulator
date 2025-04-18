@@ -1,0 +1,35 @@
+﻿using System.Text.Json.Serialization;
+
+namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
+
+/// <summary>
+/// <para>Encapsulates metadata about the certificate.</para>
+/// <para>Not listed on the API, very cool Azure, but throws <see cref="InvalidOperationException"/> if required items are missing.</para>
+/// </summary>
+public class CertificateProperties : AttributeBase
+{
+    [JsonPropertyName("id")]
+    public required Uri CertificateIdentifier { get; set; }
+
+    [JsonPropertyName("name")]
+    public required string CertificateName { get; set; }
+
+    [JsonPropertyName("vaultUri")]
+    public required Uri VaultUri { get; set; }
+
+    [JsonPropertyName("x5t")]
+    public required string X509Thumbprint { get; set; }
+
+    // Recovery not currently supported. Raise an issue if it's required please.
+    [JsonPropertyName("recoveryLevelDays")]
+    public static int RecoveryLevelDays => 0;
+
+    [JsonPropertyName("version")]
+    public required string Version { get; set; }
+
+    [JsonPropertyName("attributes")]
+    public CertificateAttributesModel Attributes { get; set; } = new();
+
+    [JsonPropertyName("tags")]
+    public Dictionary<string, string> Tags { get; set; } = [];
+}

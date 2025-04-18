@@ -5,16 +5,16 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 public sealed class KeyProperties
 {
     [JsonPropertyName("crv")]
-    public required string JsonWebKeyCurveName { get; set; }
+    public string JsonWebKeyCurveName { get; set; } = string.Empty;
 
     [JsonPropertyName("exportable")]
     public static bool Exportable => true;
 
     [JsonPropertyName("key_size")]
-    public required int KeySize { get; set; }
+    public int KeySize { get; set; }
 
     [JsonPropertyName("kty")]
-    public required string JsonWebKeyType { get; set; }
+    public string JsonWebKeyType { get; set; } = string.Empty;
 
     [JsonPropertyName("reuse_key")]
     public bool ReuseKey { get; set; }

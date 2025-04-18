@@ -14,7 +14,13 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
 
         var setup = await GetClientSetupModelAsync();
 
-        return _certClient = new CertificateClient(setup.VaultUri, setup.Credential);
+        var options = new CertificateClientOptions
+        {
+            DisableChallengeResourceVerification = true,
+            RetryPolicy = _clientRetryPolicy
+        };
+
+        return _certClient = new CertificateClient(setup.VaultUri, setup.Credential, options);
     }
 
     public async Task<X509Certificate2> CreateCertificateAsync(string name, string? password = null)

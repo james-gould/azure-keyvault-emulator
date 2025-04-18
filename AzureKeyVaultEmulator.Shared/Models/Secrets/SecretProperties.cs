@@ -5,5 +5,5 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets;
 public sealed class SecretProperties
 {
     [JsonPropertyName("contentType")]
-    public required string ContentType { get; set; }
+    public string ContentType { get; set; } = string.Empty;
 }

@@ -11,7 +11,7 @@ namespace AzureKeyVaultEmulator.Certificates.Controllers;
 // https://learn.microsoft.com/en-us/rest/api/keyvault/certificates/operation-groups
 public class CertificatesController(ICertificateService certService) : Controller
 {
-    [HttpPost("{name}")]
+    [HttpPost("{name}/create")]
     public IActionResult CreateCertificate(
         [FromRoute] string name,
         [FromBody] CreateCertificateRequest request,
@@ -32,6 +32,16 @@ public class CertificatesController(ICertificateService certService) : Controlle
         ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
         var result = certService.GetCertificate(name, version);
+
+        return Ok(result);
+    }
+
+    [HttpGet("{name}")]
+    public IActionResult GetCertificate(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        var result = certService.GetCertificate(name, "");
 
         return Ok(result);
     }

@@ -29,24 +29,29 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         attributes.NotBefore = certificate.NotBefore.ToUnixTimeSeconds();
         attributes.Expiration = certificate.NotAfter.ToUnixTimeSeconds();
 
-        var certType = attributes.ContentType.FromApplicationContentType();
-        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, "", "certificates").ToString();
+        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, "", "certificates");
 
-        var bundle = new CertificateBundle(certType)
+        var version = OperationConstants.Completed;
+
+        var bundle = new CertificateBundle
         {
             CertificateIdentifier = certIdentifier,
             Attributes = attributes,
-            CertificatePolicy = GetPolicy(policy, certIdentifier),
-            Thumbprint = certificate.Thumbprint,
+            CertificateName = name,
+            VaultUri = new Uri(AuthConstants.EmulatorUri),
+            Version = version,
+            ContentType = policy?.SecretProperies?.ContentType.ParseCertContentType()!, // this is never null, bugger off SDK
+            CertificatePolicy = GetPolicy(policy, certIdentifier.ToString()),
+            X509Thumbprint = certificate.Thumbprint,
             CertificateContents = EncodingUtils.Base64UrlEncode(certificate.RawData)
         };
 
-        var cacheId = name.GetCacheId(OperationConstants.Completed);
+        var cacheId = name.GetCacheId(version);
 
         _certs.AddOrUpdate(name.GetCacheId(), bundle, (_, _) => bundle);
         _certs.TryAdd(cacheId, bundle);
 
-        return new CertificateOperation(certIdentifier, name);
+        return new CertificateOperation(certIdentifier.ToString(), name);
     }
 
     public CertificateBundle GetCertificate(string name, string version)
