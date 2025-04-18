@@ -29,5 +29,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.NotNull(certificateResult.Value);
 
         var certificateFromStore = await client.GetCertAsync(certName);
+
+        Assert.CertificatesAreEqual(certificateFromStore, certificateResult.Value);
     }
 }

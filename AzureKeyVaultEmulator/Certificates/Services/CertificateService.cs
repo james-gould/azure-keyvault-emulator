@@ -41,7 +41,10 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
             CertificateContents = EncodingUtils.Base64UrlEncode(certificate.RawData)
         };
 
-        _certs.TryAdd(name, bundle);
+        var cacheId = name.GetCacheId(OperationConstants.Completed);
+
+        _certs.AddOrUpdate(name.GetCacheId(), bundle, (_, _) => bundle);
+        _certs.TryAdd(cacheId, bundle);
 
         return new CertificateOperation(certIdentifier, name);
     }

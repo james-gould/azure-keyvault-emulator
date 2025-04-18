@@ -19,7 +19,7 @@ public class CertificatesController(ICertificateService certService) : Controlle
     {
         var result = certService.CreateCertificate(name, request.Attributes, request.CertificatePolicy);
 
-        return Ok(result);
+        return Accepted(result);
     }
 
     [HttpGet("{name}/{version}")]
