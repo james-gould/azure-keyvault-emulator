@@ -10,7 +10,7 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
     private static readonly ConcurrentDictionary<string, KeyProperties> _backingKeys = [];
     private static readonly ConcurrentDictionary<string, SecretProperties> _backingSecrets = [];
 
-    public CertificateBundle CreateCertificate(
+    public CertificateOperation CreateCertificate(
         string name,
         CertificateAttributesModel attributes,
         CertificatePolicy? policy)
@@ -43,7 +43,7 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
 
         _certs.TryAdd(name, bundle);
 
-        return bundle;
+        return new CertificateOperation(certIdentifier, name);
     }
 
     public CertificateBundle GetCertificate(string name, string version)
