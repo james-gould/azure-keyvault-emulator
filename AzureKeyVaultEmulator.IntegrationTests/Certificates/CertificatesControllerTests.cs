@@ -1,5 +1,4 @@
 ﻿using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
-using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.IntegrationTests.Extensions;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
@@ -7,6 +6,22 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     : IClassFixture<CertificatesTestingFixture>
 {
+
+    [Fact]
+    public async Task NotWaitingForOperationWillThrow()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetCertAsync(certName));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            var cert = (await client.StartCreateCertificateAsync(certName, fixture.BasicPolicy, enabled: true)).Value;
+        });
+    }
+
     [Fact]
     public async Task EvaulatingCertificateOperationWillSucceed()
     {
@@ -16,17 +31,31 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         await Assert.ThrowsRequestFailedAsync(() => client.GetCertificateAsync(certName));
 
-        var policy = new CertificatePolicy
-        {
-            ContentType = CertificateContentType.Pkcs12,
-            KeySize = 2048
-        };
-
-        var operation = await client.StartCreateCertificateAsync(certName, policy, enabled: true);
+        var operation = await client.StartCreateCertificateAsync(certName, fixture.BasicPolicy, enabled: true);
 
         Assert.NotNull(operation);
 
         await operation.UpdateStatusAsync();
+
+        var certificateFromStore = await client.GetCertAsync(certName);
+
+        Assert.Equal(certName, certificateFromStore.Name);
+    }
+
+    [Fact]
+    public async Task WaitForCompletionWillCompleteCreationOperation()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetCertificateAsync(certName));
+
+        var operation = await client.StartCreateCertificateAsync(certName, fixture.BasicPolicy, enabled: true);
+
+        await operation.WaitForCompletionAsync();
+
+        Assert.True(operation.HasCompleted);
 
         var certificateFromStore = await client.GetCertAsync(certName);
 

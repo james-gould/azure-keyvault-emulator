@@ -29,9 +29,7 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         attributes.NotBefore = certificate.NotBefore.ToUnixTimeSeconds();
         attributes.Expiration = certificate.NotAfter.ToUnixTimeSeconds();
 
-        var version = OperationConstants.Completed;
-
-        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, version, "certificates");
+        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, OperationConstants.Pending, "certificates");
 
         var bundle = new CertificateBundle
         {
@@ -39,28 +37,28 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            Version = version,
+            Version = OperationConstants.Completed,
             ContentType = policy?.SecretProperies?.ContentType.ParseCertContentType()!, // this is never null, bugger off SDK
             CertificatePolicy = GetPolicy(policy, certIdentifier.ToString(), attributes),
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData)
         };
 
-        var cacheId = name.GetCacheId(version);
-
-        // client.CertificateOperation checks for version: pending | completed. We need to handle both.
-        var cacheIdPending = name.GetCacheId(OperationConstants.Pending);
-
-        _certs.AddOrUpdate(name.GetCacheId(), bundle, (_, _) => bundle);
-        _certs.TryAdd(cacheId, bundle);
-        _certs.TryAdd(cacheIdPending, bundle);
+        _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
 
         return new CertificateOperation(certIdentifier.ToString(), name);
     }
 
-    public CertificateBundle GetCertificate(string name, string version)
+    public CertificateOperation GetPendingCertificate(string name)
     {
-        return _certs.SafeGet(name.GetCacheId(version));
+        var cert = _certs.SafeGet(name.GetCacheId());
+
+        return new CertificateOperation(cert.CertificateIdentifier.ToString(), name);
+    }
+
+    public CertificateBundle GetCertificate(string name)
+    {
+        return _certs.SafeGet(name.GetCacheId());
     }
 
     private static CertificatePolicy GetPolicy(

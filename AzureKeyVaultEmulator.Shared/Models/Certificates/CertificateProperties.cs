@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Constants;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
@@ -19,6 +20,9 @@ public class CertificateProperties : AttributeBase
 
     [JsonPropertyName("x5t")]
     public required string X509Thumbprint { get; set; }
+
+    [JsonPropertyName("status")]
+    public static string OperationStatus = OperationConstants.Completed; // del
 
     // Recovery not currently supported. Raise an issue if it's required please.
     [JsonPropertyName("recoveryLevelDays")]

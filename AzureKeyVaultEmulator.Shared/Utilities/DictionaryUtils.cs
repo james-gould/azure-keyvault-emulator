@@ -13,4 +13,10 @@ public static class DictionaryUtils
 
         return value;
     }
+
+    public static void SafeAddOrUpdate<T>(this ConcurrentDictionary<string, T> dict, string name, T value)
+        => dict.AddOrUpdate(name, value, (_, _) => value);
+
+    public static void SafeRemove<T>(this ConcurrentDictionary<string, T> dict, string key)
+        => dict.TryRemove(key, out _);
 }

@@ -5,6 +5,7 @@ using Aspire.Hosting;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using AzureKeyVaultEmulator.Shared.Constants;
+using AzureKeyVaultEmulator.Shared.Utilities;
 using IdentityModel.Client;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
@@ -103,9 +104,15 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
         return _bearerToken;
     }
 
+    /// <summary>
+    /// <para>Very unnecessary but literally a "just in case" <see cref="Guid"/> creation helper.</para>
+    /// <para>If this every throws <see cref="InvalidOperationException"/>, buy a lottery ticket.</para>
+    /// </summary>
+    /// <returns>A <see cref="Guid"/> formatted in lowercase without hyphens.</returns>
+    /// <exception cref="InvalidOperationException"></exception>
     private string GetCleanGuid()
     {
-        var guid = Guid.NewGuid().ToString("n");
+        var guid = Guid.NewGuid().Neat();
 
         var exists = _spentGuids.FirstOrDefault(x => x.Equals(guid, StringComparison.InvariantCultureIgnoreCase));
 

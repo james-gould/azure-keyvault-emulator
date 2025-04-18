@@ -22,25 +22,24 @@ public class CertificatesController(ICertificateService certService) : Controlle
         return Accepted(result);
     }
 
-    [HttpGet("{name}/{version}")]
-    public IActionResult GetCertificate(
-        [FromRoute] string name,
-        [ApiVersion] string apiVersion,
-        [FromRoute] string version = "")
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
-        var result = certService.GetCertificate(name, version);
-
-        return Ok(result);
-    }
-
     [HttpGet("{name}")]
     public IActionResult GetCertificate(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
-        var result = certService.GetCertificate(name, "");
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        var result = certService.GetCertificate(name);
+
+        return Ok(result);
+    }
+
+    [HttpGet("{name}/pending")]
+    public IActionResult GetPendingCertificate(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        var result = certService.GetPendingCertificate(name);
 
         return Ok(result);
     }

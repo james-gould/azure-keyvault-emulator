@@ -7,6 +7,9 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
 {
     private CertificateClient? _certClient;
 
+    public CertificatePolicy BasicPolicy
+        = new() { KeySize = 2048, ContentType = CertificateContentType.Pkcs12 };
+
     public override async ValueTask<CertificateClient> GetClientAsync()
     {
         if (_certClient is not null)
