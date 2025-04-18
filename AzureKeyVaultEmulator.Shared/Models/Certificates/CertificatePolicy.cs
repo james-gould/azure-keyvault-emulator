@@ -19,8 +19,8 @@ public sealed class CertificatePolicy
     public IEnumerable<LifetimeActions> LifetimeActions { get; set; } = [];
 
     [JsonPropertyName("key_props")]
-    public KeyProperties? KeyProperties { get; set; }
+    public KeyProperties? KeyProperties { get; set; } = new();
 
     [JsonPropertyName("secret_props")]
-    public SecretProperties? SecretProperies { get; set; }
+    public SecretProperties? SecretProperies { get; set; } = new();
 }

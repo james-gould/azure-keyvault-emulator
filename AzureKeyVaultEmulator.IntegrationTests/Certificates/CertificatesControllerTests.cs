@@ -1,5 +1,7 @@
 ﻿using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 using AzureKeyVaultEmulator.IntegrationTests.Extensions;
+using Azure.Security.KeyVault.Certificates;
+using AzureKeyVaultEmulator.Shared.Constants;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 
@@ -61,5 +63,43 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var certificateFromStore = await client.GetCertAsync(certName);
 
         Assert.Equal(certName, certificateFromStore.Name);
+    }
+
+    [Fact]
+    public async Task AddingCustomSubjectsToCertificateWillPersist()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var email = "emulator@keyvault.net";
+        var ip = "127.0.0.1";
+        var principal = "Emulator";
+
+        var sans = new SubjectAlternativeNames();
+
+        sans.Emails.Add(email);
+        sans.UserPrincipalNames.Add(principal);
+        sans.DnsNames.Add(ip);
+
+        var policy = new CertificatePolicy(AuthConstants.EmulatorIss, sans)
+        {
+            KeySize = 2048,
+            ContentType = Azure.Security.KeyVault.Certificates.CertificateContentType.Pkcs12
+        };
+
+        var operation = await client.StartCreateCertificateAsync(certName, policy);
+
+        await operation.WaitForCompletionAsync();
+
+        var cert = await client.GetCertAsync(certName);
+
+        Assert.NotNull(cert?.Policy?.SubjectAlternativeNames);
+
+        var certSan = cert!.Policy.SubjectAlternativeNames!;
+
+        Assert.Contains(email, certSan.Emails);
+        Assert.Contains(ip, certSan.DnsNames);
+        Assert.Contains(principal, certSan.UserPrincipalNames);
     }
 }
