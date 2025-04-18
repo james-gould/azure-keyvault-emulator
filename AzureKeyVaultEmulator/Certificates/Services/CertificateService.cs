@@ -37,8 +37,6 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            Version = OperationConstants.Completed,
-            ContentType = policy?.SecretProperies?.ContentType.ParseCertContentType()!, // this is never null, bugger off SDK
             CertificatePolicy = GetPolicy(policy, certIdentifier.ToString(), attributes),
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData)

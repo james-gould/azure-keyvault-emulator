@@ -6,7 +6,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     : IClassFixture<CertificatesTestingFixture>
 {
-
     [Fact]
     public async Task NotWaitingForOperationWillThrow()
     {
