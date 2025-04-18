@@ -22,10 +22,10 @@ public static class X509CertificateFactory
                 false)
             );
 
-        var subjectName = policy.BuildSubjectAlternativeName();
+        var sans = policy.BuildSubjectAlternativeName();
 
-        if (subjectName is not null)
-            request.CertificateExtensions.Add(subjectName);
+        if (sans is not null)
+            request.CertificateExtensions.Add(sans);
 
         return request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(365));
     }
@@ -37,13 +37,15 @@ public static class X509CertificateFactory
 
         var builder = new SubjectAlternativeNameBuilder();
 
-        foreach(var ns in policy.CertificateProperties.DnsNames)
+        var sans = policy.CertificateProperties.SubjectAlternativeNames;
+
+        foreach(var ns in sans.DnsNames)
             builder.AddDnsName(ns);
 
-        foreach(var email in  policy.CertificateProperties.Emails)
+        foreach(var email in  sans.Emails)
             builder.AddEmailAddress(email);
 
-        foreach(var principal in policy.CertificateProperties.Upns)
+        foreach(var principal in sans.Upns)
             builder.AddUserPrincipalName(principal);
 
         return builder.Build();
