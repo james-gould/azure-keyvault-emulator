@@ -10,7 +10,10 @@ public sealed class CertificatePolicy
     public string Identifier { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public CertificateAttributesModel? CertificateAttributes { get; set; }
+    public CertificateAttributesModel CertificateAttributes { get; set; } = new();
+
+    [JsonPropertyName("x509_props")]
+    public X509CertificateProperties? CertificateProperties { get; set; } = new();
 
     [JsonPropertyName("lifetime_actions")]
     public IEnumerable<LifetimeActions> LifetimeActions { get; set; } = [];
@@ -20,7 +23,4 @@ public sealed class CertificatePolicy
 
     [JsonPropertyName("secret_props")]
     public SecretProperties? SecretProperies { get; set; }
-
-    [JsonPropertyName("x509_props")]
-    public X509CertificateProperties? CertificateProperties { get; set; }
 }

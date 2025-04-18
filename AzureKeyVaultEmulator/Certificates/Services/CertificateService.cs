@@ -29,9 +29,9 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         attributes.NotBefore = certificate.NotBefore.ToUnixTimeSeconds();
         attributes.Expiration = certificate.NotAfter.ToUnixTimeSeconds();
 
-        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, "", "certificates");
-
         var version = OperationConstants.Completed;
+
+        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, version, "certificates");
 
         var bundle = new CertificateBundle
         {
@@ -41,15 +41,19 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
             VaultUri = new Uri(AuthConstants.EmulatorUri),
             Version = version,
             ContentType = policy?.SecretProperies?.ContentType.ParseCertContentType()!, // this is never null, bugger off SDK
-            CertificatePolicy = GetPolicy(policy, certIdentifier.ToString()),
+            CertificatePolicy = GetPolicy(policy, certIdentifier.ToString(), attributes),
             X509Thumbprint = certificate.Thumbprint,
-            CertificateContents = EncodingUtils.Base64UrlEncode(certificate.RawData)
+            CertificateContents = Convert.ToBase64String(certificate.RawData)
         };
 
         var cacheId = name.GetCacheId(version);
 
+        // client.CertificateOperation checks for version: pending | completed. We need to handle both.
+        var cacheIdPending = name.GetCacheId(OperationConstants.Pending);
+
         _certs.AddOrUpdate(name.GetCacheId(), bundle, (_, _) => bundle);
         _certs.TryAdd(cacheId, bundle);
+        _certs.TryAdd(cacheIdPending, bundle);
 
         return new CertificateOperation(certIdentifier.ToString(), name);
     }
@@ -59,13 +63,15 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         return _certs.SafeGet(name.GetCacheId(version));
     }
 
-    // Feels janky
-    private static CertificatePolicy GetPolicy(CertificatePolicy? policy, string identifier)
+    private static CertificatePolicy GetPolicy(
+        CertificatePolicy? policy,
+        string identifier,
+        CertificateAttributesModel attributes)
     {
-        if (policy is not null)
-            policy.Identifier = identifier;
-        else
-            policy = new() { Identifier  = identifier };
+        policy ??= new();
+
+        policy.Identifier = identifier;
+        policy.CertificateAttributes ??= attributes;
 
         return policy;
     }

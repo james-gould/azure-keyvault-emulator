@@ -19,7 +19,6 @@ public static class CertificateContentType
 
         // actually used content types from schema above
         { X509ContentType.Cert, "pkix-cert" },
-        { X509ContentType.Pfx, "x-pkcs12" },
         { X509ContentType.Pkcs7, "x-pkcs7-crl" },
         { X509ContentType.Pkcs12, "x-pkcs12" },
 

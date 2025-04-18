@@ -1,6 +1,6 @@
 ﻿namespace AzureKeyVaultEmulator.Shared.Utilities;
 
-public static class DateTimeUtils
+public static class DataExtensions
 {
     /// <summary>
     /// Converts a <see cref="DateTime"/> to a <see cref="DateTimeOffset"/> and returns the epoch time.
@@ -16,5 +16,15 @@ public static class DateTimeUtils
         var dto = new DateTimeOffset(dt, TimeZoneInfo.FindSystemTimeZoneById(timeZone).GetUtcOffset(dt));
 
         return dto.ToUnixTimeSeconds();
+    }
+
+    /// <summary>
+    /// Formats the <paramref name="guid"/> in lowercase with no hyphens ("-").
+    /// </summary>
+    /// <param name="guid">The guid to format.</param>
+    /// <returns>A formatted <see cref="Guid"/></returns>
+    public static string Neat(this Guid guid)
+    {
+        return guid.ToString("n");
     }
 }

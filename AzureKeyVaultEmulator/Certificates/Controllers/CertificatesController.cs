@@ -25,11 +25,10 @@ public class CertificatesController(ICertificateService certService) : Controlle
     [HttpGet("{name}/{version}")]
     public IActionResult GetCertificate(
         [FromRoute] string name,
-        [FromRoute] string version,
-        [ApiVersion] string apiVersion)
+        [ApiVersion] string apiVersion,
+        [FromRoute] string version = "")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
         var result = certService.GetCertificate(name, version);
 

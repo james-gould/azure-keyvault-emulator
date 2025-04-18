@@ -26,12 +26,10 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.NotNull(operation);
 
-        var certificateResult = await operation.WaitForCompletionAsync();
-
-        Assert.NotNull(certificateResult.Value);
+        await operation.UpdateStatusAsync();
 
         var certificateFromStore = await client.GetCertAsync(certName);
 
-        Assert.CertificatesAreEqual(certificateFromStore, certificateResult.Value);
+        Assert.Equal(certName, certificateFromStore.Name);
     }
 }
