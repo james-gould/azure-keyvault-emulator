@@ -35,7 +35,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.NotNull(operation);
 
-        await operation.UpdateStatusAsync();
+        var response = await operation.UpdateStatusAsync();
+
+        Assert.Equal((int)HttpStatusCode.OK, response.Status);
 
         var certificateFromStore = await client.GetCertAsync(certName);
 
