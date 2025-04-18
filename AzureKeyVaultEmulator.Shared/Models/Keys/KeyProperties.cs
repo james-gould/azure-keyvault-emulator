@@ -11,7 +11,7 @@ public sealed class KeyProperties
     public static bool Exportable => true;
 
     [JsonPropertyName("key_size")]
-    public required long KeySize { get; set; }
+    public required int KeySize { get; set; }
 
     [JsonPropertyName("kty")]
     public required string JsonWebKeyType { get; set; }

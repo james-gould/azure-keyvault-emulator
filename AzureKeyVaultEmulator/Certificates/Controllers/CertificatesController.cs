@@ -1,4 +1,5 @@
 ﻿using AzureKeyVaultEmulator.Certificates.Services;
+using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,9 +8,21 @@ namespace AzureKeyVaultEmulator.Certificates.Controllers;
 [ApiController]
 [Route("certificates")]
 [Authorize]
+// https://learn.microsoft.com/en-us/rest/api/keyvault/certificates/operation-groups
 public class CertificatesController(ICertificateService certService) : Controller
 {
-    [HttpGet("{name}")]
+    [HttpPost("{name}")]
+    public IActionResult CreateCertificate(
+        [FromRoute] string name,
+        [FromBody] CreateCertificateRequest request,
+        [ApiVersion] string apiVersion)
+    {
+        var result = certService.CreateCertificate(name, request.Attributes, request.CertificatePolicy);
+
+        return Ok(result);
+    }
+
+    [HttpGet("{name}/{version}")]
     public IActionResult GetCertificate(
         [FromRoute] string name,
         [FromRoute] string version,

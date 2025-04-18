@@ -36,17 +36,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             var JWKS = GetJWKSFromModel(key.KeySize, key.KeyType);
 
             var version = Guid.NewGuid().ToString();
-            var keyUrl = new UriBuilder
-            {
-                Scheme = httpContextAccessor.HttpContext?.Request.Scheme,
-                Host = httpContextAccessor.HttpContext?.Request.Host.Host,
-                Port = httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
-                Path = $"keys/{name}/{version}"
-            };
+            var keyUrl = httpContextAccessor.BuildIdentifierUri(name, version, "keys");
 
             JWKS.KeyName = name;
             JWKS.KeyVersion = version;
-            JWKS.KeyIdentifier = keyUrl.Uri.ToString();
+            JWKS.KeyIdentifier = keyUrl.ToString();
             JWKS.KeyOperations = key.KeyOperations;
 
             var response = new KeyBundle

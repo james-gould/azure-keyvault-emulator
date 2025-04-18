@@ -4,13 +4,8 @@ using AzureKeyVaultEmulator.Shared.Constants;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates
 {
-    public sealed class CertificateBundle : ResponseBase
+    public sealed class CertificateBundle(X509ContentType contentType) : ResponseBase
     {
-        public CertificateBundle(X509ContentType contentType)
-        {
-            ContentType = contentType.ToApplicationContentType();
-        }
-
         [JsonPropertyName("id")]
         public required string CertificateIdentifier { get; set; }
 
@@ -21,10 +16,10 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates
         public required string CertificateContents { get; set; }
 
         [JsonPropertyName("contentType")]
-        public string ContentType { get; private set; }
+        public string ContentType => contentType.ToApplicationContentType();
 
         [JsonPropertyName("kid")]
-        public required string KeyIdentifier { get; set; }
+        public string KeyIdentifier { get; set; } = string.Empty;
 
         [JsonPropertyName("policy")]
         public CertificatePolicy? CertificatePolicy { get; set; }

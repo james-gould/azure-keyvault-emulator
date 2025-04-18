@@ -30,17 +30,12 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             ArgumentNullException.ThrowIfNull(secret);
 
             var version = Guid.NewGuid().ToString();
-            var secretUrl = new UriBuilder
-            {
-                Scheme = httpContextAccessor.HttpContext?.Request.Scheme,
-                Host = httpContextAccessor.HttpContext?.Request.Host.Host,
-                Port = httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
-                Path = $"secrets/{name}/{version}"
-            };
+
+            var secretUri = httpContextAccessor.BuildIdentifierUri(name, version, "secrets");
 
             var response = new SecretBundle
             {
-                Id = secretUrl.Uri,
+                Id = secretUri,
                 Value = secret.Value,
                 Attributes = secret.SecretAttributes,
                 Tags = secret.Tags

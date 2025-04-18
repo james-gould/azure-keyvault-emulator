@@ -4,10 +4,10 @@ using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
-public sealed class CertificatePolicy(string id)
+public sealed class CertificatePolicy
 {
     [JsonPropertyName("id")]
-    public string Identifier => id;
+    public required string Identifier { get; set; }
 
     [JsonPropertyName("attributes")]
     public CertificateAttributesModel? CertificateAttributes { get; set; }

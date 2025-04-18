@@ -1,9 +1,12 @@
 ﻿using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 
 namespace AzureKeyVaultEmulator.Shared.Constants;
 
 public static class CertificateContentType
 {
+    private static Regex _typeRegex = new Regex(@"^application\/([^\/\s]+)$", RegexOptions.Compiled);
+
     // https://pki-tutorial.readthedocs.io/en/latest/mime.html
     private static Dictionary<X509ContentType, string> _contentTypes = new()
     {
@@ -27,5 +30,15 @@ public static class CertificateContentType
     public static string ToApplicationContentType(this X509ContentType contentType)
     {
         return $"application/{_contentTypes[contentType]}";
+    }
+
+    public static X509ContentType FromApplicationContentType(this string contentType)
+    {
+        var matches = _typeRegex.Matches(contentType);
+
+        if(matches.Count == 0)
+            return X509ContentType.Unknown;
+
+        return _contentTypes.Where(x => x.Value == matches[0].Value).FirstOrDefault().Key;
     }
 }
