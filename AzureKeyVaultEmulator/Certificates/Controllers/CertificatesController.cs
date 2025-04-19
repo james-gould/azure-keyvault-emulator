@@ -25,6 +25,9 @@ public class CertificatesController(ICertificateService certService) : Controlle
         return Accepted(result);
     }
 
+    // pending/completed must be above {version:regex...} due to ASP.NET Core's ordering with endpoint registration
+    // separating these into another controller caused the same bugs to occur due to the above registration behaviour.
+
     [HttpGet("{name}/pending")]
     public IActionResult GetPendingCertificate(
         [FromRoute] string name,
