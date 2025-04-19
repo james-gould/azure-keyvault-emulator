@@ -1,4 +1,5 @@
 ﻿using AzureKeyVaultEmulator.Certificates.Services;
+using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,8 @@ public class CertificatesController(ICertificateService certService) : Controlle
         [FromBody] CreateCertificateRequest request,
         [ApiVersion] string apiVersion)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var result = certService.CreateCertificate(name, request.Attributes, request.CertificatePolicy);
 
         return Accepted(result);
@@ -27,7 +30,7 @@ public class CertificatesController(ICertificateService certService) : Controlle
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         var result = certService.GetCertificate(name);
 
@@ -39,19 +42,23 @@ public class CertificatesController(ICertificateService certService) : Controlle
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var result = certService.GetPendingCertificate(name);
 
         return Ok(result);
     }
 
-    [HttpPatch("{name}/{version}")]
-    public IActionResult UpdateCertificate(
+    [HttpPatch("{name}/policy")]
+    public IActionResult UpdateCertificatePolicy(
         [FromRoute] string name,
-        [FromRoute] string version,
-        [FromBody] UpdateCertificateRequest request,
+        [FromBody] CertificatePolicy policy,
         [ApiVersion] string apiVersion)
     {
-        var result = certService.UpdateCertificate(request.Attributes, request.Policy, request.Tags);
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(policy);
+
+        var result = certService.UpdateCertificatePolicy(name, policy);
 
         return Ok(result);
     }

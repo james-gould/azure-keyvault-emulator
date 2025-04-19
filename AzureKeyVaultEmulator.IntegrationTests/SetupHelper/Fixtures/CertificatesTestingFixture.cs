@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using Azure.Security.KeyVault.Certificates;
+﻿using Azure.Security.KeyVault.Certificates;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
@@ -7,8 +6,7 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
 {
     private CertificateClient? _certClient;
 
-    public CertificatePolicy BasicPolicy
-        = new() { KeySize = 2048, ContentType = CertificateContentType.Pkcs12 };
+    public CertificatePolicy BasicPolicy = CertificatePolicy.Default;
 
     public override async ValueTask<CertificateClient> GetClientAsync()
     {
@@ -26,12 +24,15 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
         return _certClient = new CertificateClient(setup.VaultUri, setup.Credential, options);
     }
 
-    public async Task<X509Certificate2> CreateCertificateAsync(string name, string? password = null)
+    public async Task<KeyVaultCertificateWithPolicy>
+        CreateCertificateAsync(string name, string? password = null)
     {
         var client = await GetClientAsync();
 
-        var createdCertificate = (await client.StartCreateCertificateAsync(name, CertificatePolicy.Default)).Value;
+        var createdCertificate = await client.StartCreateCertificateAsync(name, CertificatePolicy.Default);
 
-        return X509CertificateLoader.LoadCertificate(createdCertificate.Cer);
+        return await client.GetCertificateAsync(name);
+
+        //return X509CertificateLoader.LoadCertificate(cert.Value.Cer);
     }
 }

@@ -8,7 +8,7 @@ public sealed class CreateCertificateRequest
     public CertificateAttributesModel Attributes { get; set; } = new();
 
     [JsonPropertyName("policy")]
-    public CertificatePolicy? CertificatePolicy { get; set; }
+    public CertificatePolicy CertificatePolicy { get; set; } = new();
 
     [JsonPropertyName("tags")]
     public Dictionary<string, string> Tags { get; set; } = [];

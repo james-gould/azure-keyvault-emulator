@@ -104,4 +104,26 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.Contains(ip, certSan.DnsNames);
         Assert.Contains(principal, certSan.UserPrincipalNames);
     }
+
+    [Fact]
+    public async Task UpdatingCertificateWillPersistChange()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        Assert.True(cert.Policy.Enabled);
+
+        var policyToUpdate = fixture.BasicPolicy;
+
+        policyToUpdate.Enabled = false;
+
+        var updated = await client.UpdateCertificatePolicyAsync(certName, policyToUpdate);
+
+        Assert.NotEqual(cert.Policy, updated);
+
+        Assert.False(updated.Value.Enabled);
+    }
 }

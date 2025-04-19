@@ -52,24 +52,15 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         return _certs.SafeGet(name.GetCacheId());
     }
 
-    public CertificateBundle UpdateCertificate(string name, string version, CertificateAttributesModel? attributesModel, CertificatePolicy? policy, Dictionary<string, string>? tags)
+    public CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy policy)
     {
-        var cacheId = name.GetCacheId(version);
+        var cert = _certs.SafeGet(name.GetCacheId());
 
-        var cert = _certs.SafeGet(cacheId);
+        cert.CertificatePolicy = policy;
 
-        if(attributesModel is not null)
-            cert.Attributes = attributesModel;
+        _certs.SafeAddOrUpdate(name, cert);
 
-        if(policy is not null)
-            cert.CertificatePolicy = policy;
-
-        if(tags is not null)
-            cert.Tags = tags;
-
-        _certs.SafeAddOrUpdate(cacheId, cert);
-
-        return cert;
+        return policy;
     }
 
     public CertificateOperation GetPendingCertificate(string name)
