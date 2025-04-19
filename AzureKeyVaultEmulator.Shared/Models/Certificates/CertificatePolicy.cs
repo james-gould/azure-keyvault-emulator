@@ -13,7 +13,7 @@ public sealed class CertificatePolicy
     public string Subject { get; set; } = string.Empty;
 
     [JsonPropertyName("issuer")]
-    public Issuer Issuer { get; set; } = new();
+    public IssuerBundle Issuer { get; set; } = new();
 
     [JsonPropertyName("attributes")]
     public CertificateAttributesModel CertificateAttributes { get; set; } = new();

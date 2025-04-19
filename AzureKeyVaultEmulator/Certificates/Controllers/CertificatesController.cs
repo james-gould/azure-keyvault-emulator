@@ -64,7 +64,7 @@ public class CertificatesController(ICertificateService certService) : Controlle
         return Ok(result);
     }
 
-    [HttpGet("{name}/{version:regex(^(?!pending$|completed$).+)}")]
+    [HttpGet("{name:regex(^(?!issuers$).+)}/{version:regex(^(?!pending$|completed$).+)}")]
     public IActionResult GetCertificateByVersion(
         [FromRoute] string name,
         [FromRoute] string version,
@@ -102,5 +102,15 @@ public class CertificatesController(ICertificateService certService) : Controlle
         var result = certService.UpdateCertificatePolicy(name, policy);
 
         return Ok(result);
+    }
+
+    [HttpGet("issuers/{name}")]
+    public IActionResult GetCertificateIssuer(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        // Issuers aren't currently tracked in an associative way.
+        // Stubbing for now.
+        return Ok(new IssuerBundle());
     }
 }

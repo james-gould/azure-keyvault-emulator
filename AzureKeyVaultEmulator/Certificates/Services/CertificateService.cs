@@ -80,6 +80,16 @@ public sealed class CertificateService(
         return new CertificateOperation(cert.CertificateIdentifier.ToString(), name);
     }
 
+    public IssuerBundle GetCertificateIssuer(string name)
+    {
+        var cert = _certs.SafeGet(name.GetCacheId());
+
+        if (cert.CertificatePolicy?.Issuer is null)
+            throw new InvalidOperationException($"Certificate {name} was found but no issuer was associated.");
+
+        return cert.CertificatePolicy.Issuer;
+    }
+
     private static CertificatePolicy UpdateNullablePolicy(
         CertificatePolicy? policy,
         string identifier,

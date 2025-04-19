@@ -178,4 +178,16 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.Equal(cert.Policy.Subject, policy.Subject);
         Assert.Equal(cert.Policy.Enabled, policy.Enabled);
     }
+
+    [Fact]
+    public async Task GetCertificateIssuerWillSucceed()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var issuerName = fixture.FreshlyGeneratedGuid;
+
+        var issuer = await client.GetIssuerAsync(issuerName);
+
+        Assert.NotNull(issuer);
+    }
 }

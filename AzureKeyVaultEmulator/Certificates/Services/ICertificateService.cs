@@ -10,4 +10,6 @@ public interface ICertificateService
     CertificateOperation GetPendingCertificate(string name);
     CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy certificatePolicy);
     CertificatePolicy GetCertificatePolicy(string name);
+
+    IssuerBundle GetCertificateIssuer(string name);
 }
