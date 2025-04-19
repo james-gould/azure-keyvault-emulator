@@ -14,6 +14,11 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
     // { certName, IssuerBundle } 
     private static readonly ConcurrentDictionary<string, IssuerBundle> _certificateIssuers = new();
 
+    public IssuerBundle GetIssuer(string name)
+    {
+        return _issuers.SafeGet(name.GetCacheId());
+    }
+
     public (KeyBundle backingKey, SecretBundle backingSecret) GetBackingComponents(string certName, CertificatePolicy? policy = null)
     {
         var keySize = policy?.KeyProperties?.KeySize ?? 2048;

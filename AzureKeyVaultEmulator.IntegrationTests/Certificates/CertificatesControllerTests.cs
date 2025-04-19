@@ -231,6 +231,6 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var issuer = response.Value;
 
-        Assert.Equivalent(issuerConfig, issuer);
+        Assert.IssuersAreEqual(issuerConfig, issuer);
     }
 }

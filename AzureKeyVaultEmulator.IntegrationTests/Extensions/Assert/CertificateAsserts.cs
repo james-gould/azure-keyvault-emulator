@@ -35,4 +35,18 @@ public partial class Assert
         if (!string.IsNullOrEmpty(first.KeyId.ToString()) || !string.IsNullOrEmpty(second.KeyId.ToString()))
             Equal(first.KeyId, second.KeyId);
     }
+
+    public static void IssuersAreEqual(CertificateIssuer first, CertificateIssuer second, bool firstFromConfig = true)
+    {
+        Equivalent(first.AdministratorContacts, second.AdministratorContacts);
+
+        Equal(first.Name, second.Name);
+        Equal(first.AccountId, second.AccountId);
+        Equal(first.Password, second.Password);
+        Equal(first.Enabled, second.Enabled);
+        Equal(first.Provider, second.Provider);
+
+        if(firstFromConfig)
+            NotEqual(first.Id, second.Id);
+    }
 }
