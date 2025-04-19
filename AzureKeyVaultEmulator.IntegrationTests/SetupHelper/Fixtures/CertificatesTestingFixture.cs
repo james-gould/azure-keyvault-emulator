@@ -29,10 +29,33 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
     {
         var client = await GetClientAsync();
 
-        var createdCertificate = await client.StartCreateCertificateAsync(name, CertificatePolicy.Default);
+        await client.StartCreateCertificateAsync(name, CertificatePolicy.Default);
 
         return await client.GetCertificateAsync(name);
 
         //return X509CertificateLoader.LoadCertificate(cert.Value.Cer);
+    }
+
+    public CertificateIssuer CreateIssuerConfiguration(string issuerName, string provider = "Self")
+    {
+        var issuerConfig = new CertificateIssuer(issuerName, provider)
+        {
+            AccountId = FreshlyGeneratedGuid,
+            Password = FreshlyGeneratedGuid,
+            Enabled = true,
+            OrganizationId = FreshlyGeneratedGuid
+        };
+
+        var contact = new AdministratorContact
+        {
+            Email = "emulator@keyvault.net",
+            FirstName = "Azure",
+            LastName = "Key Vault",
+            Phone = "0118 999 881 999 119 7253"
+        };
+
+        issuerConfig.AdministratorContacts.Add(contact);
+
+        return issuerConfig;
     }
 }

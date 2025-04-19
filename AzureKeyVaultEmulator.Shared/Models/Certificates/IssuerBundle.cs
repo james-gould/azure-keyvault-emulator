@@ -4,10 +4,11 @@ using AzureKeyVaultEmulator.Shared.Utilities;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
+// https://learn.microsoft.com/en-us/rest/api/keyvault/certificates/get-certificate-issuer/get-certificate-issuer?view=rest-keyvault-certificates-7.4&tabs=HTTP#examples
 public sealed class IssuerBundle
 {
     [JsonPropertyName("id")]
-    public string Identifier { get; set; } = $"{AuthConstants.EmulatorUri}/certificates/issuers/{Guid.NewGuid().Neat()}";
+    public string Identifier => $"{AuthConstants.EmulatorUri}/certificates/issuers/{IssuerName}";
 
     [JsonPropertyName("provider")]
     public string Provider { get; set; } = string.Empty;

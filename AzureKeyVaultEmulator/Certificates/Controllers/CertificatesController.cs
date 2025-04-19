@@ -10,7 +10,9 @@ namespace AzureKeyVaultEmulator.Certificates.Controllers;
 [Route("certificates")]
 [Authorize]
 // https://learn.microsoft.com/en-us/rest/api/keyvault/certificates/operation-groups
-public class CertificatesController(ICertificateService certService) : Controller
+public class CertificatesController(
+    ICertificateService certService,
+    ICertificateBackingService backingService) : Controller
 {
     [HttpPost("{name}/create")]
     public IActionResult CreateCertificate(
@@ -109,8 +111,24 @@ public class CertificatesController(ICertificateService certService) : Controlle
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
-        // Issuers aren't currently tracked in an associative way.
-        // Stubbing for now.
-        return Ok(new IssuerBundle());
+        var result = certService.GetCertificateIssuer(name);
+
+        return Ok(result);
+    }
+
+    [HttpPut("issuers/{name}")]
+    public IActionResult CreateCertificateIssuer(
+        [FromRoute] string name,
+        [FromBody] IssuerBundle bundle,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(bundle);
+
+        var result = backingService.PersistIssuerConfig(name, bundle);
+
+        var t = JsonSerializer.Serialize(result);
+
+        return Ok(result);
     }
 }

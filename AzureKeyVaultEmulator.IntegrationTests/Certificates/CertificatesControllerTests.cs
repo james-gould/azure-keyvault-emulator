@@ -2,6 +2,7 @@
 using AzureKeyVaultEmulator.IntegrationTests.Extensions;
 using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.Shared.Constants;
+using System.Text.Json;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 
@@ -180,14 +181,56 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task CreatingAnIssuerWillPersist()
+    {
+        var client = await fixture.GetClientAsync();
+
+        //var issuerName = fixture.FreshlyGeneratedGuid;
+        var issuerName = "testingNonGuid";
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetIssuerAsync(issuerName));
+
+        var issuerConfig = fixture.CreateIssuerConfiguration(issuerName);
+
+        var response = await client.CreateIssuerAsync(issuerConfig);
+
+        Assert.NotNull(response.Value);
+
+        var issuer = response.Value;
+
+        var t = JsonSerializer.Serialize(issuer);
+
+        // Can't use top level Equivalent due to Id being set at create time, it's null in the setup config.
+        Assert.Equivalent(issuerConfig.AdministratorContacts, issuer.AdministratorContacts);
+        Assert.Equal(issuerConfig.Name, issuer.Name);
+        Assert.Equal(issuerConfig.AccountId, issuer.AccountId);
+        Assert.Equal(issuerConfig.Password, issuer.Password);
+        Assert.Equal(issuerConfig.Enabled, issuer.Enabled);
+        Assert.Equal(issuerConfig.Provider, issuer.Provider);
+
+        Assert.NotEqual(issuerConfig.Id, issuer.Id);
+    }
+
+    [Fact]
     public async Task GetCertificateIssuerWillSucceed()
     {
         var client = await fixture.GetClientAsync();
 
         var issuerName = fixture.FreshlyGeneratedGuid;
+        var certName = fixture.FreshlyGeneratedGuid;
 
-        var issuer = await client.GetIssuerAsync(issuerName);
+        await Assert.ThrowsRequestFailedAsync(() => client.GetIssuerAsync(issuerName));
 
-        Assert.NotNull(issuer);
+        var issuerConfig = fixture.CreateIssuerConfiguration(issuerName);
+
+        var createdResponse = await client.CreateIssuerAsync(issuerConfig);
+
+        var response = await client.GetIssuerAsync(issuerName);
+
+        Assert.NotNull(response.Value);
+
+        var issuer = response.Value;
+
+        Assert.Equivalent(issuerConfig, issuer);
     }
 }

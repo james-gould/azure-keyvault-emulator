@@ -8,6 +8,12 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 public sealed class CertificateBackingService(IKeyService keyService, ISecretService secretService)
     : ICertificateBackingService
 {
+    // { issuerName, issuerBundle }
+    private static readonly ConcurrentDictionary<string, IssuerBundle> _issuers = new();
+
+    // { certName, IssuerBundle } 
+    private static readonly ConcurrentDictionary<string, IssuerBundle> _certificateIssuers = new();
+
     public (KeyBundle backingKey, SecretBundle backingSecret) GetBackingComponents(string certName, CertificatePolicy? policy = null)
     {
         var keySize = policy?.KeyProperties?.KeySize ?? 2048;
@@ -19,6 +25,23 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
         var backingSecret = CreateBackingSecret(certName, contentType);
 
         return (backingKey, backingSecret);
+    }
+
+    public IssuerBundle PersistIssuerConfig(string name, IssuerBundle bundle)
+    {
+        // Name is passed as a route arg, not set in model...
+        bundle.IssuerName = name;
+
+        _issuers.SafeAddOrUpdate(name.GetCacheId(), bundle);
+
+        return bundle;
+    }
+
+    public IssuerBundle UpdateIssuerAgainstCertificate(string certName, IssuerBundle bundle)
+    {
+        _certificateIssuers.SafeAddOrUpdate(certName, bundle);
+
+        return bundle;
     }
 
     private KeyBundle CreateBackingKey(

@@ -64,11 +64,15 @@ public sealed class CertificateService(
 
     public CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy policy)
     {
-        var cert = _certs.SafeGet(name.GetCacheId());
+        var cacheId = name.GetCacheId();
+
+        var cert = _certs.SafeGet(cacheId);
 
         cert.CertificatePolicy = policy;
 
         _certs.SafeAddOrUpdate(name, cert);
+
+        backingService.UpdateIssuerAgainstCertificate(cacheId, policy.Issuer);
 
         return policy;
     }
