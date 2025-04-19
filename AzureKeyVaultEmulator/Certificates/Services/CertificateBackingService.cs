@@ -11,7 +11,8 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
     public (KeyBundle backingKey, SecretBundle backingSecret) GetBackingComponents(string certName, CertificatePolicy? policy = null)
     {
         var keySize = policy?.KeyProperties?.KeySize ?? 2048;
-        var keyType = policy?.KeyProperties?.JsonWebKeyType ?? SupportedKeyTypes.RSA;
+        var keyType = !string.IsNullOrEmpty(policy?.KeyProperties?.JsonWebKeyType) ? policy.KeyProperties.JsonWebKeyType : SupportedKeyTypes.RSA;
+
         var backingKey = CreateBackingKey(certName, keySize, keyType);
 
         var contentType = policy?.SecretProperies?.ContentType ?? "application/unknown";
