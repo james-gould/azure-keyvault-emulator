@@ -66,20 +66,6 @@ public class CertificatesController(
         return Ok(result);
     }
 
-    [HttpGet("{name:regex(^(?!issuers$).+)}/{version:regex(^(?!pending$|completed$).+)}")]
-    public IActionResult GetCertificateByVersion(
-        [FromRoute] string name,
-        [FromRoute] string version,
-        [ApiVersion] string apiVersion)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-        ArgumentException.ThrowIfNullOrEmpty(version);
-
-        var result = certService.GetCertificate(name, version);
-
-        return Ok(result);
-    }
-
     [HttpGet("{name}/policy")]
     public IActionResult GetCertificatePolicy(
         [FromRoute] string name,
@@ -127,7 +113,24 @@ public class CertificatesController(
 
         var result = backingService.PersistIssuerConfig(name, bundle);
 
-        var t = JsonSerializer.Serialize(result);
+        return Ok(result);
+    }
+
+    // Doesn't this look fantastic?
+    // Due to {name}/{version} everywhere, and how ASP.NET Core handles routing
+    // {version} becomes the route param when passing a name, so {name}/policy hits here
+    // unless we have a regex negating it above the actual {name}/policy action
+    // Put this at the bottom of the controller so it stops picking up other requests.
+    [HttpGet("{name:regex(^(?!issuers$).+)}/{version:regex(^(?!pending$|completed$|policy$).+)}")]
+    public IActionResult GetCertificateByVersion(
+        [FromRoute] string name,
+        [FromRoute] string version,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentException.ThrowIfNullOrEmpty(version);
+
+        var result = certService.GetCertificate(name, version);
 
         return Ok(result);
     }

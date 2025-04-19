@@ -2,7 +2,6 @@
 using AzureKeyVaultEmulator.IntegrationTests.Extensions;
 using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.Shared.Constants;
-using System.Text.Json;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 
@@ -197,8 +196,6 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.NotNull(response.Value);
 
         var issuer = response.Value;
-
-        var t = JsonSerializer.Serialize(issuer);
 
         // Can't use top level Equivalent due to Id being set at create time, it's null in the setup config.
         Assert.Equivalent(issuerConfig.AdministratorContacts, issuer.AdministratorContacts);
