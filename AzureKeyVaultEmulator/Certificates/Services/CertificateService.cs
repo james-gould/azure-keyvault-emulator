@@ -47,16 +47,36 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         return new CertificateOperation(certIdentifier.ToString(), name);
     }
 
+    public CertificateBundle GetCertificate(string name)
+    {
+        return _certs.SafeGet(name.GetCacheId());
+    }
+
+    public CertificateBundle UpdateCertificate(string name, string version, CertificateAttributesModel? attributesModel, CertificatePolicy? policy, Dictionary<string, string>? tags)
+    {
+        var cacheId = name.GetCacheId(version);
+
+        var cert = _certs.SafeGet(cacheId);
+
+        if(attributesModel is not null)
+            cert.Attributes = attributesModel;
+
+        if(policy is not null)
+            cert.CertificatePolicy = policy;
+
+        if(tags is not null)
+            cert.Tags = tags;
+
+        _certs.SafeAddOrUpdate(cacheId, cert);
+
+        return cert;
+    }
+
     public CertificateOperation GetPendingCertificate(string name)
     {
         var cert = _certs.SafeGet(name.GetCacheId());
 
         return new CertificateOperation(cert.CertificateIdentifier.ToString(), name);
-    }
-
-    public CertificateBundle GetCertificate(string name)
-    {
-        return _certs.SafeGet(name.GetCacheId());
     }
 
     private static CertificatePolicy GetPolicy(

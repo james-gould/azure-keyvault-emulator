@@ -43,4 +43,16 @@ public class CertificatesController(ICertificateService certService) : Controlle
 
         return Ok(result);
     }
+
+    [HttpPatch("{name}/{version}")]
+    public IActionResult UpdateCertificate(
+        [FromRoute] string name,
+        [FromRoute] string version,
+        [FromBody] UpdateCertificateRequest request,
+        [ApiVersion] string apiVersion)
+    {
+        var result = certService.UpdateCertificate(request.Attributes, request.Policy, request.Tags);
+
+        return Ok(result);
+    }
 }

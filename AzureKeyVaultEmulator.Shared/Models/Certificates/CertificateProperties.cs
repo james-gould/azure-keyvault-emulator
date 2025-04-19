@@ -7,7 +7,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 /// <para>Encapsulates metadata about the certificate.</para>
 /// <para>Not listed on the API, very cool Azure, but throws <see cref="InvalidOperationException"/> if required items are missing.</para>
 /// </summary>
-public class CertificateProperties : ResponseBase
+public class CertificateProperties : TaggedModel
 {
     [JsonPropertyName("id")]
     public required Uri CertificateIdentifier { get; set; }
