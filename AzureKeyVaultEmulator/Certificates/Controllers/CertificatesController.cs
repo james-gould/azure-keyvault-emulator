@@ -26,7 +26,7 @@ public class CertificatesController(ICertificateService certService) : Controlle
     }
 
     // pending/completed must be above {version:regex...} due to ASP.NET Core's ordering with endpoint registration
-    // separating these into another controller caused the same bugs to occur due to the above registration behaviour.
+    // separating these into another controller caused the route bugs to occur due to the above registration behaviour.
 
     [HttpGet("{name}/pending")]
     public IActionResult GetPendingCertificate(
@@ -74,6 +74,18 @@ public class CertificatesController(ICertificateService certService) : Controlle
         ArgumentException.ThrowIfNullOrEmpty(version);
 
         var result = certService.GetCertificate(name, version);
+
+        return Ok(result);
+    }
+
+    [HttpGet("{name}/policy")]
+    public IActionResult GetCertificatePolicy(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var result = certService.GetCertificatePolicy(name);
 
         return Ok(result);
     }

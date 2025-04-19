@@ -9,4 +9,5 @@ public interface ICertificateService
     CertificateOperation CreateCertificate(string name, CertificateAttributesModel attributes, CertificatePolicy? policy);
     CertificateOperation GetPendingCertificate(string name);
     CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy certificatePolicy);
+    CertificatePolicy GetCertificatePolicy(string name);
 }

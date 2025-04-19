@@ -157,4 +157,25 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.False(updated.Value.Enabled);
     }
+
+    [Fact]
+    public async Task GetCertificatePolicyWillSucceed()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var response = await client.GetCertificatePolicyAsync(certName);
+
+        Assert.NotNull(response.Value);
+
+        var policy = response.Value;
+
+        Assert.NotNull(policy);
+        Assert.Equal(cert.Policy.IssuerName, policy.IssuerName);
+        Assert.Equal(cert.Policy.Subject, policy.Subject);
+        Assert.Equal(cert.Policy.Enabled, policy.Enabled);
+    }
 }

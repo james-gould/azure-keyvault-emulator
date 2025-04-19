@@ -36,7 +36,7 @@ public sealed class CertificateService(
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            CertificatePolicy = GetPolicy(policy, certIdentifier.ToString(), attributes),
+            CertificatePolicy = UpdateNullablePolicy(policy, certIdentifier.ToString(), attributes),
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.Id.ToString(),
@@ -52,6 +52,14 @@ public sealed class CertificateService(
     public CertificateBundle GetCertificate(string name, string version = "")
     {
         return _certs.SafeGet(name.GetCacheId(version));
+    }
+
+    public CertificatePolicy GetCertificatePolicy(string name)
+    {
+        var cert = _certs.SafeGet(name.GetCacheId());
+
+        return cert.CertificatePolicy
+            ?? throw new InvalidOperationException($"Found certificate {cert.CertificateName} but the associated policy was null.");
     }
 
     public CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy policy)
@@ -72,7 +80,7 @@ public sealed class CertificateService(
         return new CertificateOperation(cert.CertificateIdentifier.ToString(), name);
     }
 
-    private static CertificatePolicy GetPolicy(
+    private static CertificatePolicy UpdateNullablePolicy(
         CertificatePolicy? policy,
         string identifier,
         CertificateAttributesModel attributes)
