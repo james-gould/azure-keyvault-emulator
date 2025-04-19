@@ -37,6 +37,29 @@ app.UseMiddleware<KeyVaultErrorMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+#pragma warning disable ASP0014 // Suggest using top level route registrations
+//app.UseEndpoints(e =>
+//{
+//    e.MapControllerRoute(
+//        name: "pendingCertificates",
+//        pattern: "{name}/pending",
+//        defaults: new { controller = "CertificateOperationsController", action = "GetPendingCertificate" }
+//    );
+
+//    e.MapControllerRoute(
+//        name: "completedCertificates",
+//        pattern: "{name}/completed",
+//        defaults: new { controller = "CertificateOperationsController", action = "GetPendingCertificate" }
+//    );
+
+//    e.MapControllerRoute(
+//        name: "versionedCertificates",
+//        pattern: "{name}/{version:regex(^(?!pending$|completed$).+)}",
+//        defaults: new { controller = "CertificatesController", action = "GetCertificateByVersion" }
+//    );
+//});
+#pragma warning restore ASP0014 // Suggest using top level route registrations
+
 app.MapControllers();
 
 app.Run();

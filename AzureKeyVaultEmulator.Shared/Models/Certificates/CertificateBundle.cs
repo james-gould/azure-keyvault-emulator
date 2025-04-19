@@ -11,7 +11,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates
         public string CertificateContents { get; set; } = string.Empty;
 
         [JsonPropertyName("kid")]
-        public string KeyIdentifier { get; set; } = string.Empty;
+        public string KeyId { get; set; } = string.Empty;
 
         [JsonPropertyName("sid")]
         public string SecretId { get; set; } = string.Empty;

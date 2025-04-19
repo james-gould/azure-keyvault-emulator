@@ -1,14 +1,14 @@
 ﻿using AzureKeyVaultEmulator.Certificates.Factories;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
-using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
 
-public sealed class CertificateService(IHttpContextAccessor httpContextAccessor) : ICertificateService
+public sealed class CertificateService(
+    IHttpContextAccessor httpContextAccessor,
+    ICertificateBackingService backingService)
+    : ICertificateService
 {
     private static readonly ConcurrentDictionary<string, CertificateBundle> _certs = [];
-    private static readonly ConcurrentDictionary<string, KeyProperties> _backingKeys = [];
-    private static readonly ConcurrentDictionary<string, SecretProperties> _backingSecrets = [];
 
     public CertificateOperation CreateCertificate(
         string name,
@@ -18,22 +18,17 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(attributes);
 
-        if(policy?.KeyProperties is not null)
-            _backingKeys.TryAdd(name, policy.KeyProperties);
-
-        if(policy?.SecretProperies is not null)
-            _backingSecrets.TryAdd(name, policy.SecretProperies);
-
         var certificate = X509CertificateFactory.BuildX509Certificate(name, policy);
 
-        attributes.NotBefore = certificate.NotBefore.ToUnixTimeSeconds();
-        attributes.Expiration = certificate.NotAfter.ToUnixTimeSeconds();
+        var (backingKey, backingSecret) = backingService.GetBackingComponents(name, policy);
 
         var version = Guid.NewGuid().Neat();
 
         attributes.Version = version;
+        attributes.NotBefore = certificate.NotBefore.ToUnixTimeSeconds();
+        attributes.Expiration = certificate.NotAfter.ToUnixTimeSeconds();
 
-        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, OperationConstants.Completed, "certificates");
+        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, version, "certificates");
 
         var bundle = new CertificateBundle
         {
@@ -43,7 +38,9 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
             VaultUri = new Uri(AuthConstants.EmulatorUri),
             CertificatePolicy = GetPolicy(policy, certIdentifier.ToString(), attributes),
             X509Thumbprint = certificate.Thumbprint,
-            CertificateContents = Convert.ToBase64String(certificate.RawData)
+            CertificateContents = Convert.ToBase64String(certificate.RawData),
+            SecretId = backingSecret.Id.ToString(),
+            KeyId = backingKey.Key.KeyIdentifier
         };
 
         _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
@@ -52,9 +49,9 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         return new CertificateOperation(certIdentifier.ToString(), name);
     }
 
-    public CertificateBundle GetCertificate(string name)
+    public CertificateBundle GetCertificate(string name, string version = "")
     {
-        return _certs.SafeGet(name.GetCacheId());
+        return _certs.SafeGet(name.GetCacheId(version));
     }
 
     public CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy policy)

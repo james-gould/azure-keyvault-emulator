@@ -4,7 +4,7 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public interface ICertificateService
 {
-    CertificateBundle GetCertificate(string name);
+    CertificateBundle GetCertificate(string name, string version = "");
 
     CertificateOperation CreateCertificate(string name, CertificateAttributesModel attributes, CertificatePolicy? policy);
     CertificateOperation GetPendingCertificate(string name);

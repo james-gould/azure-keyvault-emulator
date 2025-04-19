@@ -25,6 +25,30 @@ public class CertificatesController(ICertificateService certService) : Controlle
         return Accepted(result);
     }
 
+    [HttpGet("{name}/pending")]
+    public IActionResult GetPendingCertificate(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var result = certService.GetPendingCertificate(name);
+
+        return Ok(result);
+    }
+
+    [HttpGet("{name}/completed")]
+    public IActionResult GetCompletedCertificate(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var result = certService.GetPendingCertificate(name);
+
+        return Ok(result);
+    }
+
     [HttpGet("{name}")]
     public IActionResult GetCertificate(
         [FromRoute] string name,
@@ -37,14 +61,16 @@ public class CertificatesController(ICertificateService certService) : Controlle
         return Ok(result);
     }
 
-    [HttpGet("{name}/pending")]
-    public IActionResult GetPendingCertificate(
+    [HttpGet("{name}/{version:regex(^(?!pending$|completed$).+)}")]
+    public IActionResult GetCertificateByVersion(
         [FromRoute] string name,
+        [FromRoute] string version,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentException.ThrowIfNullOrEmpty(version);
 
-        var result = certService.GetPendingCertificate(name);
+        var result = certService.GetCertificate(name, version);
 
         return Ok(result);
     }

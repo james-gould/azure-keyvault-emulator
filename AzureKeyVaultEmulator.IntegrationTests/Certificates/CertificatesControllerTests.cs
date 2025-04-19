@@ -79,6 +79,24 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task GetCertificateByVersionWillSucceed()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        Assert.NotEqual(string.Empty, cert.Properties.Version);
+
+        var versionResponse = await client.GetCertificateVersionAsync(certName, cert.Properties.Version);
+
+        var byVersion = versionResponse.Value;
+
+        Assert.CertificatesAreEqual(byVersion, cert);
+    }
+
+    [Fact]
     public async Task AddingCustomSubjectsToCertificateWillPersist()
     {
         var client = await fixture.GetClientAsync();

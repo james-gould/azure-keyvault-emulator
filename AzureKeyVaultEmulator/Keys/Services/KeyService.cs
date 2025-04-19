@@ -14,14 +14,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         private static readonly ConcurrentDictionary<string, KeyBundle> _deletedKeys = new();
 
-        public KeyBundle? GetKey(string name)
+        public KeyBundle GetKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             return _keys.SafeGet(name);
         }
 
-        public KeyBundle? GetKey(string name, string version)
+        public KeyBundle GetKey(string name, string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -29,7 +29,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return _keys.SafeGet(name.GetCacheId(version));
         }
 
-        public KeyBundle? CreateKey(string name, CreateKeyModel key)
+        public KeyBundle CreateKey(string name, CreateKeyModel key)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -64,15 +64,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            // See KeyController.cs inline doc for exclusion reason
-            //ArgumentException.ThrowIfNullOrWhiteSpace(version);
-
             var cacheId = name.GetCacheId(version);
 
             var key = _keys.SafeGet(cacheId);
-
-            if (string.IsNullOrEmpty(attributes.ContentType))
-                key.Attributes.ContentType = attributes.ContentType;
 
             key.Attributes = attributes;
             key.Attributes.RecoverableDays = attributes.RecoverableDays;
@@ -460,11 +454,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             switch (keyType)
             {
-                case RSAKeyTypes.RSA:
+                case SupportedKeyTypes.RSA:
                     var rsaKey = RsaKeyFactory.CreateRsaKey(keySize);
                     return new JsonWebKeyModel(rsaKey);
 
-                case RSAKeyTypes.EC:
+                case SupportedKeyTypes.EC:
                     throw new NotImplementedException("Elliptic Curve keys are not currently supported.");
 
                 default:

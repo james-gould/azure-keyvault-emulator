@@ -5,7 +5,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets
     public sealed class SecretBundle : TaggedModel
     {
         [JsonPropertyName("id")]
-        public Uri? Id { get; set; }
+        public required Uri Id { get; set; }
 
         [JsonPropertyName("value")]
         public string Value { get; set; } = string.Empty;

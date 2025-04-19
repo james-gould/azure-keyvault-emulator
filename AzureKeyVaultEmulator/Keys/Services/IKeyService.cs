@@ -4,9 +4,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
 {
     public interface IKeyService
     {
-        KeyBundle? GetKey(string name);
-        KeyBundle? GetKey(string name, string version);
-        KeyBundle? CreateKey(string name, CreateKeyModel key);
+        KeyBundle GetKey(string name);
+        KeyBundle GetKey(string name, string version);
+        KeyBundle CreateKey(string name, CreateKeyModel key);
         KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes, Dictionary<string, string> tags);
         KeyBundle? RotateKey(string name, string version);
 

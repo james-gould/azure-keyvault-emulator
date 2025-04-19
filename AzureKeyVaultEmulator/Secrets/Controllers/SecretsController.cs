@@ -33,7 +33,10 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string version,
             [ApiVersion] string apiVersion)
         {
-            var secretResult = secretService.Get(name, version);
+            ArgumentException.ThrowIfNullOrEmpty(name);
+            ArgumentException.ThrowIfNullOrEmpty(version);
+
+            var secretResult = secretService.GetSecret(name, version);
 
             return Ok(secretResult);
         }
@@ -46,7 +49,9 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var secretResult = secretService.Get(name);
+            ArgumentException.ThrowIfNullOrEmpty(name);
+
+            var secretResult = secretService.GetSecret(name);
 
             return Ok(secretResult);
         }

@@ -9,7 +9,7 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
         public static IServiceCollection RegisterCustomServices(this IServiceCollection services)
         {
             services.AddSingleton<IKeyService, KeyService>();
-            services.AddSingleton<ISecretService, SercretService>();
+            services.AddSingleton<ISecretService, SecretService>();
             services.AddSingleton<ICertificateService, CertificateService>();
 
             services.AddSingleton<IEncryptionService, EncryptionService>();

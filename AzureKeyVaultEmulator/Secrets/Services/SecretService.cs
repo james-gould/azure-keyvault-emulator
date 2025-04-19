@@ -2,29 +2,20 @@ using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
-    public class SercretService(
+    public class SecretService(
         IHttpContextAccessor httpContextAccessor,
         ITokenService token,
         IEncryptionService encryption) : ISecretService
     {
-        private static readonly ConcurrentDictionary<string, SecretBundle?> _secrets = new();
+        private static readonly ConcurrentDictionary<string, SecretBundle> _secrets = new();
         private static readonly ConcurrentDictionary<string, SecretBundle?> _deletedSecrets = new();
 
-        public SecretBundle? Get(string name, string version = "")
+        public SecretBundle GetSecret(string name, string version = "")
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
-            var cacheId = name.GetCacheId(version);
-
-            var exists = _secrets.TryGetValue(cacheId, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Failed to find secret by name: {name}");
-
-            return secret;
+            return _secrets.SafeGet(name.GetCacheId(version));
         }
 
-        public SecretBundle? SetSecret(string name, SetSecretModel secret)
+        public SecretBundle SetSecret(string name, SetSecretModel secret)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNull(secret);
@@ -41,8 +32,8 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Tags = secret.Tags
             };
 
-            _secrets.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
-            _secrets.TryAdd(name.GetCacheId(version), response);
+            _secrets.SafeAddOrUpdate(name.GetCacheId(), response);
+            _secrets.SafeAddOrUpdate(name.GetCacheId(version), response);
 
             return response;
         }
@@ -177,7 +168,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var exists = _deletedSecrets.TryGetValue(name, out var secret);
 
-            if (!exists)
+            if (!exists || secret is null)
                 throw new SecretException($"Cannot recover secret with name: {name}, secret not found");
 
             var added = _secrets.TryAdd(name, secret);
@@ -214,7 +205,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             secret.Attributes.Update();
 
-            _secrets.TryUpdate(cacheId, secret, null);
+            _secrets.TryUpdate(cacheId, secret, null!);
 
             return secret.Attributes;
         }

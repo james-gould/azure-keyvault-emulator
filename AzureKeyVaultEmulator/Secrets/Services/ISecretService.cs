@@ -4,8 +4,8 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 {
     public interface ISecretService
     {
-        SecretBundle? Get(string name, string version = "");
-        SecretBundle? SetSecret(string name, SetSecretModel requestBody);
+        SecretBundle GetSecret(string name, string version = "");
+        SecretBundle SetSecret(string name, SetSecretModel requestBody);
         DeletedSecretBundle? DeleteSecret(string name, string version = "");
         ValueModel<string>? BackupSecret(string name);
         SecretBundle? GetDeletedSecret(string name);

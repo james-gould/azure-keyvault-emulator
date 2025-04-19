@@ -14,9 +14,6 @@ namespace AzureKeyVaultEmulator.Shared.Models
             Expiration = now.AddDays(365).ToUnixTimeSeconds();
         }
 
-        [JsonPropertyName("contentType")]
-        public string ContentType { get; set; } = string.Empty;
-
         [JsonPropertyName("enabled")]
         public bool Enabled { get; set; } = true;
 
