@@ -27,9 +27,6 @@ public class CertificatesController(
         return Accepted(result);
     }
 
-    // pending/completed must be above {version:regex...} due to ASP.NET Core's ordering with endpoint registration
-    // separating these into another controller caused the route bugs to occur due to the above registration behaviour.
-
     [HttpGet("{name}/pending")]
     public IActionResult GetPendingCertificate(
         [FromRoute] string name,
@@ -119,7 +116,7 @@ public class CertificatesController(
     // Doesn't this look fantastic?
     // Due to {name}/{version} everywhere, and how ASP.NET Core handles routing
     // {version} becomes the route param when passing a name, so {name}/policy hits here
-    // unless we have a regex negating it above the actual {name}/policy action
+    // unless we have a regex negating it below the actual {name}/policy action
     // Put this at the bottom of the controller so it stops picking up other requests.
     [HttpGet("{name:regex(^(?!issuers$).+)}/{version:regex(^(?!pending$|completed$|policy$).+)}")]
     public IActionResult GetCertificateByVersion(
