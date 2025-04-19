@@ -29,6 +29,10 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         attributes.NotBefore = certificate.NotBefore.ToUnixTimeSeconds();
         attributes.Expiration = certificate.NotAfter.ToUnixTimeSeconds();
 
+        var version = Guid.NewGuid().Neat();
+
+        attributes.Version = version;
+
         var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, OperationConstants.Completed, "certificates");
 
         var bundle = new CertificateBundle
@@ -43,6 +47,7 @@ public sealed class CertificateService(IHttpContextAccessor httpContextAccessor)
         };
 
         _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
+        _certs.SafeAddOrUpdate(name.GetCacheId(version), bundle);
 
         return new CertificateOperation(certIdentifier.ToString(), name);
     }

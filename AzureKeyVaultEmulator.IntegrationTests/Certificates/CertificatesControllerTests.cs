@@ -46,6 +46,19 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task NewlyCreatedCertificateWillHaveVersion()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        Assert.NotNull(cert.Properties.Version);
+        Assert.NotEqual(string.Empty, cert.Properties.Version);
+    }
+
+    [Fact]
     public async Task WaitForCompletionWillCompleteCreationOperation()
     {
         var client = await fixture.GetClientAsync();
