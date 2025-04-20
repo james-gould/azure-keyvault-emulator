@@ -116,6 +116,27 @@ public sealed class CertificateService(
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
+        var allItems = _certs.Where(x => x.Key.Contains(name)).ToList();
+
+        if (allItems.Count == 0)
+            return new();
+
+        var maxedItems = allItems.Skip(skipCount).Take(maxResults).Select(x => x.Value);
+
+        var requiresPaging = maxedItems.Count() >= maxResults;
+
+        return new ListResult<CertificateVersionItem>
+        {
+            NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+            Values = maxedItems.Select(ToCertificateVersionItem)
+        };
+    }
+
+    public ListResult<CertificateVersionItem> GetCertificates(int maxResults = 25, int skipCount = 25)
+    {
+        if (maxResults is default(int) && skipCount is default(int))
+            return new();
+
         var allItems = _certs.ToList();
 
         if (allItems.Count == 0)

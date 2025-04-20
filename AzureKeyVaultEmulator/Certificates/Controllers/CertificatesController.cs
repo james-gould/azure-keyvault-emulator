@@ -153,6 +153,22 @@ public class CertificatesController(
         return Ok(result);
     }
 
+    [HttpGet]
+    public IActionResult GetCertificates(
+    [ApiVersion] string apiVersion,
+    [FromQuery] int maxResults = 25,
+    [SkipToken] string skipToken = "")
+    {
+        int skipCount = 0;
+
+        if (!string.IsNullOrEmpty(skipToken))
+            skipCount = tokenService.DecodeSkipToken(skipToken);
+
+        var result = certService.GetCertificates(maxResults, skipCount);
+
+        return Ok(result);
+    }
+
     // Doesn't this look fantastic?
     // Due to {name}/{version} everywhere, and how ASP.NET Core handles routing
     // {version} becomes the route param when passing a name, so {name}/policy hits here

@@ -7,6 +7,7 @@ public interface ICertificateService
 {
     CertificateOperation CreateCertificate(string name, CertificateAttributesModel attributes, CertificatePolicy? policy);
     CertificateBundle GetCertificate(string name, string version = "");
+    ListResult<CertificateVersionItem> GetCertificates(int maxResults = 25, int skipToken = 25);
     ListResult<CertificateVersionItem> GetCertificateVersions(string name, int maxResults = 25, int skipCount = 25);
     
 

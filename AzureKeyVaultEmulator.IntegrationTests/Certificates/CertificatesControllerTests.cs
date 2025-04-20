@@ -259,7 +259,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
-    public async Task GetCertificateListWillCycleLink()
+    public async Task GetCertificateVersionsListWillCycleLink()
     {
         var client = await fixture.GetClientAsync();
 
@@ -274,5 +274,25 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
             certs.Add(cer);
 
         Assert.Equal(executionCount + 1, certs.Count);
+    }
+
+    [Fact]
+    public async Task GetCertificatesListWillCycleLink()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var executionCount = await RequestSetup
+            .CreateMultiple(26, 51, i => fixture.CreateCertificateAsync(certName));
+
+        List<CertificateProperties> certs = [];
+
+        await foreach (var cer in client.GetPropertiesOfCertificatesAsync())
+            certs.Add(cer);
+
+        // Unless we run sequentially (times out GH actions), we can't assert anything useful here
+        // As long as the requests succeed (ie doesn't timeout) and doesn't 404, we're fine.
+        Assert.NotEmpty(certs);
     }
 }
