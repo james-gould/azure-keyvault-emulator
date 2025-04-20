@@ -113,6 +113,28 @@ public class CertificatesController(
         return Ok(result);
     }
 
+    [HttpPost("{name}/backup")]
+    public IActionResult BackupCertificate(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        var result = certService.BackupCertificate(name);
+
+        return Ok(result);
+    }
+
+    [HttpPost("restore")]
+    public IActionResult RestoreCertificate(
+        [ApiVersion] string apiVersion,
+        [FromBody] ValueModel<string>? certBackup)
+    {
+        ArgumentNullException.ThrowIfNull(certBackup);
+
+        var result = certService.RestoreCertificate(certBackup);
+
+        return Ok(result);
+    }
+
     // Doesn't this look fantastic?
     // Due to {name}/{version} everywhere, and how ASP.NET Core handles routing
     // {version} becomes the route param when passing a name, so {name}/policy hits here

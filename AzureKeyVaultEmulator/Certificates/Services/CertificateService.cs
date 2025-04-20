@@ -5,7 +5,8 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public sealed class CertificateService(
     IHttpContextAccessor httpContextAccessor,
-    ICertificateBackingService backingService)
+    ICertificateBackingService backingService,
+    IEncryptionService encryptionService)
     : ICertificateService
 {
     private static readonly ConcurrentDictionary<string, CertificateBundle> _certs = [];
@@ -87,6 +88,25 @@ public sealed class CertificateService(
     public IssuerBundle GetCertificateIssuer(string name)
     {
         return backingService.GetIssuer(name);
+    }
+
+    public ValueModel<string> BackupCertificate(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var cert = _certs.SafeGet(name.GetCacheId());
+
+        return new ValueModel<string>
+        {
+            Value = encryptionService.CreateKeyVaultJwe(cert)
+        };
+    }
+
+    public CertificateBundle RestoreCertificate(ValueModel<string> backup)
+    {
+        ArgumentNullException.ThrowIfNull(backup);
+
+        return encryptionService.DecryptFromKeyVaultJwe<CertificateBundle>(backup.Value);
     }
 
     private static CertificatePolicy UpdateNullablePolicy(

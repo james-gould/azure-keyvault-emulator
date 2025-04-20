@@ -230,4 +230,30 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.IssuersAreEqual(issuerConfig, issuer);
     }
+
+    [Fact(Skip = "Failing due to SDK bug, PR pending")]
+    public async Task BackingUpAndRestoringCertificateWillSucceed()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        Assert.NotNull(cert);
+
+        var backup = await client.BackupCertificateAsync(certName);
+
+        Assert.NotNull(backup);
+
+        Assert.NotEqual([], backup.Value);
+
+        var restoredResponse = await client.RestoreCertificateBackupAsync(backup.Value);
+
+        Assert.NotNull(restoredResponse.Value);
+
+        var restoredCert = restoredResponse.Value;
+
+        Assert.CertificatesAreEqual(cert, restoredCert);
+    }
 }

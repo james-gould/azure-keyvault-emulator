@@ -452,7 +452,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
         {
-            switch (keyType)
+            switch (keyType.ToUpper())
             {
                 case SupportedKeyTypes.RSA:
                     var rsaKey = RsaKeyFactory.CreateRsaKey(keySize);

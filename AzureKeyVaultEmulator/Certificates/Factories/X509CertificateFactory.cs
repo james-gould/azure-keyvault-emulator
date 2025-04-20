@@ -8,7 +8,13 @@ public static class X509CertificateFactory
 {
     public static X509Certificate2 BuildX509Certificate(string name, CertificatePolicy? policy)
     {
-        using var rsa = RSA.Create(policy?.KeyProperties?.KeySize ?? 2048);
+        int keySize = 2048;
+
+        // Needs to be constrained to acceptable numbers, just fixing a bug quickly.
+        if (policy?.KeyProperties?.KeySize is not null && policy.KeyProperties.KeySize > 0)
+            keySize = policy.KeyProperties.KeySize;
+
+        using var rsa = RSA.Create(keySize);
 
         var certName = new X500DistinguishedName($"CN={name}");
 

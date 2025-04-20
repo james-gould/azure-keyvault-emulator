@@ -179,7 +179,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(decrypted.Plaintext, data);
     }
 
-    [Fact(Skip = "Weird bug with restore endpoint 404ing, works in swagger...")]
+    [Fact(Skip = "Failing due to SDK bug, PR pending")]
     public async Task BackingUpAndRestoringKeySucceeds()
     {
         var client = await fixture.GetClientAsync();
