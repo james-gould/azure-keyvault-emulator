@@ -26,6 +26,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Azure KeyVault Emulator"));
 
+    app.UseMiddleware<RestoreDoubleSlashRerouteMiddleware>();
     app.UseMiddleware<RequestDumpMiddleware>();
 }
 

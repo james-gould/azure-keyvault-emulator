@@ -402,7 +402,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var allItems = _deletedKeys.ToList();
 
-            if (!allItems.Any())
+            if (allItems.Count == 0)
                 return new();
 
             var maxedItems = allItems.Skip(skipCount).Take(maxResults);

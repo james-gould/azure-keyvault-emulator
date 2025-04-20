@@ -1,11 +1,14 @@
 ﻿using AzureKeyVaultEmulator.Shared.Models.Certificates;
+using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public interface ICertificateService
 {
-    CertificateBundle GetCertificate(string name, string version = "");
     CertificateOperation CreateCertificate(string name, CertificateAttributesModel attributes, CertificatePolicy? policy);
+    CertificateBundle GetCertificate(string name, string version = "");
+    ListResult<CertificateVersionItem> GetCertificateVersions(string name, int maxResults = 25, int skipCount = 25);
+    
 
     CertificateOperation GetPendingCertificate(string name);
 

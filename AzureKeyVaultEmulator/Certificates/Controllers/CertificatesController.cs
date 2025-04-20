@@ -12,7 +12,8 @@ namespace AzureKeyVaultEmulator.Certificates.Controllers;
 // https://learn.microsoft.com/en-us/rest/api/keyvault/certificates/operation-groups
 public class CertificatesController(
     ICertificateService certService,
-    ICertificateBackingService backingService) : Controller
+    ICertificateBackingService backingService,
+    ITokenService tokenService) : Controller
 {
     [HttpPost("{name}/create")]
     public IActionResult CreateCertificate(
@@ -126,11 +127,28 @@ public class CertificatesController(
     [HttpPost("restore")]
     public IActionResult RestoreCertificate(
         [ApiVersion] string apiVersion,
-        [FromBody] ValueModel<string>? certBackup)
+        [FromBody] ValueModel<string> certBackup)
     {
         ArgumentNullException.ThrowIfNull(certBackup);
 
         var result = certService.RestoreCertificate(certBackup);
+
+        return Ok(result);
+    }
+
+    [HttpGet("{name}/versions")]
+    public IActionResult GetCertificateVersions(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion,
+        [FromQuery] int maxResults = 25,
+        [SkipToken] string skipToken = "")
+    {
+        int skipCount = 0;
+
+        if(!string.IsNullOrEmpty(skipToken))
+            skipCount = tokenService.DecodeSkipToken(skipToken);
+
+        var result = certService.GetCertificateVersions(name, maxResults, skipCount);
 
         return Ok(result);
     }
@@ -140,7 +158,7 @@ public class CertificatesController(
     // {version} becomes the route param when passing a name, so {name}/policy hits here
     // unless we have a regex negating it below the actual {name}/policy action
     // Put this at the bottom of the controller so it stops picking up other requests.
-    [HttpGet("{name:regex(^(?!issuers$).+)}/{version:regex(^(?!pending$|completed$|policy$).+)}")]
+    [HttpGet("{name:regex(^(?!issuers$).+)}/{version:regex(^(?!pending$|completed$|policy$|versions$).+)}")]
     public IActionResult GetCertificateByVersion(
         [FromRoute] string name,
         [FromRoute] string version,

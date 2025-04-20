@@ -1,12 +1,14 @@
 ﻿using AzureKeyVaultEmulator.Certificates.Factories;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
+using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public sealed class CertificateService(
     IHttpContextAccessor httpContextAccessor,
     ICertificateBackingService backingService,
-    IEncryptionService encryptionService)
+    IEncryptionService encryptionService,
+    ITokenService tokenService)
     : ICertificateService
 {
     private static readonly ConcurrentDictionary<string, CertificateBundle> _certs = [];
@@ -107,6 +109,45 @@ public sealed class CertificateService(
         ArgumentNullException.ThrowIfNull(backup);
 
         return encryptionService.DecryptFromKeyVaultJwe<CertificateBundle>(backup.Value);
+    }
+
+    public ListResult<CertificateVersionItem> GetCertificateVersions(string name, int maxResults = 25, int skipCount = 25)
+    {
+        if (maxResults is default(int) && skipCount is default(int))
+            return new();
+
+        var allItems = _certs.ToList();
+
+        if (allItems.Count == 0)
+            return new();
+
+        var maxedItems = allItems.Skip(skipCount).Take(maxResults).Select(x => x.Value);
+
+        var requiresPaging = maxedItems.Count() >= maxResults;
+
+        return new ListResult<CertificateVersionItem>
+        {
+            NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+            Values = maxedItems.Select(ToCertificateVersionItem)
+        };
+    }
+
+    private string GenerateNextLink(int maxResults)
+    {
+        var skipToken = tokenService.CreateSkipToken(maxResults);
+
+        return httpContextAccessor.GetNextLink(skipToken, maxResults);
+    }
+
+    private static CertificateVersionItem ToCertificateVersionItem(CertificateBundle bundle)
+    {
+        return new()
+        {
+            Id = bundle.CertificateIdentifier.ToString(),
+            Attributes = bundle.Attributes,
+            Thumbprint = bundle.X509Thumbprint,
+            Tags = bundle.Tags,
+        };
     }
 
     private static CertificatePolicy UpdateNullablePolicy(

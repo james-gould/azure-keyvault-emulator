@@ -2,6 +2,7 @@
 using AzureKeyVaultEmulator.IntegrationTests.Extensions;
 using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.Shared.Constants;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 
@@ -255,5 +256,23 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var restoredCert = restoredResponse.Value;
 
         Assert.CertificatesAreEqual(cert, restoredCert);
+    }
+
+    [Fact]
+    public async Task GetCertificateListWillCycleLink()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var executionCount = await RequestSetup
+            .CreateMultiple(26, 51, i => fixture.CreateCertificateAsync(certName));
+
+        List<CertificateProperties> certs = [];
+
+        await foreach (var cer in client.GetPropertiesOfCertificateVersionsAsync(certName))
+            certs.Add(cer);
+
+        Assert.Equal(executionCount + 1, certs.Count);
     }
 }

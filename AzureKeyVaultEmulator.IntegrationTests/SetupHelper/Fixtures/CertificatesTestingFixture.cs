@@ -31,7 +31,9 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
 
         await client.StartCreateCertificateAsync(name, CertificatePolicy.Default);
 
-        return await client.GetCertificateAsync(name);
+        var cert = await client.GetCertificateAsync(name);
+
+        return cert.Value;
 
         //return X509CertificateLoader.LoadCertificate(cert.Value.Cer);
     }
