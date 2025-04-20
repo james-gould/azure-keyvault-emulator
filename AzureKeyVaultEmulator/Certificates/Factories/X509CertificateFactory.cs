@@ -15,6 +15,7 @@ public static class X509CertificateFactory
             keySize = policy.KeyProperties.KeySize;
 
         using var rsa = RSA.Create(keySize);
+        rsa.ImportFromPem(RsaPem.FullPem);
 
         var certName = new X500DistinguishedName($"CN={name}");
 
@@ -34,6 +35,13 @@ public static class X509CertificateFactory
             request.CertificateExtensions.Add(sans);
 
         return request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(365));
+    }
+
+    public static X509Certificate2 ImportFromBase64(string certificateBase64)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(certificateBase64);
+
+        return X509CertificateLoader.LoadCertificate(Convert.FromBase64String(certificateBase64));
     }
 
     private static X509Extension? BuildSubjectAlternativeName(this CertificatePolicy? policy)

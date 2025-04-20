@@ -1,5 +1,6 @@
 ﻿using AzureKeyVaultEmulator.Certificates.Factories;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
+using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
@@ -151,6 +152,42 @@ public sealed class CertificateService(
             NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
             Values = maxedItems.Select(ToCertificateVersionItem)
         };
+    }
+
+    public CertificateBundle ImportCertificate(string name, ImportCertificateRequest request)
+    {
+        var version = Guid.NewGuid().Neat();
+
+        var certificate = X509CertificateFactory.ImportFromBase64(request.Value);
+
+        var (backingKey, backingSecret) = backingService.GetBackingComponents(name);
+
+        var attributes = new CertificateAttributesModel
+        {
+            Version = version,
+            NotBefore = certificate.NotBefore.ToUnixTimeSeconds(),
+            Expiration = certificate.NotAfter.ToUnixTimeSeconds()
+        };
+
+        var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, version, "certificates");
+
+        var bundle = new CertificateBundle
+        {
+            CertificateIdentifier = certIdentifier,
+            Attributes = attributes,
+            CertificateName = name,
+            VaultUri = new Uri(AuthConstants.EmulatorUri),
+            CertificatePolicy = UpdateNullablePolicy(request.Policy, certIdentifier.ToString(), attributes),
+            X509Thumbprint = certificate.Thumbprint,
+            CertificateContents = Convert.ToBase64String(certificate.RawData),
+            SecretId = backingSecret.Id.ToString(),
+            KeyId = backingKey.Key.KeyIdentifier
+        };
+
+        _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
+        _certs.SafeAddOrUpdate(name.GetCacheId(version), bundle);
+
+        return bundle;
     }
 
     private string GenerateNextLink(int maxResults)

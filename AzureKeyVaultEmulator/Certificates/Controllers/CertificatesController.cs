@@ -28,6 +28,34 @@ public class CertificatesController(
         return Accepted(result);
     }
 
+    [HttpGet("{name}")]
+    public IActionResult GetCertificate(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var result = certService.GetCertificate(name);
+
+        return Ok(result);
+    }
+
+    [HttpGet]
+    public IActionResult GetCertificates(
+        [ApiVersion] string apiVersion,
+        [FromQuery] int maxResults = 25,
+        [SkipToken] string skipToken = "")
+    {
+        int skipCount = 0;
+
+        if (!string.IsNullOrEmpty(skipToken))
+            skipCount = tokenService.DecodeSkipToken(skipToken);
+
+        var result = certService.GetCertificates(maxResults, skipCount);
+
+        return Ok(result);
+    }
+
     [HttpGet("{name}/pending")]
     public IActionResult GetPendingCertificate(
         [FromRoute] string name,
@@ -48,18 +76,6 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
 
         var result = certService.GetPendingCertificate(name);
-
-        return Ok(result);
-    }
-
-    [HttpGet("{name}")]
-    public IActionResult GetCertificate(
-        [FromRoute] string name,
-        [ApiVersion] string apiVersion)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-
-        var result = certService.GetCertificate(name);
 
         return Ok(result);
     }
@@ -153,28 +169,26 @@ public class CertificatesController(
         return Ok(result);
     }
 
-    [HttpGet]
-    public IActionResult GetCertificates(
-    [ApiVersion] string apiVersion,
-    [FromQuery] int maxResults = 25,
-    [SkipToken] string skipToken = "")
+    [HttpPost("{name}/import")]
+    public IActionResult ImportCertificate(
+        [FromRoute] string name,
+        [FromBody] ImportCertificateRequest? request,
+        [ApiVersion] string apiVersion)
     {
-        int skipCount = 0;
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(request);
 
-        if (!string.IsNullOrEmpty(skipToken))
-            skipCount = tokenService.DecodeSkipToken(skipToken);
-
-        var result = certService.GetCertificates(maxResults, skipCount);
+        var result = certService.ImportCertificate(name, request);
 
         return Ok(result);
     }
 
-    // Doesn't this look fantastic?
     // Due to {name}/{version} everywhere, and how ASP.NET Core handles routing
+    // any HttpGet("{name}/someValue} will end up here.
     // {version} becomes the route param when passing a name, so {name}/policy hits here
     // unless we have a regex negating it below the actual {name}/policy action
     // Put this at the bottom of the controller so it stops picking up other requests.
-    [HttpGet("{name:regex(^(?!issuers$).+)}/{version:regex(^(?!pending$|completed$|policy$|versions$).+)}")]
+    [HttpGet("{name}/{version}")]
     public IActionResult GetCertificateByVersion(
         [FromRoute] string name,
         [FromRoute] string version,

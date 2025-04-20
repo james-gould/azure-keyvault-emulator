@@ -1,4 +1,5 @@
 ﻿using AzureKeyVaultEmulator.Shared.Models.Certificates;
+using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
@@ -12,11 +13,11 @@ public interface ICertificateService
     
 
     CertificateOperation GetPendingCertificate(string name);
-
     CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy certificatePolicy);
     CertificatePolicy GetCertificatePolicy(string name);
     IssuerBundle GetCertificateIssuer(string name);
 
     ValueModel<string> BackupCertificate(string name);
     CertificateBundle RestoreCertificate(ValueModel<string> backup);
+    CertificateBundle ImportCertificate(string name, ImportCertificateRequest request);
 }

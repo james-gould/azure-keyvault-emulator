@@ -295,4 +295,34 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         // As long as the requests succeed (ie doesn't timeout) and doesn't 404, we're fine.
         Assert.NotEmpty(certs);
     }
+
+    [Fact(Skip = "404 issue from CertificateClient again, underlying endpoint/functionality works fine. See iss #106")]
+    public async Task ImportingCertificateWillPersistInStore()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var certData = cert.Cer;
+
+        Assert.NotEmpty(certData);
+
+        var importedName = fixture.FreshlyGeneratedGuid;
+
+        var importOptions = new ImportCertificateOptions(importedName, certData)
+        {
+            Enabled = true,
+            Policy = CertificatePolicy.Default
+        };
+
+        var response = await client.ImportCertificateAsync(importOptions);
+
+        Assert.NotNull(response.Value);
+
+        var importedCert = response.Value;
+
+        Assert.CertificatesAreEqual(importedCert, cert);
+    }
 }
