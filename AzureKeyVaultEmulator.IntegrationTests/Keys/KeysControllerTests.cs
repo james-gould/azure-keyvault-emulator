@@ -179,7 +179,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(decrypted.Plaintext, data);
     }
 
-    [Fact(Skip = "Failing due to SDK bug, PR pending")]
+    [Fact]
     public async Task BackingUpAndRestoringKeySucceeds()
     {
         var client = await fixture.GetClientAsync();

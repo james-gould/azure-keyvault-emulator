@@ -44,7 +44,9 @@ public sealed class CertificateService(
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.Id.ToString(),
-            KeyId = backingKey.Key.KeyIdentifier
+            KeyId = backingKey.Key.KeyIdentifier,
+
+            FullCertificate = certificate
         };
 
         _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
@@ -181,13 +183,32 @@ public sealed class CertificateService(
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.Id.ToString(),
-            KeyId = backingKey.Key.KeyIdentifier
+            KeyId = backingKey.Key.KeyIdentifier,
+
+            FullCertificate = certificate
         };
 
         _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
         _certs.SafeAddOrUpdate(name.GetCacheId(version), bundle);
 
         return bundle;
+    }
+
+    public CertificateBundle MergeCertificates(string name, MergeCertificatesRequest request)
+    {
+        var cert = _certs.SafeGet(name.GetCacheId());
+
+        ArgumentNullException.ThrowIfNull(cert.FullCertificate);
+
+        var mergedCert = X509CertificateFactory.MergeCertificates(cert.FullCertificate, request.Certificates);
+
+        var version = Guid.NewGuid().Neat();
+
+        var copied = cert.CopyWithNewCertificate(mergedCert);
+
+        _certs.SafeAddOrUpdate(name.GetCacheId(version), copied);
+
+        return copied;
     }
 
     private string GenerateNextLink(int maxResults)

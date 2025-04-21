@@ -232,7 +232,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.IssuersAreEqual(issuerConfig, issuer);
     }
 
-    [Fact(Skip = "Failing due to SDK bug, PR pending")]
+    [Fact]
     public async Task BackingUpAndRestoringCertificateWillSucceed()
     {
         var client = await fixture.GetClientAsync();
@@ -324,5 +324,32 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var importedCert = response.Value;
 
         Assert.CertificatesAreEqual(importedCert, cert);
+    }
+
+    [Fact(Skip = "Pending changes to key pair in certificates")]
+    public async Task MergingCertificateWillSucceed()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var baseCertName = fixture.FreshlyGeneratedGuid;
+        var mergingCertName = fixture.FreshlyGeneratedGuid;
+
+        var baseCert = await fixture.CreateCertificateAsync(baseCertName);
+
+        var mergingCert = Encoding.UTF8.GetBytes(fixture.X509CertificateWithPrivateKey);
+
+        var mergeOptions = new MergeCertificateOptions(baseCertName, [mergingCert])
+        {
+            Enabled = true
+        };
+
+        var response = await client.MergeCertificateAsync(mergeOptions);
+
+        Assert.NotNull(response.Value);
+
+        var mergeResult = response.Value;
+
+        // Being lazy, probably a better way of asserting the merge went through.
+        Assert.Throws<Exception>(() => Assert.CertificatesAreEqual(baseCert, mergeResult));
     }
 }

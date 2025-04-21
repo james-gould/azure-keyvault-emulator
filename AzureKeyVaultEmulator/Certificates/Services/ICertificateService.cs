@@ -20,4 +20,5 @@ public interface ICertificateService
     ValueModel<string> BackupCertificate(string name);
     CertificateBundle RestoreCertificate(ValueModel<string> backup);
     CertificateBundle ImportCertificate(string name, ImportCertificateRequest request);
+    CertificateBundle MergeCertificates(string name, MergeCertificatesRequest request);
 }

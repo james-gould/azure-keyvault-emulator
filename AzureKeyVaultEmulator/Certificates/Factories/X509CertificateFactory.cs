@@ -37,6 +37,30 @@ public static class X509CertificateFactory
         return request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(365));
     }
 
+    public static X509Certificate2 MergeCertificates(X509Certificate2 baseCert, IEnumerable<string> mergedAsBase64)
+    {
+        ArgumentNullException.ThrowIfNull(baseCert);
+        ArgumentNullException.ThrowIfNull(mergedAsBase64);
+
+        foreach (var cert64 in mergedAsBase64)
+        {
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
+            var cert = new X509Certificate2(Encoding.UTF8.GetBytes(cert64));
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
+            //var cert = X509CertificateLoader.LoadCertificate(Encoding.Default.GetBytes(cert64));
+
+            // Should be handling the variety of keys available, but for now just use RSA.
+            // Low priority, GH issue #108
+            var privateKey = cert.GetRSAPrivateKey();
+
+            ArgumentNullException.ThrowIfNull(privateKey);
+
+            baseCert.CopyWithPrivateKey(privateKey);
+        }
+
+        return baseCert;
+    }
+
     public static X509Certificate2 ImportFromBase64(string certificateBase64)
     {
         ArgumentException.ThrowIfNullOrEmpty(certificateBase64);

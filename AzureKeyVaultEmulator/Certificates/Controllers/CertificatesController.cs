@@ -80,6 +80,19 @@ public class CertificatesController(
         return Ok(result);
     }
 
+    [HttpPost("{name}/pending/merge")]
+    public IActionResult MergeCertificates(
+        [FromRoute] string name,
+        [FromBody] MergeCertificatesRequest request,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var result = certService.MergeCertificates(name, request);
+
+        return Accepted(result);
+    }
+
     [HttpGet("{name}/policy")]
     public IActionResult GetCertificatePolicy(
         [FromRoute] string name,

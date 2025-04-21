@@ -20,13 +20,14 @@ builder.Services.RegisterCustomServices();
 
 var app = builder.Build();
 
+app.RegisterDoubleSlashBodge();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Azure KeyVault Emulator"));
 
-    app.UseMiddleware<RestoreDoubleSlashRerouteMiddleware>();
     app.UseMiddleware<RequestDumpMiddleware>();
 }
 

@@ -1,13 +1,56 @@
-﻿namespace AzureKeyVaultEmulator.Shared.Constants
+<Query Kind="Program">
+  <Namespace>System.Net</Namespace>
+  <Namespace>System.Net.Http</Namespace>
+  <Namespace>System.Security.Cryptography</Namespace>
+  <Namespace>System.Security.Cryptography.X509Certificates</Namespace>
+  <Namespace>System.Text.Json</Namespace>
+  <Namespace>System.Threading.Tasks</Namespace>
+</Query>
+
+// Import this file into LinqPad and run to generate a full, self signed X509Certificate2 with a private key.
+// The password is within the script and will log out when ran.
+void Main()
 {
-    /// <summary>
-    /// <para>Used to encrypt data NOT used by the KeyService. </para>
-    /// <para>Allows users to persist backups over multiple sessions and still be able to restore them.</para>
-    /// </summary>
-    public sealed class RsaPem
-    {
-        public const string FullPem = @"
-            -----BEGIN PRIVATE KEY-----
+	var name = Guid.NewGuid().ToString("n");
+	var pwd = "emulator";
+	
+	var cert = BuildX509Certificate(name);
+	
+	byte[] exported = cert.Export(X509ContentType.Pfx, pwd);
+	
+	File.WriteAllBytes(@"C:/Projects/cert.pfx", exported);
+	
+	var str = Convert.ToBase64String(exported);
+	Console.WriteLine($"Exported X509Certificate2 {name} with password \"{pwd}\" to base64:");
+	Console.WriteLine(str);
+}
+
+public static X509Certificate2 BuildX509Certificate(string name)
+{
+    int keySize = 2048;
+	
+    using var rsa = RSA.Create(keySize);
+    rsa.ImportFromPem(RsaPem.FullPem);
+
+    var certName = new X500DistinguishedName($"CN={name}");
+
+    var request = new CertificateRequest(certName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+
+    request.CertificateExtensions
+        .Add(new X509KeyUsageExtension(
+            X509KeyUsageFlags.DataEncipherment |
+            X509KeyUsageFlags.KeyEncipherment |
+            X509KeyUsageFlags.DigitalSignature,
+            false)
+        );
+		
+    return request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(365));
+}
+
+public sealed class RsaPem
+{
+    public const string FullPem = @"
+			-----BEGIN PRIVATE KEY-----
             MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCofdCGPszXrWF7Jxwlhh6m9h56
             9YhbscSK6I9zYkuBBgO0WbyZfZPimGNN5e+LqereEnAUa/ggDaTWldHjmStDz0O9dYr/9v8kWpxJ
             QmO6MpzBO/07yuUfCwRjdE8XzbG2BSEgLlVHyTgYDV83h9ThBN5xsiZ0bjqMKS1QrPu75uWBh+WH
@@ -31,5 +74,4 @@
             tHfC5zD1uQ8sd/4hCbsK2yQuEsiS+j7Ij15MZvFdJCwxPKV99BTFuxIhnit5xEnqVzb7KNugwDp4
             Yu1oryGTUP3I2wF4ta4teRH/4y01Iw==
             -----END PRIVATE KEY-----";
-    }
 }
