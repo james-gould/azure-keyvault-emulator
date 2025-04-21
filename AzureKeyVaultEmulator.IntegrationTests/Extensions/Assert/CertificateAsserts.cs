@@ -4,36 +4,72 @@ namespace Xunit;
 
 public partial class Assert
 {
-    public static void CertificatesAreEqual(KeyVaultCertificateWithPolicy first, KeyVaultCertificateWithPolicy second)
+    /// <summary>
+    /// Validates the two certificates are identical.
+    /// </summary>
+    /// <param name="sourceOfTruth">Source of truth.</param>
+    /// <param name="comparativeCertificate">Comparitive</param>
+    /// <param name="fromGet">Flag to toggle Id checks, to be used when <paramref name="comparativeCertificate"/></param>
+    /// <remarks>
+    /// <para>The parameter <paramref name="fromGet"/> helps to keep the test asserts consistent but not all certificates are made equal (get it?).</para>
+    /// <para>In many scenarios a cert is created, exported and then reintroduced to test the introduction behaviour. When this happens the CertId, encryption key, URIs etc will change.</para>
+    /// <para>In those scenarios we only want to validate that the non-unique metadata is equal, along with the cert contents.</para>
+    /// </remarks>
+    public static void CertificatesAreEqual(
+        KeyVaultCertificateWithPolicy sourceOfTruth,
+        KeyVaultCertificateWithPolicy comparativeCertificate,
+        bool fromGet = true)
     {
-        NotNull(first);
-        NotNull(second);
+        NotNull(sourceOfTruth);
+        NotNull(comparativeCertificate);
 
-        Equal(first.Id, second.Id);
-        Equal(first.Name, second.Name);
-        Equal(first.Cer, second.Cer);
+        Equal(sourceOfTruth.Name, comparativeCertificate.Name);
+        Equal(sourceOfTruth.Cer, comparativeCertificate.Cer);
 
-        if(!string.IsNullOrEmpty(first.SecretId.ToString()) || !string.IsNullOrEmpty(second.SecretId.ToString()))
-            Equal(first.SecretId, second.SecretId);
+        if (fromGet)
+        {
+            Equal(sourceOfTruth.Id, comparativeCertificate.Id);
 
-        if (!string.IsNullOrEmpty(first.KeyId.ToString()) || !string.IsNullOrEmpty(second.KeyId.ToString()))
-            Equal(first.KeyId, second.KeyId);
+            if (!string.IsNullOrEmpty(sourceOfTruth.SecretId.ToString()) || !string.IsNullOrEmpty(comparativeCertificate.SecretId.ToString()))
+                Equal(sourceOfTruth.SecretId, comparativeCertificate.SecretId);
+
+            if (!string.IsNullOrEmpty(sourceOfTruth.KeyId.ToString()) || !string.IsNullOrEmpty(comparativeCertificate.KeyId.ToString()))
+                Equal(sourceOfTruth.KeyId, comparativeCertificate.KeyId);
+        }
     }
 
-    public static void CertificatesAreEqual(KeyVaultCertificate first, KeyVaultCertificateWithPolicy second)
+    /// <summary>
+    /// Validates the two certificates are identical.
+    /// </summary>
+    /// <param name="sourceOfTruth">Source of truth.</param>
+    /// <param name="comparativeCertificate">Comparitive</param>
+    /// <param name="fromGet">Flag to toggle Id checks, to be used when <paramref name="comparativeCertificate"/></param>
+    /// <remarks>
+    /// <para>The parameter <paramref name="fromGet"/> helps to keep the test asserts consistent but not all certificates are made equal (get it?).</para>
+    /// <para>In many scenarios a cert is created, exported and then reintroduced to test the introduction behaviour. When this happens the CertId, encryption key, URIs etc will change.</para>
+    /// <para>In those scenarios we only want to validate that the non-unique metadata is equal, along with the cert contents.</para>
+    /// </remarks>
+    public static void CertificatesAreEqual(
+        KeyVaultCertificate sourceOfTruth,
+        KeyVaultCertificateWithPolicy comparativeCertificate,
+        bool fromGet = true)
     {
-        NotNull(first);
-        NotNull(second);
+        NotNull(sourceOfTruth);
+        NotNull(comparativeCertificate);
 
-        Equal(first.Id, second.Id);
-        Equal(first.Name, second.Name);
-        Equal(first.Cer, second.Cer);
+        Equal(sourceOfTruth.Name, comparativeCertificate.Name);
+        Equal(sourceOfTruth.Cer, comparativeCertificate.Cer);
 
-        if (!string.IsNullOrEmpty(first.SecretId.ToString()) || !string.IsNullOrEmpty(second.SecretId.ToString()))
-            Equal(first.SecretId, second.SecretId);
+        if (fromGet)
+        {
+            Equal(sourceOfTruth.Id, comparativeCertificate.Id);
 
-        if (!string.IsNullOrEmpty(first.KeyId.ToString()) || !string.IsNullOrEmpty(second.KeyId.ToString()))
-            Equal(first.KeyId, second.KeyId);
+            if (!string.IsNullOrEmpty(sourceOfTruth.SecretId.ToString()) || !string.IsNullOrEmpty(comparativeCertificate.SecretId.ToString()))
+                Equal(sourceOfTruth.SecretId, comparativeCertificate.SecretId);
+
+            if (!string.IsNullOrEmpty(sourceOfTruth.KeyId.ToString()) || !string.IsNullOrEmpty(comparativeCertificate.KeyId.ToString()))
+                Equal(sourceOfTruth.KeyId, comparativeCertificate.KeyId);
+        }
     }
 
     public static void IssuersAreEqual(CertificateIssuer first, CertificateIssuer second, bool firstFromConfig = true)

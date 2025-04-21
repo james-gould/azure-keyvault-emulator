@@ -296,7 +296,8 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.NotEmpty(certs);
     }
 
-    [Fact(Skip = "404 issue from CertificateClient again, underlying endpoint/functionality works fine. See iss #106")]
+    //[Fact(Skip = "404 issue from CertificateClient again, underlying endpoint/functionality works fine. See iss #106")]
+    [Fact]
     public async Task ImportingCertificateWillPersistInStore()
     {
         var client = await fixture.GetClientAsync();
@@ -309,9 +310,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.NotEmpty(certData);
 
-        var importedName = fixture.FreshlyGeneratedGuid;
-
-        var importOptions = new ImportCertificateOptions(importedName, certData)
+        var importOptions = new ImportCertificateOptions(certName, certData)
         {
             Enabled = true,
             Policy = CertificatePolicy.Default
@@ -323,7 +322,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var importedCert = response.Value;
 
-        Assert.CertificatesAreEqual(importedCert, cert);
+        Assert.CertificatesAreEqual(importedCert, cert, fromGet: false);
     }
 
     [Fact(Skip = "Pending changes to key pair in certificates")]
