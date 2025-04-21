@@ -58,11 +58,15 @@ public sealed class CertificateService(
 
     public CertificateBundle GetCertificate(string name, string version = "")
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         return _certs.SafeGet(name.GetCacheId(version));
     }
 
     public CertificatePolicy GetCertificatePolicy(string name)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var cert = _certs.SafeGet(name.GetCacheId());
 
         return cert.CertificatePolicy
@@ -71,6 +75,8 @@ public sealed class CertificateService(
 
     public CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy policy)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var cacheId = name.GetCacheId();
 
         var cert = _certs.SafeGet(cacheId);
@@ -86,6 +92,8 @@ public sealed class CertificateService(
 
     public CertificateOperation GetPendingCertificate(string name)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var cert = _certs.SafeGet(name.GetCacheId());
 
         return new CertificateOperation(cert.CertificateIdentifier, name);
@@ -93,6 +101,8 @@ public sealed class CertificateService(
 
     public IssuerBundle GetCertificateIssuer(string name)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         return backingService.GetIssuer(name);
     }
 
@@ -117,6 +127,8 @@ public sealed class CertificateService(
 
     public ListResult<CertificateVersionItem> GetCertificateVersions(string name, int maxResults = 25, int skipCount = 25)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
@@ -159,6 +171,8 @@ public sealed class CertificateService(
 
     public CertificateBundle ImportCertificate(string name, ImportCertificateRequest request)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var version = Guid.NewGuid().Neat();
 
         var certificate = X509CertificateFactory.ImportFromBase64(request.Value);
@@ -197,6 +211,8 @@ public sealed class CertificateService(
 
     public CertificateBundle MergeCertificates(string name, MergeCertificatesRequest request)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var cert = _certs.SafeGet(name.GetCacheId());
 
         ArgumentNullException.ThrowIfNull(cert.FullCertificate);
@@ -247,6 +263,8 @@ public sealed class CertificateService(
 
     public CertificateOperation GetPendingDeletedCertificate(string name)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var cert = _deletedCerts.SafeGet(name.GetCacheId());
 
         return new(cert.RecoveryId, name.GetCacheId());
@@ -275,6 +293,8 @@ public sealed class CertificateService(
 
     public CertificateOperation GetDeletedCertificate(string name)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var cert = _deletedCerts.SafeGet(name.GetCacheId());
 
         return new CertificateOperation(cert.RecoveryId, name.GetCacheId());
@@ -300,9 +320,18 @@ public sealed class CertificateService(
 
     public CertificateOperation GetPendingRecoveryOperation(string name)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var cert = _certs.SafeGet(name.GetCacheId());
 
         return new(cert.CertificateIdentifier, name);
+    }
+
+    public void PurgeDeletedCertificate(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        _deletedCerts.SafeRemove(name);
     }
 
     private string GenerateNextLink(int maxResults)

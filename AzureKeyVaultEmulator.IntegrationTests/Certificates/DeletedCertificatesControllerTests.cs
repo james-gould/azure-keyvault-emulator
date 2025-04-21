@@ -11,16 +11,7 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
     {
         var client = await fixture.GetClientAsync();
 
-        var certName = fixture.FreshlyGeneratedGuid;
-
-        var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => fixture.CreateCertificateAsync(certName));
-
-        var deleteOp = await client.StartDeleteCertificateAsync(certName);
-
-        await deleteOp.WaitForCompletionAsync();
-
-        Assert.NotNull(deleteOp.Value);
+        var (certName, _) = await CreateAndDeleteCertificate();
 
         var deletedCert = await client.GetDeletedCertificateAsync(certName);
 
@@ -61,17 +52,7 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
     {
         var client = await fixture.GetClientAsync();
 
-        var certName = fixture.FreshlyGeneratedGuid;
-
-        var cert = await fixture.CreateCertificateAsync(certName);
-
-        var beforeDelete = await client.GetCertificateAsync(certName);
-
-        Assert.Equal(certName, beforeDelete?.Value.Name);
-
-        var deleteOp = await client.StartDeleteCertificateAsync(certName);
-
-        await deleteOp.WaitForCompletionAsync();
+        var (certName, cert) = await CreateAndDeleteCertificate();
 
         var afterDelete = await client.GetDeletedCertificateAsync(certName);
 
@@ -85,6 +66,47 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
 
         Assert.CertificatesAreEqual(cert, afterRecovery);
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetDeletedCertificateAsync(certName));
+        await Assert.RequestFailsAsync(() => client.GetDeletedCertificateAsync(certName));
+    }
+
+    [Fact]
+    public async Task PurgingCertificateWillRemoveItFromDeletedStore()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var (certName, _) = await CreateAndDeleteCertificate();
+
+        var fromDeletedStore = await client.GetDeletedCertificateAsync(certName);
+
+        Assert.NotNull(fromDeletedStore.Value);
+
+        var purge = await client.PurgeDeletedCertificateAsync(certName);
+
+        Assert.Equal((int)HttpStatusCode.NoContent, purge.Status);
+
+        await Assert.RequestFailsAsync(() => client.GetDeletedCertificateAsync(certName));
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
+    }
+
+    private async Task<(string certName, KeyVaultCertificateWithPolicy cert)> CreateAndDeleteCertificate()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var beforeDelete = await client.GetCertificateAsync(certName);
+
+        Assert.Equal(certName, beforeDelete?.Value.Name);
+
+        var deleteOp = await client.StartDeleteCertificateAsync(certName);
+
+        await deleteOp.WaitForCompletionAsync();
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
+
+        return (certName, cert);
     }
 }

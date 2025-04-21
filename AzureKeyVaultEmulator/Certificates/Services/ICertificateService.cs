@@ -30,4 +30,5 @@ public interface ICertificateService
 
     CertificateOperation GetPendingRecoveryOperation(string name);
     CertificateOperation RecoverCerticate(string name);
+    void PurgeDeletedCertificate(string name);
 }

@@ -107,7 +107,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         Assert.NotNull(deletedKey?.Value.DeletedOn);
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetKeyAsync(keyName));
+        await Assert.RequestFailsAsync(() => client.GetKeyAsync(keyName));
 
         var fromDeletedStore = await client.GetDeletedKeyAsync(keyName);
 

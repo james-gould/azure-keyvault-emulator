@@ -16,7 +16,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var certName = fixture.FreshlyGeneratedGuid;
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetCertAsync(certName));
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
@@ -31,7 +31,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var certName = fixture.FreshlyGeneratedGuid;
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetCertificateAsync(certName));
+        await Assert.RequestFailsAsync(() => client.GetCertificateAsync(certName));
 
         var operation = await client.StartCreateCertificateAsync(certName, fixture.BasicPolicy, enabled: true);
 
@@ -66,7 +66,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var certName = fixture.FreshlyGeneratedGuid;
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetCertificateAsync(certName));
+        await Assert.RequestFailsAsync(() => client.GetCertificateAsync(certName));
 
         var operation = await client.StartCreateCertificateAsync(certName, fixture.BasicPolicy, enabled: true);
 
@@ -188,7 +188,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         //var issuerName = fixture.FreshlyGeneratedGuid;
         var issuerName = "testingNonGuid";
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetIssuerAsync(issuerName));
+        await Assert.RequestFailsAsync(() => client.GetIssuerAsync(issuerName));
 
         var issuerConfig = fixture.CreateIssuerConfiguration(issuerName);
 
@@ -217,7 +217,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var issuerName = fixture.FreshlyGeneratedGuid;
         var certName = fixture.FreshlyGeneratedGuid;
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetIssuerAsync(issuerName));
+        await Assert.RequestFailsAsync(() => client.GetIssuerAsync(issuerName));
 
         var issuerConfig = fixture.CreateIssuerConfiguration(issuerName);
 
@@ -363,7 +363,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.NotNull(cert);
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetDeletedCertificateAsync(certName));
+        await Assert.RequestFailsAsync(() => client.GetDeletedCertificateAsync(certName));
 
         var deleteOp = await client.StartDeleteCertificateAsync(certName);
 
@@ -375,6 +375,6 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.NotNull(response.Value);
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetCertAsync(certName));
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
     }
 }

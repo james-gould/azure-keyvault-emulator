@@ -75,4 +75,16 @@ public class DeletedCertificatesController(
 
         return Ok(result);
     }
+
+    [HttpDelete("{name}")]
+    public IActionResult PurgeCertificate(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        certService.PurgeDeletedCertificate(name);
+
+        return NoContent();
+    }
 }
