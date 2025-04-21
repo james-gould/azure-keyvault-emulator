@@ -35,7 +35,7 @@ namespace AzureKeyVaultEmulator.Shared.Utilities
         /// <param name="path">The path of the request, typically the name of the item being created (keys/secrets/certificates).</param>
         /// <param name="version">Optional version.</param>
         /// <returns>A fully compliant <see cref="Uri"/></returns>
-        public static Uri BuildIdentifierUri(this IHttpContextAccessor context, string name, string version, string path)
+        public static string BuildIdentifierUri(this IHttpContextAccessor context, string name, string version, string path)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -49,7 +49,7 @@ namespace AzureKeyVaultEmulator.Shared.Utilities
                 Path = $"{path}/{name}/{version}"
             };
 
-            return builder.Uri;
+            return builder.Uri.ToString();
         }
     }
 }

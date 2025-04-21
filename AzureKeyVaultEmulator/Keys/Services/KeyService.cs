@@ -40,7 +40,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             JWKS.KeyName = name;
             JWKS.KeyVersion = version;
-            JWKS.KeyIdentifier = keyUrl.ToString();
+            JWKS.KeyIdentifier = keyUrl;
             JWKS.KeyOperations = key.KeyOperations;
 
             var response = new KeyBundle
@@ -380,6 +380,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             
             return new DeletedKeyBundle
             {
+                Name = name,
                 Kid = parentKey.Key.KeyIdentifier,
                 Attributes = parentKey.Attributes,
                 RecoveryId = $"{AuthConstants.EmulatorUri}/deletedkeys/{name}",

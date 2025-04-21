@@ -26,7 +26,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var response = new SecretBundle
             {
-                Id = secretUri,
+                SecretIdentifier = secretUri,
                 Value = secret.Value,
                 Attributes = secret.SecretAttributes,
                 Tags = secret.Tags
@@ -51,8 +51,10 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var deleted = new DeletedSecretBundle
             {
+                Name = name,
+                RecoveryId = secret.SecretIdentifier,
                 Attributes = secret.Attributes,
-                SecretId = secret.Id?.ToString() ?? string.Empty,
+                SecretId = secret.SecretIdentifier,
                 Tags = secret.Tags,
                 Value = secret.Value
             };

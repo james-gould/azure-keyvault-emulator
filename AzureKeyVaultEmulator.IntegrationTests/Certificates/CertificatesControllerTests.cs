@@ -351,4 +351,30 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         // Being lazy, probably a better way of asserting the merge went through.
         Assert.Throws<Exception>(() => Assert.CertificatesAreEqual(baseCert, mergeResult));
     }
+
+    [Fact]
+    public async Task DeleteCertificateWillRemoveFromMainStore()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        Assert.NotNull(cert);
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetDeletedCertificateAsync(certName));
+
+        var deleteOp = await client.StartDeleteCertificateAsync(certName);
+
+        Assert.NotNull(deleteOp);
+
+        await deleteOp.WaitForCompletionAsync();
+
+        var response = await client.GetDeletedCertificateAsync(certName);
+
+        Assert.NotNull(response.Value);
+
+        await Assert.ThrowsRequestFailedAsync(() => client.GetCertAsync(certName));
+    }
 }

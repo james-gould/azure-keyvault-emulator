@@ -68,6 +68,9 @@ public class CertificatesController(
         return Ok(result);
     }
 
+    /// <summary>
+    /// Might not be needed, can't remember the exact flow. 
+    /// </summary>
     [HttpGet("{name}/completed")]
     public IActionResult GetCompletedCertificate(
         [FromRoute] string name,
@@ -192,6 +195,18 @@ public class CertificatesController(
         ArgumentNullException.ThrowIfNull(request);
 
         var result = certService.ImportCertificate(name, request);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{name}")]
+    public IActionResult DeleteCertificate(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var result = certService.DeleteCertificate(name);
 
         return Ok(result);
     }

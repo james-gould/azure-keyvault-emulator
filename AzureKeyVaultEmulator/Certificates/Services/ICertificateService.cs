@@ -21,4 +21,13 @@ public interface ICertificateService
     CertificateBundle RestoreCertificate(ValueModel<string> backup);
     CertificateBundle ImportCertificate(string name, ImportCertificateRequest request);
     CertificateBundle MergeCertificates(string name, MergeCertificatesRequest request);
+
+    CertificateOperation GetDeletedCertificate(string name);
+    CertificateOperation GetPendingDeletedCertificate(string name);
+
+    CertificateOperation DeleteCertificate(string name);
+    ListResult<DeletedCertificateBundle> GetDeletedCertificates(int maxResults = 25, int skipCount = 25);
+
+    CertificateOperation GetPendingRecoveryOperation(string name);
+    CertificateOperation RecoverCerticate(string name);
 }

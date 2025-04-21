@@ -10,7 +10,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 public class CertificateProperties : TaggedModel
 {
     [JsonPropertyName("id")]
-    public required Uri CertificateIdentifier { get; set; }
+    public required string CertificateIdentifier { get; set; }
 
     [JsonPropertyName("name")]
     public required string CertificateName { get; set; }

@@ -13,6 +13,7 @@ public sealed class CertificateService(
     : ICertificateService
 {
     private static readonly ConcurrentDictionary<string, CertificateBundle> _certs = [];
+    private static readonly ConcurrentDictionary<string, DeletedCertificateBundle> _deletedCerts = [];
 
     public CertificateOperation CreateCertificate(
         string name,
@@ -40,10 +41,10 @@ public sealed class CertificateService(
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            CertificatePolicy = UpdateNullablePolicy(policy, certIdentifier.ToString(), attributes),
+            CertificatePolicy = UpdateNullablePolicy(policy, certIdentifier, attributes),
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
-            SecretId = backingSecret.Id.ToString(),
+            SecretId = backingSecret.SecretIdentifier,
             KeyId = backingKey.Key.KeyIdentifier,
 
             FullCertificate = certificate
@@ -52,7 +53,7 @@ public sealed class CertificateService(
         _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
         _certs.SafeAddOrUpdate(name.GetCacheId(version), bundle);
 
-        return new CertificateOperation(certIdentifier.ToString(), name);
+        return new CertificateOperation(certIdentifier, name);
     }
 
     public CertificateBundle GetCertificate(string name, string version = "")
@@ -87,7 +88,7 @@ public sealed class CertificateService(
     {
         var cert = _certs.SafeGet(name.GetCacheId());
 
-        return new CertificateOperation(cert.CertificateIdentifier.ToString(), name);
+        return new CertificateOperation(cert.CertificateIdentifier, name);
     }
 
     public IssuerBundle GetCertificateIssuer(string name)
@@ -179,10 +180,10 @@ public sealed class CertificateService(
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            CertificatePolicy = UpdateNullablePolicy(request.Policy, certIdentifier.ToString(), attributes),
+            CertificatePolicy = UpdateNullablePolicy(request.Policy, certIdentifier, attributes),
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
-            SecretId = backingSecret.Id.ToString(),
+            SecretId = backingSecret.SecretIdentifier.ToString(),
             KeyId = backingKey.Key.KeyIdentifier,
 
             FullCertificate = certificate
@@ -211,6 +212,99 @@ public sealed class CertificateService(
         return copied;
     }
 
+    public CertificateOperation DeleteCertificate(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var cert = _certs.SafeGet(name.GetCacheId());
+
+        var matches = _certs.Where(x => x.Key.Contains(name));
+
+        foreach (var deleted in matches)
+            _certs.SafeRemove(deleted.Key);
+
+        var deletedCert = new DeletedCertificateBundle
+        {
+            Name = name,
+            CertificateIdentifier = $"{AuthConstants.EmulatorUri}/certificates/{name}",
+            RecoveryId = cert.CertificateIdentifier,
+            ContentType = cert.CertificatePolicy?.SecretProperies?.ContentType ?? string.Empty,
+            Attributes = cert.Attributes,
+            Tags = cert.Tags,
+            Kid = cert.KeyId,
+            SecretId = cert.SecretId,
+            Policy = cert.CertificatePolicy ?? new(),
+            CertificateThumbprint = cert.X509Thumbprint,
+            CertBase64 = cert.CertificateContents,
+
+            FullCertificate = cert
+        };
+
+        _deletedCerts.SafeAddOrUpdate(name.GetCacheId(), deletedCert);
+
+        return new(deletedCert.RecoveryId, name.GetCacheId());
+    }
+
+    public CertificateOperation GetPendingDeletedCertificate(string name)
+    {
+        var cert = _deletedCerts.SafeGet(name.GetCacheId());
+
+        return new(cert.RecoveryId, name.GetCacheId());
+    }
+
+    public ListResult<DeletedCertificateBundle> GetDeletedCertificates(int maxResults = 25, int skipCount = 25)
+    {
+        if (maxResults is default(int) && skipCount is default(int))
+            return new();
+
+        var allItems = _deletedCerts.ToList();
+
+        if (allItems.Count == 0)
+            return new();
+
+        var maxedItems = allItems.Skip(skipCount).Take(maxResults);
+
+        var requiresPaging = maxedItems.Count() >= maxResults;
+
+        return new ListResult<DeletedCertificateBundle>
+        {
+            NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
+            Values = maxedItems.Select(x => x.Value)
+        };
+    }
+
+    public CertificateOperation GetDeletedCertificate(string name)
+    {
+        var cert = _deletedCerts.SafeGet(name.GetCacheId());
+
+        return new CertificateOperation(cert.RecoveryId, name.GetCacheId());
+    }
+
+    public CertificateOperation RecoverCerticate(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var cacheId = name.GetCacheId();
+
+        var deletedCert = _deletedCerts.SafeGet(cacheId);
+
+        var cert = deletedCert.FullCertificate;
+
+        ArgumentNullException.ThrowIfNull(cert);
+
+        _certs.SafeAddOrUpdate(cacheId, cert);
+        _deletedCerts.SafeRemove(cacheId);
+
+        return new(cert.CertificateIdentifier, name);
+    }
+
+    public CertificateOperation GetPendingRecoveryOperation(string name)
+    {
+        var cert = _certs.SafeGet(name.GetCacheId());
+
+        return new(cert.CertificateIdentifier, name);
+    }
+
     private string GenerateNextLink(int maxResults)
     {
         var skipToken = tokenService.CreateSkipToken(maxResults);
@@ -222,7 +316,7 @@ public sealed class CertificateService(
     {
         return new()
         {
-            Id = bundle.CertificateIdentifier.ToString(),
+            Id = bundle.CertificateIdentifier,
             Attributes = bundle.Attributes,
             Thumbprint = bundle.X509Thumbprint,
             Tags = bundle.Tags,
