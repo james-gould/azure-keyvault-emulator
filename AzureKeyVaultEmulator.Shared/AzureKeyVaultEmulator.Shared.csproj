@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.4.0" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="9.2.0" />

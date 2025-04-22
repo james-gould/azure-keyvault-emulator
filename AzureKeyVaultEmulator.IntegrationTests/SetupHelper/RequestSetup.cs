@@ -28,6 +28,21 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper
             return executionCount;
         }
 
+        public static async Task<int> CreateMultiple<T>(
+    int lower, int upper,
+    Func<int, Task<T>> execution)
+        {
+            var executionCount = Random.Shared.Next(lower, upper);
+
+            var tasks = Enumerable
+                .Range(0, executionCount)
+                .Select(i => execution(i));
+
+            await Task.WhenAll(tasks);
+
+            return executionCount;
+        }
+
         public static string CreateRandomData(int size = 512)
         {
             byte[] bytes = new byte[size];

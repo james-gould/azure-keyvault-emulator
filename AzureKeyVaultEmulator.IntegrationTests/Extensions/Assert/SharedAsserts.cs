@@ -9,7 +9,7 @@ public partial class Assert
     /// </summary>
     /// <typeparam name="TResult">The response object for <paramref name="clientAction"/></typeparam>
     /// <param name="clientAction">The client func to execute expecting a failure.</param>
-    public static async Task ThrowsRequestFailedAsync<TResult>(Func<Task<TResult>> clientAction)
+    public static async Task RequestFailsAsync<TResult>(Func<Task<TResult>> clientAction)
         where TResult : class
     {
         var exception = await ThrowsAsync<RequestFailedException>(clientAction);

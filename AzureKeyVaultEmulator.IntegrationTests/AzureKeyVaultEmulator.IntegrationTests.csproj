@@ -35,9 +35,6 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Certificates\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj" />
     <ProjectReference Include="..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false" />
   </ItemGroup>

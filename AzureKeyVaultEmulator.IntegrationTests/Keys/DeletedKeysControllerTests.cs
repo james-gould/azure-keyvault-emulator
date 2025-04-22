@@ -9,7 +9,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     [Fact]
     public async Task GetDeletedKeyReturnsFromDeletedKeyStore()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -17,7 +17,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
 
         var deletedKey = (await client.StartDeleteKeyAsync(keyName)).Value;
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetKeyAsync(keyName));
+        await Assert.RequestFailsAsync(() => client.GetKeyAsync(keyName));
 
         var fromDeletedStore = await client.GetDeletedKeyAsync(keyName);
 
@@ -27,7 +27,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     [Fact]
     public async Task GetDeletedKeysWillCycleLink()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -48,7 +48,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
     [Fact]
     public async Task PurgeDeletedKeyRemovedFromDeletedStore()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -62,15 +62,15 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
 
         var purgeResult = await client.PurgeDeletedKeyAsync(keyName);
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetDeletedKeyAsync(keyName));
+        await Assert.RequestFailsAsync(() => client.GetDeletedKeyAsync(keyName));
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetKeyAsync(keyName));
+        await Assert.RequestFailsAsync(() => client.GetKeyAsync(keyName));
     }
 
     [Fact]
     public async Task RestoreKeyRemovesFromDeletedStore()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -86,7 +86,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
 
         Assert.KeysAreEqual(createdKey, restoredKey);
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetDeletedKeyAsync(keyName));
+        await Assert.RequestFailsAsync(() => client.GetDeletedKeyAsync(keyName));
 
         var fromMainStore = (await client.GetKeyAsync(keyName)).Value;
 

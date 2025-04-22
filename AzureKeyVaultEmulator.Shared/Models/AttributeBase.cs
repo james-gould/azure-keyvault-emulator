@@ -4,8 +4,15 @@ namespace AzureKeyVaultEmulator.Shared.Models
 {
     public class AttributeBase
     {
-        [JsonPropertyName("contentType")]
-        public string ContentType { get; set; } = string.Empty;
+        public AttributeBase()
+        {
+            var now = DateTimeOffset.Now;
+
+            Created = now.ToUnixTimeSeconds();
+            Updated = now.ToUnixTimeSeconds();
+            NotBefore = now.ToUnixTimeSeconds();
+            Expiration = now.AddDays(365).ToUnixTimeSeconds();
+        }
 
         [JsonPropertyName("enabled")]
         public bool Enabled { get; set; } = true;

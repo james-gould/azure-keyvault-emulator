@@ -16,8 +16,4 @@
   <ItemGroup>
     <ProjectReference Include="..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Certificates\Controllers\" />
-    <Folder Include="Certificates\Services\" />
-  </ItemGroup>
 </Project>

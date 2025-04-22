@@ -12,7 +12,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
     {
         [HttpGet("{name}")]
         [Produces("application/json")]
-        [ProducesResponseType<SecretResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetDeletedSecret(
             [FromRoute] string name,
@@ -25,7 +25,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
 
         [HttpGet]
         [Produces("application/json")]
-        [ProducesResponseType<ListResult<SecretResponse>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ListResult<SecretBundle>>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult GetDeletedSecrets(
             [ApiVersion] string apiVersion,
@@ -57,7 +57,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
 
         [HttpPost("{name}/recover")]
         [Produces("application/json")]
-        [ProducesResponseType<ListResult<SecretResponse>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ListResult<SecretBundle>>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
         public IActionResult RecoverDeletedSecret(
             [FromRoute] string name,

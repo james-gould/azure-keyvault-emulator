@@ -3,14 +3,14 @@ using Azure.Security.KeyVault.Keys.Cryptography;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
-public sealed class KeysTestingFixture : EmulatorTestingFixture
+public sealed class KeysTestingFixture : KeyVaultClientTestingFixture<KeyClient>
 {
     private KeyClient? _client;
 
     public const string DefaultKeyName = "algKey";
     private KeyType _defaultType = KeyType.Rsa;
 
-    public async ValueTask<KeyClient> GetKeyClientAsync()
+    public override async ValueTask<KeyClient> GetClientAsync()
     {
         if (_client is not null)
             return _client;
@@ -39,7 +39,7 @@ public sealed class KeysTestingFixture : EmulatorTestingFixture
 
     public async Task<KeyVaultKey> CreateKeyAsync(string name = DefaultKeyName, KeyType? type = null)
     {
-        var client = await GetKeyClientAsync();
+        var client = await GetClientAsync();
 
         type ??= _defaultType;
 

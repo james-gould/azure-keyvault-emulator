@@ -26,5 +26,30 @@ namespace AzureKeyVaultEmulator.Shared.Utilities
 
             return $"{builder.AbsoluteUri}{queryParam}";
         }
+
+        /// <summary>
+        /// Constructs the URI that's used to create KeyIdentifier, SecretIdentifier or CertificateIdentifier.
+        /// </summary>
+        /// <param name="context">The <see cref="IHttpContextAccessor"/> from the request.</param>
+        /// <param name="name">The name of the item to create an identifier for.</param>
+        /// <param name="path">The path of the request, typically the name of the item being created (keys/secrets/certificates).</param>
+        /// <param name="version">Optional version.</param>
+        /// <returns>A fully compliant <see cref="Uri"/></returns>
+        public static string BuildIdentifierUri(this IHttpContextAccessor context, string name, string version, string path)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
+            var builder = new UriBuilder
+            {
+                Scheme = context.HttpContext?.Request.Scheme,
+                Host = context.HttpContext?.Request.Host.Host,
+                Port = context.HttpContext?.Request.Host.Port ?? -1,
+                Path = $"{path}/{name}/{version}"
+            };
+
+            return builder.Uri.ToString();
+        }
     }
 }

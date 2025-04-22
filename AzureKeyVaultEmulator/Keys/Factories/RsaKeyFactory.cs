@@ -8,7 +8,9 @@ namespace AzureKeyVaultEmulator.Keys.Factories
 
         public static RSA CreateRsaKey(int? keySize)
         {
-            return RSA.Create(keySize ?? _defaultSize);
+            var adjustedSize = (keySize is not null && keySize != 0) ? keySize : _defaultSize;
+
+            return RSA.Create(adjustedSize ?? _defaultSize);
         }
     }
 }
