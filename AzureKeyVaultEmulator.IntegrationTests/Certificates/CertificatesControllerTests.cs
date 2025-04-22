@@ -377,4 +377,23 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
     }
+
+    [Fact(Skip = @"
+        Certificate Operations are currently hardcoded to work in a specific way,
+        this functionality requires a refactor of the CertificateOperation class and
+        a redesign of the behaviour. The functionality is undocumented in the SDK/API docs,
+        but the existing integration tests will capture any regressions.
+    ")]
+    public async Task DeleteCertificateOperationWillSucceed()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var createOperation = await client.StartCreateCertificateAsync(certName, fixture.BasicPolicy);
+
+        await createOperation.CancelAsync();
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
+    }
 }
