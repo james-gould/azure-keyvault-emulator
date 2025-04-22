@@ -10,4 +10,6 @@ public interface ICertificateBackingService
     IssuerBundle GetIssuer(string name);
     IssuerBundle PersistIssuerConfig(string name, IssuerBundle bundle);
     IssuerBundle UpdateIssuerAgainstCertificate(string certName, IssuerBundle bundle);
+
+    IssuerBundle DeleteIssuer(string issuerName);
 }

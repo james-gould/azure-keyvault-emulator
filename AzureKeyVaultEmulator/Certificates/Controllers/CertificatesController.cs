@@ -122,30 +122,6 @@ public class CertificatesController(
         return Ok(result);
     }
 
-    [HttpGet("issuers/{name}")]
-    public IActionResult GetCertificateIssuer(
-        [FromRoute] string name,
-        [ApiVersion] string apiVersion)
-    {
-        var result = certService.GetCertificateIssuer(name);
-
-        return Ok(result);
-    }
-
-    [HttpPut("issuers/{name}")]
-    public IActionResult CreateCertificateIssuer(
-        [FromRoute] string name,
-        [FromBody] IssuerBundle bundle,
-        [ApiVersion] string apiVersion)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-        ArgumentNullException.ThrowIfNull(bundle);
-
-        var result = backingService.PersistIssuerConfig(name, bundle);
-
-        return Ok(result);
-    }
-
     [HttpPost("{name}/backup")]
     public IActionResult BackupCertificate(
         [FromRoute] string name,
@@ -210,6 +186,46 @@ public class CertificatesController(
 
         return Ok(result);
     }
+
+    #region issuers
+
+    [HttpGet("issuers/{name}")]
+    public IActionResult GetCertificateIssuer(
+    [FromRoute] string name,
+    [ApiVersion] string apiVersion)
+    {
+        var result = certService.GetCertificateIssuer(name);
+
+        return Ok(result);
+    }
+
+    [HttpPut("issuers/{name}")]
+    public IActionResult CreateCertificateIssuer(
+        [FromRoute] string name,
+        [FromBody] IssuerBundle bundle,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(bundle);
+
+        var result = backingService.PersistIssuerConfig(name, bundle);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("issuers/{name}")]
+    public IActionResult DeleteIssuers(
+        [FromRoute] string name,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var result = backingService.DeleteIssuer(name);
+
+        return Ok(result);
+    }
+
+    #endregion
 
     // Due to {name}/{version} everywhere, and how ASP.NET Core handles routing
     // any HttpGet("{name}/someValue} will end up here.

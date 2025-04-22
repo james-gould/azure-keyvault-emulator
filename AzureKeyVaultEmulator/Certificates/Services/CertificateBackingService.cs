@@ -32,12 +32,26 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
         return (backingKey, backingSecret);
     }
 
-    public IssuerBundle PersistIssuerConfig(string name, IssuerBundle bundle)
+    public IssuerBundle DeleteIssuer(string issuerName)
     {
-        // Name is passed as a route arg, not set in model...
-        bundle.IssuerName = name;
+        ArgumentException.ThrowIfNullOrEmpty(issuerName);
 
-        _issuers.SafeAddOrUpdate(name.GetCacheId(), bundle);
+        var cacheId = issuerName.GetCacheId();
+
+        var bundle = _issuers.SafeGet(cacheId);
+
+        _issuers.SafeRemove(cacheId);
+
+        return bundle;
+    }
+
+    public IssuerBundle PersistIssuerConfig(string issuerName, IssuerBundle bundle)
+    {
+        // Name is passed as a route arg from the SDK, not set in model
+        // The response model in the SDK has a Name property though, so it needs to be set.
+        bundle.IssuerName = issuerName;
+
+        _issuers.SafeAddOrUpdate(issuerName.GetCacheId(), bundle);
 
         return bundle;
     }
