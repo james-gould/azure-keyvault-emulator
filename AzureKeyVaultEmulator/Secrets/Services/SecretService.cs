@@ -10,7 +10,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         private static readonly ConcurrentDictionary<string, SecretResponse?> _secrets = new();
         private static readonly ConcurrentDictionary<string, SecretResponse?> _deletedSecrets = new();
 
-        public SecretResponse? Get(string name, string version = "")
+        public SecretResponse Get(string name, string version = "")
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -24,7 +24,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return secret;
         }
 
-        public SecretResponse? SetSecret(string name, SetSecretModel secret)
+        public SecretResponse SetSecret(string name, SetSecretModel secret)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNull(secret);
@@ -52,7 +52,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return response;
         }
 
-        public DeletedSecretBundle? DeleteSecret(string name, string version = "")
+        public DeletedSecretBundle DeleteSecret(string name, string version = "")
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -76,7 +76,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return deleted;
         }
 
-        public ValueModel<string>? BackupSecret(string name)
+        public ValueModel<string> BackupSecret(string name)
         {
             var cacheId = name.GetCacheId();
 
@@ -91,7 +91,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             };
         }
 
-        public SecretResponse? GetDeletedSecret(string name)
+        public SecretResponse GetDeletedSecret(string name)
         {
             var cacheId = name.GetCacheId();
 
@@ -176,7 +176,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             _deletedSecrets.Remove(name, out _);
         }
 
-        public SecretResponse? RecoverDeletedSecret(string name)
+        public SecretResponse RecoverDeletedSecret(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -192,14 +192,14 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             _deletedSecrets.Remove(name, out _);
 
-            return secret;
+            return secret!;
         }
 
-        public SecretResponse? RestoreSecret(string encodedSecretId)
+        public SecretResponse RestoreSecret(string encodedSecretId)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            return encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId);
+            return encryption.DecryptFromKeyVaultJwe<SecretResponse?>(encodedSecretId)!;
         }
 
         public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
