@@ -42,13 +42,19 @@ public class CertificateIssuersTests(CertificatesTestingFixture fixture) : IClas
 
         Assert.NotNull(adminContact);
 
-        adminContact!.Email = "testing@integrationtest.com";
+        var newEmail = "testing@integrationtest.com";
+
+        adminContact!.Email = newEmail;
 
         var response = await client.UpdateIssuerAsync(issuerToBeUpdated);
 
         Assert.NotNull(response.Value);
 
-        Assert.NotEqual(fixture.DefaultAdminContact.Email, response.Value.AdministratorContacts?.FirstOrDefault()?.Email);
+        var updatedEmail = response.Value.AdministratorContacts?.FirstOrDefault()?.Email;
+
+        Assert.NotEqual(fixture.DefaultAdminContact.Email, updatedEmail);
+
+        Assert.Equal(newEmail, updatedEmail);
     }
 
     private async Task<(string issuerName, CertificateIssuer issuer)> CreateIssuerAsync()
