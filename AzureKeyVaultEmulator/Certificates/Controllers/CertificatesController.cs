@@ -187,6 +187,11 @@ public class CertificatesController(
         return Ok(result);
     }
 
+    /// <summary>
+    /// Regions below need to be refactored in separate controllers that respect the order of the endpoints.
+    /// The long comment at the end of the controller explains why.
+    /// </summary>
+
     #region issuers
 
     [HttpGet("issuers/{name}")]
@@ -235,6 +240,40 @@ public class CertificatesController(
         ArgumentNullException.ThrowIfNull(bundle);
 
         var result = backingService.UpdateCertificateIssuer(name, bundle);
+
+        return Ok(result);
+    }
+
+    #endregion
+
+    #region contacts
+
+    [HttpPut("contacts")]
+    public IActionResult SetContacts(
+        [FromBody] SetContactsRequest request,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var result = backingService.SetContactInformation(request);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("contacts")]
+    public IActionResult DeleteContacts(
+        [ApiVersion] string apiVersion)
+    {
+        var result = backingService.DeleteCertificateContacts();
+
+        return Ok(result);
+    }
+
+    [HttpGet("contacts")]
+    public IActionResult GetCertificateContacts(
+        [ApiVersion] string apiVersion)
+    {
+        var result = backingService.GetCertificateContacts();
 
         return Ok(result);
     }

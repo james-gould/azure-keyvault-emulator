@@ -1,4 +1,5 @@
 ﻿using AzureKeyVaultEmulator.Shared.Models.Certificates;
+using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
@@ -13,4 +14,8 @@ public interface ICertificateBackingService
 
     IssuerBundle UpdateCertificateIssuer(string issuerName, IssuerBundle bundle);
     IssuerBundle DeleteIssuer(string issuerName);
+
+    CertificateContacts SetContactInformation(SetContactsRequest request);
+    CertificateContacts DeleteCertificateContacts();
+    CertificateContacts GetCertificateContacts();
 }

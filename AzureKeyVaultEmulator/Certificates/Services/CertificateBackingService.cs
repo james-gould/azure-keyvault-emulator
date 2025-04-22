@@ -1,6 +1,7 @@
 ﻿using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
+using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
@@ -13,6 +14,10 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
 
     // { certName, IssuerBundle } 
     private static readonly ConcurrentDictionary<string, IssuerBundle> _certificateIssuers = new();
+
+    // This seems basically unused outside of key vault, the docs, SDK nor portal make use of it?
+    // Might be an artefact or maybe it's just really obvious and I am stupid.
+    private CertificateContacts _certContacts = new();
 
     public IssuerBundle GetIssuer(string name)
     {
@@ -72,6 +77,22 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
 
         return bundle;
     }
+
+    public CertificateContacts SetContactInformation(SetContactsRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        _certContacts.Contacts = request.Contacts;
+
+        return _certContacts;
+    }
+
+    public CertificateContacts DeleteCertificateContacts()
+    {
+        return _certContacts = new();
+    }
+
+    public CertificateContacts GetCertificateContacts() => _certContacts;
 
     private KeyBundle CreateBackingKey(
         string certName,
