@@ -3,7 +3,8 @@ using AzureKeyVaultEmulator.Shared.Constants;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-//var useEmulatorContainer = bool.Parse(Environment.GetEnvironmentVariable("UseEmulator") ?? "false");
+// Integration tests seem to fail due to an unavailable endpoint when referencing another project?
+// Haven't seen it before, likely something wonky with the Client library and creating of an Aspire resource
 var useDeployedDockerContainer = false;
 
 if (useDeployedDockerContainer)

@@ -14,14 +14,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         private static readonly ConcurrentDictionary<string, KeyBundle> _deletedKeys = new();
 
-        public KeyBundle? GetKey(string name)
+        public KeyBundle GetKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             return _keys.SafeGet(name);
         }
 
-        public KeyBundle? GetKey(string name, string version)
+        public KeyBundle GetKey(string name, string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -29,24 +29,18 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return _keys.SafeGet(name.GetCacheId(version));
         }
 
-        public KeyBundle? CreateKey(string name, CreateKeyModel key)
+        public KeyBundle CreateKey(string name, CreateKeyModel key)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             var JWKS = GetJWKSFromModel(key.KeySize, key.KeyType);
 
             var version = Guid.NewGuid().ToString();
-            var keyUrl = new UriBuilder
-            {
-                Scheme = httpContextAccessor.HttpContext?.Request.Scheme,
-                Host = httpContextAccessor.HttpContext?.Request.Host.Host,
-                Port = httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
-                Path = $"keys/{name}/{version}"
-            };
+            var keyUrl = httpContextAccessor.BuildIdentifierUri(name, version, "keys");
 
             JWKS.KeyName = name;
             JWKS.KeyVersion = version;
-            JWKS.KeyIdentifier = keyUrl.Uri.ToString();
+            JWKS.KeyIdentifier = keyUrl;
             JWKS.KeyOperations = key.KeyOperations;
 
             var response = new KeyBundle
@@ -70,15 +64,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            // See KeyController.cs inline doc for exclusion reason
-            //ArgumentException.ThrowIfNullOrWhiteSpace(version);
-
             var cacheId = name.GetCacheId(version);
 
             var key = _keys.SafeGet(cacheId);
-
-            if (string.IsNullOrEmpty(attributes.ContentType))
-                key.Attributes.ContentType = attributes.ContentType;
 
             key.Attributes = attributes;
             key.Attributes.RecoverableDays = attributes.RecoverableDays;
@@ -392,6 +380,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             
             return new DeletedKeyBundle
             {
+                Name = name,
                 Kid = parentKey.Key.KeyIdentifier,
                 Attributes = parentKey.Attributes,
                 RecoveryId = $"{AuthConstants.EmulatorUri}/deletedkeys/{name}",
@@ -414,7 +403,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var allItems = _deletedKeys.ToList();
 
-            if (!allItems.Any())
+            if (allItems.Count == 0)
                 return new();
 
             var maxedItems = allItems.Skip(skipCount).Take(maxResults);
@@ -464,13 +453,13 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
         {
-            switch (keyType)
+            switch (keyType.ToUpper())
             {
-                case RSAKeyTypes.RSA:
+                case SupportedKeyTypes.RSA:
                     var rsaKey = RsaKeyFactory.CreateRsaKey(keySize);
                     return new JsonWebKeyModel(rsaKey);
 
-                case RSAKeyTypes.EC:
+                case SupportedKeyTypes.EC:
                     throw new NotImplementedException("Elliptic Curve keys are not currently supported.");
 
                 default:

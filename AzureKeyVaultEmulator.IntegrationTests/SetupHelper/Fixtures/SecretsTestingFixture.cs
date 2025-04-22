@@ -2,7 +2,7 @@
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
-public class SecretsTestingFixture : EmulatorTestingFixture
+public class SecretsTestingFixture : KeyVaultClientTestingFixture<SecretClient>
 {
     private SecretClient? _secretClient;
 
@@ -11,7 +11,7 @@ public class SecretsTestingFixture : EmulatorTestingFixture
 
     private KeyVaultSecret? _defaultSecret = null;
 
-    public async ValueTask<SecretClient> GetSecretClientAsync()
+    public override async ValueTask<SecretClient> GetClientAsync()
     {
         if (_secretClient is not null)
             return _secretClient;
@@ -42,7 +42,7 @@ public class SecretsTestingFixture : EmulatorTestingFixture
         ArgumentException.ThrowIfNullOrWhiteSpace(secretName);
         ArgumentException.ThrowIfNullOrWhiteSpace(secretValue);
 
-        _secretClient = await GetSecretClientAsync();
+        _secretClient = await GetClientAsync();
 
         return await _secretClient.SetSecretAsync(secretName, secretValue, CancellationToken);
     }

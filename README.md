@@ -1,6 +1,6 @@
 # Azure Key Vault Emulator
 
-A fully featured, emulated version of [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) product.
+A fully featured, emulated version of the [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) product.
 
 `.NET Aspire` has the ability to create emulated, easily referenced resources in development environments - unfortunately Key Vault is not one of those. To work with Key Vault in a dev-env you need to have a deployed, real world instance of the resource in an active Azure Subscription; this emulator removes that requirement.
 
@@ -112,11 +112,11 @@ docker pull jamesgoulddev/azure-keyvault-emulator:latest
 
 Some API functionality may not be supported while the initial development is ongoing, please refer to the roadmap below to double check if you're attempting a supported operation. The full API *will* be supported, but if you run into issues beforehand that's likely the reason why.
 
-- [ ] Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
+- [x] Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
     - [x] Secrets
     - [x] Keys
-    - [ ] Certificates
-    - [ ] Managed HSM
+    - [x] Certificates
+    - [x] Managed HSM
 - [x] Separate NuGet package for introducing an [emulated Key Vault into your .NET Aspire](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Hosting.Aspire) projects.
 - [x] Separate NuGet package for easy usage of the [emulator in client applications](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Client).
 - [ ] Complete `docker-compose` options for integrating the emulator into a cluster.

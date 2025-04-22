@@ -3,7 +3,7 @@
 namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 
 // https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-keys/get-keys?view=rest-keyvault-keys-7.4&tabs=HTTP#keyitem
-public sealed class KeyItemBundle : ResponseBase
+public sealed class KeyItemBundle : TaggedModel
 {
     [JsonPropertyName("attributes")]
     public KeyAttributesModel KeyAttributes { get; set; } = new();

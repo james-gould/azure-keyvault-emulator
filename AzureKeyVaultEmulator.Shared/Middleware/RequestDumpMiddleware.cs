@@ -20,6 +20,7 @@ public sealed class RequestDumpMiddleware(RequestDelegate next)
 
         RequestDebugModel dump = new()
         {
+            Method = context.Request.Method,
             Path = context.Request.Host + context.Request.GetEncodedPathAndQuery(),
             Headers = context.Request.Headers.Select(x => $"Key: {x.Key}, Value: {x.Value}"),
             Body = body
@@ -35,6 +36,7 @@ public sealed class RequestDumpMiddleware(RequestDelegate next)
 
 public sealed class RequestDebugModel
 {
+    public string Method { get; set; } = string.Empty;
     public string Path { get; set; } = string.Empty;
     public IEnumerable<string> Headers { get; set; } = [];
     public string Body { get; set; } = string.Empty;

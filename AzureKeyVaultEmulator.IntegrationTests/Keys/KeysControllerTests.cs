@@ -12,7 +12,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact]
     public async Task CreateAndGetKeySucceeds()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var createdKey = await fixture.CreateKeyAsync();
 
@@ -24,7 +24,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact]
     public async Task GetKeyWithVersionGetsCorrectVersion()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var versionedKeyName = "intTestKey";
 
@@ -44,7 +44,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact]
     public async Task GetKeyThrowsWhenNoKeyExists()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -64,7 +64,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact]
     public async Task UpdateKeySetsPropertiesOnVersionedKey()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = "updatedKey";
         var tagKey = fixture.FreshlyGeneratedGuid;
@@ -93,7 +93,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact]
     public async Task DeletingKeyWillRemoveItFromMainStore()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -107,7 +107,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         Assert.NotNull(deletedKey?.Value.DeletedOn);
 
-        await Assert.ThrowsRequestFailedAsync(() => client.GetKeyAsync(keyName));
+        await Assert.RequestFailsAsync(() => client.GetKeyAsync(keyName));
 
         var fromDeletedStore = await client.GetDeletedKeyAsync(keyName);
 
@@ -117,7 +117,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact(Skip = "Github Actions is failing due to free tier limitations. This works locally and passes.")]
     public async Task GetAllKeyVersionsWillCycle()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -136,7 +136,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact(Skip = "Github Actions is failing due to free tier limitations. This works locally and passes.")]
     public async Task GetOneHundredKeyVersionsCyclesThroughLink()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -155,7 +155,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact]
     public async Task EncryptAndDecryptWithKeySucceeds()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -179,10 +179,10 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(decrypted.Plaintext, data);
     }
 
-    [Fact(Skip = "Weird bug with restore endpoint 404ing, works in swagger...")]
+    [Fact]
     public async Task BackingUpAndRestoringKeySucceeds()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -203,7 +203,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [InlineData(120)]
     public async Task GetRandomBytesWillMatchRequestedLength(int length)
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var bytes = await client.GetRandomBytesAsync(length);
 
@@ -213,7 +213,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact]
     public async Task CreatingRotationPolicyWillPersistAgainstKey()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -241,7 +241,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     [Fact(Skip = "Release/Import key requires JWE decoding and inspection")]
     public async Task ReleasingKeyWillCreatePublicKeyHeader()
     {
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -265,7 +265,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     public async Task SignAndVerifyWithKeySucceeds()
     {
         // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Keys_4.7.0/sdk/keyvault/Azure.Security.KeyVault.Keys/samples/Sample5_SignVerify.md
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
@@ -290,7 +290,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Keys_4.7.0/sdk/keyvault/Azure.Security.KeyVault.Keys/samples/Sample6_WrapUnwrap.md
 
-        var client = await fixture.GetKeyClientAsync();
+        var client = await fixture.GetClientAsync();
 
         var keyName = fixture.FreshlyGeneratedGuid;
 

@@ -20,6 +20,8 @@ builder.Services.RegisterCustomServices();
 
 var app = builder.Build();
 
+app.RegisterDoubleSlashBodge();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
