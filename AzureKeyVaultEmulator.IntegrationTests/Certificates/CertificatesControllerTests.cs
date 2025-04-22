@@ -90,9 +90,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.NotEqual(string.Empty, cert.Properties.Version);
 
-        var versionResponse = await client.GetCertificateVersionAsync(certName, cert.Properties.Version);
-
-        var byVersion = versionResponse.Value;
+        var byVersion = await client.GetCertVersionAsync(certName, cert.Properties.Version);
 
         Assert.CertificatesAreEqual(byVersion, cert);
     }
@@ -152,11 +150,11 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         policyToUpdate.Enabled = false;
 
-        var updated = await client.UpdateCertificatePolicyAsync(certName, policyToUpdate);
+        var updatedPolicy = await client.UpdateCertificatePolicyWithResponseAsync(certName, policyToUpdate);
 
-        Assert.NotEqual(cert.Policy, updated);
+        Assert.NotEqual(cert.Policy, updatedPolicy);
 
-        Assert.False(updated.Value.Enabled);
+        Assert.False(updatedPolicy.Enabled);
     }
 
     [Fact]
@@ -168,13 +166,14 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var cert = await fixture.CreateCertificateAsync(certName);
 
-        var response = await client.GetCertificatePolicyAsync(certName);
+        var certPolicy = await client.GetCertAsync(certName);
 
-        Assert.NotNull(response.Value);
+        Assert.NotNull(certPolicy);
 
-        var policy = response.Value;
+        var policy = certPolicy.Policy;
 
         Assert.NotNull(policy);
+
         Assert.Equal(cert.Policy.IssuerName, policy.IssuerName);
         Assert.Equal(cert.Policy.Subject, policy.Subject);
         Assert.Equal(cert.Policy.Enabled, policy.Enabled);
@@ -192,11 +191,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var issuerConfig = fixture.CreateIssuerConfiguration(issuerName);
 
-        var response = await client.CreateIssuerAsync(issuerConfig);
+        var issuer = await client.CreateIssuerWithResponseAsync(issuerConfig);
 
-        Assert.NotNull(response.Value);
-
-        var issuer = response.Value;
+        Assert.NotNull(issuer);
 
         // Can't use top level Equivalent due to Id being set at create time, it's null in the setup config.
         Assert.Equivalent(issuerConfig.AdministratorContacts, issuer.AdministratorContacts);
@@ -223,11 +220,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var createdResponse = await client.CreateIssuerAsync(issuerConfig);
 
-        var response = await client.GetIssuerAsync(issuerName);
+        var issuer = await client.GetIssuerWithResponseAsync(issuerName);
 
-        Assert.NotNull(response.Value);
-
-        var issuer = response.Value;
+        Assert.NotNull(issuer);
 
         Assert.IssuersAreEqual(issuerConfig, issuer);
     }
@@ -243,17 +238,15 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         Assert.NotNull(cert);
 
-        var backup = await client.BackupCertificateAsync(certName);
+        var backupCert = await client.BackupCertificateWithResponseAsync(certName);
 
-        Assert.NotNull(backup);
+        Assert.NotNull(backupCert);
 
-        Assert.NotEqual([], backup.Value);
+        Assert.NotEqual([], backupCert);
 
-        var restoredResponse = await client.RestoreCertificateBackupAsync(backup.Value);
+        var restoredCert = await client.RestoreCertificateBackupWithResponseAsync(backupCert);
 
-        Assert.NotNull(restoredResponse.Value);
-
-        var restoredCert = restoredResponse.Value;
+        Assert.NotNull(restoredCert);
 
         Assert.CertificatesAreEqual(cert, restoredCert);
     }
@@ -316,11 +309,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
             Policy = CertificatePolicy.Default
         };
 
-        var response = await client.ImportCertificateAsync(importOptions);
+        var importedCert = await client.ImportCertWithResponseAsync(importOptions);
 
-        Assert.NotNull(response.Value);
-
-        var importedCert = response.Value;
+        Assert.NotNull(importedCert);
 
         Assert.CertificatesAreEqual(importedCert, cert, fromGet: false);
     }
@@ -342,11 +333,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
             Enabled = true
         };
 
-        var response = await client.MergeCertificateAsync(mergeOptions);
+        var mergeResult = await client.MergeCertWithResponseAsync(mergeOptions);
 
-        Assert.NotNull(response.Value);
-
-        var mergeResult = response.Value;
+        Assert.NotNull(mergeResult);
 
         // Being lazy, probably a better way of asserting the merge went through.
         Assert.Throws<Exception>(() => Assert.CertificatesAreEqual(baseCert, mergeResult));
@@ -371,28 +360,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         await deleteOp.WaitForCompletionAsync();
 
-        var response = await client.GetDeletedCertificateAsync(certName);
+        var deletedCert = await client.MergeDeletedCertWithResponseAsync(certName);
 
-        Assert.NotNull(response.Value);
-
-        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
-    }
-
-    [Fact(Skip = @"
-        Certificate Operations are currently hardcoded to work in a specific way,
-        this functionality requires a refactor of the CertificateOperation class and
-        a redesign of the behaviour. The functionality is undocumented in the SDK/API docs,
-        but the existing integration tests will capture any regressions.
-    ")]
-    public async Task DeleteCertificateOperationWillSucceed()
-    {
-        var client = await fixture.GetClientAsync();
-
-        var certName = fixture.FreshlyGeneratedGuid;
-
-        var createOperation = await client.StartCreateCertificateAsync(certName, fixture.BasicPolicy);
-
-        await createOperation.CancelAsync();
+        Assert.NotNull(deletedCert);
 
         await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
     }
