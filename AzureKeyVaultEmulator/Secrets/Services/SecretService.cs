@@ -2,7 +2,7 @@ using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
-    public class SercretService(
+    public class SecretService(
         IHttpContextAccessor httpContextAccessor,
         ITokenService token,
         IEncryptionService encryption) : ISecretService
