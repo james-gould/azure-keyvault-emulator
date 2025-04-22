@@ -38,7 +38,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return response;
         }
 
-        public DeletedSecretBundle? DeleteSecret(string name, string version = "")
+        public DeletedSecretBundle DeleteSecret(string name, string version = "")
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -64,7 +64,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return deleted;
         }
 
-        public ValueModel<string>? BackupSecret(string name)
+        public ValueModel<string> BackupSecret(string name)
         {
             var cacheId = name.GetCacheId();
 
@@ -180,7 +180,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             _deletedSecrets.Remove(name, out _);
 
-            return secret;
+            return secret!;
         }
 
         public SecretBundle? RestoreSecret(string encodedSecretId)

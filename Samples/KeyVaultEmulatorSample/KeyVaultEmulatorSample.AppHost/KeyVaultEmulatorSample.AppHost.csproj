@@ -14,6 +14,6 @@
     <PackageReference Include="AzureKeyVaultEmulator.Aspire.Hosting" Version="1.0.6" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WebApiPWithEmulator\WebApiWithEmulator.csproj" />
+    <ProjectReference Include="..\WebApiWithEmulator\WebApiWithEmulator.csproj" />
   </ItemGroup>
 </Project>
