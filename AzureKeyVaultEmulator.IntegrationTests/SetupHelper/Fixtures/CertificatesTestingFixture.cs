@@ -8,6 +8,14 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
 
     public CertificatePolicy BasicPolicy = CertificatePolicy.Default;
 
+    public AdministratorContact DefaultAdminContact = new()
+    {
+        Email = "emulator@keyvault.net",
+        FirstName = "Azure",
+        LastName = "Key Vault",
+        Phone = "0118 999 881 999 119 7253"
+    };
+
     public override async ValueTask<CertificateClient> GetClientAsync()
     {
         if (_certClient is not null)
@@ -46,15 +54,7 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
             OrganizationId = FreshlyGeneratedGuid
         };
 
-        var contact = new AdministratorContact
-        {
-            Email = "emulator@keyvault.net",
-            FirstName = "Azure",
-            LastName = "Key Vault",
-            Phone = "0118 999 881 999 119 7253"
-        };
-
-        issuerConfig.AdministratorContacts.Add(contact);
+        issuerConfig.AdministratorContacts.Add(DefaultAdminContact);
 
         return issuerConfig;
     }

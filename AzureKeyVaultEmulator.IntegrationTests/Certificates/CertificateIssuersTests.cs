@@ -1,4 +1,5 @@
-﻿using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+﻿using Azure.Security.KeyVault.Certificates;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 
@@ -9,15 +10,7 @@ public class CertificateIssuersTests(CertificatesTestingFixture fixture) : IClas
     {
         var client = await fixture.GetClientAsync();
 
-        var issuerName = fixture.FreshlyGeneratedGuid;
-
-        var issuerConfig = fixture.CreateIssuerConfiguration(issuerName);
-
-        var response = await client.CreateIssuerAsync(issuerConfig);
-
-        Assert.NotNull(response.Value);
-
-        var issuer = response.Value;
+        var (issuerName, issuer) = await CreateIssuerAsync();
 
         var fromStore = await client.GetIssuerAsync(issuerName);
 
@@ -30,5 +23,48 @@ public class CertificateIssuersTests(CertificatesTestingFixture fixture) : IClas
         Assert.Equal(deleteResponse.Value.Name, issuer.Name);
 
         await Assert.RequestFailsAsync(() => client.GetIssuerAsync(issuerName));
+    }
+
+    [Fact]
+    public async Task UpdatingIssuerBundlePersistsChangeInStore()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var (issuerName, issuer) = await CreateIssuerAsync();
+
+        var fromStore = await client.GetIssuerAsync(issuerName);
+
+        Assert.Equivalent(issuer, fromStore.Value);
+
+        var issuerToBeUpdated = fromStore.Value;
+
+        var adminContact = issuerToBeUpdated.AdministratorContacts.FirstOrDefault();
+
+        Assert.NotNull(adminContact);
+
+        adminContact!.Email = "testing@integrationtest.com";
+
+        var response = await client.UpdateIssuerAsync(issuerToBeUpdated);
+
+        Assert.NotNull(response.Value);
+
+        Assert.NotEqual(fixture.DefaultAdminContact.Email, response.Value.AdministratorContacts?.FirstOrDefault()?.Email);
+    }
+
+    private async Task<(string issuerName, CertificateIssuer issuer)> CreateIssuerAsync()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var issuerName = fixture.FreshlyGeneratedGuid;
+
+        var config = fixture.CreateIssuerConfiguration(issuerName);
+
+        var response = await client.CreateIssuerAsync(config);
+
+        Assert.NotNull(response.Value);
+
+        var issuer = response.Value;
+
+        return (issuerName, issuer);
     }
 }

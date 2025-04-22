@@ -85,7 +85,7 @@ public sealed class CertificateService(
 
         _certs.SafeAddOrUpdate(name, cert);
 
-        backingService.UpdateIssuerAgainstCertificate(cacheId, policy.Issuer);
+        backingService.AllocateIssuerToCertificate(cacheId, policy.Issuer);
 
         return policy;
     }

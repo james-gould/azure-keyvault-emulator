@@ -225,6 +225,20 @@ public class CertificatesController(
         return Ok(result);
     }
 
+    [HttpPatch("issuers/{name}")]
+    public IActionResult UpdateCertificateIssuer(
+        [FromRoute] string name,
+        [FromBody] IssuerBundle bundle,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(bundle);
+
+        var result = backingService.UpdateCertificateIssuer(name, bundle);
+
+        return Ok(result);
+    }
+
     #endregion
 
     // Due to {name}/{version} everywhere, and how ASP.NET Core handles routing

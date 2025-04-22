@@ -56,9 +56,19 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
         return bundle;
     }
 
-    public IssuerBundle UpdateIssuerAgainstCertificate(string certName, IssuerBundle bundle)
+    public IssuerBundle AllocateIssuerToCertificate(string certName, IssuerBundle bundle)
     {
         _certificateIssuers.SafeAddOrUpdate(certName, bundle);
+
+        return bundle;
+    }
+
+    public IssuerBundle UpdateCertificateIssuer(string issuerName, IssuerBundle bundle)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(issuerName);
+        ArgumentNullException.ThrowIfNull(bundle);
+
+        _issuers.SafeAddOrUpdate(issuerName, bundle);
 
         return bundle;
     }
