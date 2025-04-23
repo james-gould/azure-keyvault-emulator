@@ -1,5 +1,4 @@
-﻿using Azure;
-using Azure.Security.KeyVault.Secrets;
+﻿using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
@@ -53,9 +52,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.NotNull(deletedSecret.Value);
             Assert.Equal(deletedName, deletedSecret.Value.Name);
 
-            var gottenAfterDeleted = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(deletedName));
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(deletedName));
 
-            Assert.Equal((int)HttpStatusCode.BadRequest, gottenAfterDeleted.Status);
         }
 
         [Fact]
@@ -164,9 +162,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(deletedOperation.Value.Value, secret.Value);
 
-            var result = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secret.Name));
-
-            Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secret.Name));
         }
     }
 }

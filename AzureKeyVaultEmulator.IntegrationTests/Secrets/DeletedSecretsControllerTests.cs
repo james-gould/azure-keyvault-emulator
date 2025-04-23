@@ -1,5 +1,4 @@
-﻿using Azure;
-using Azure.Security.KeyVault.Secrets;
+﻿using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
@@ -21,10 +20,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(secret.Name, deletedAction.Value.Name);
 
-            var shouldFail = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secret.Name));
-
-            Assert.Equal((int)HttpStatusCode.BadRequest, shouldFail.Status);
-
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secret.Name));
+           
             var fromDeletedSource = await client.GetDeletedSecretAsync(secret.Name);
 
             Assert.Equal(secret.Name, fromDeletedSource.Value.Name);
@@ -77,11 +74,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             await client.PurgeDeletedSecretAsync(secretName);
 
-            var deletedEndpointResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetDeletedSecretAsync(secretName));
-            var baseEndpointResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secretName));
+            await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
 
-            Assert.Equal((int)HttpStatusCode.BadRequest, deletedEndpointResult.Status);
-            Assert.Equal((int)HttpStatusCode.BadRequest, baseEndpointResult.Status);
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
         }
 
         [Fact]
@@ -108,9 +103,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(secretName, afterRecovery.Value.Name);
 
-            var deletedResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetDeletedSecretAsync(secretName));
+            await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
 
-            Assert.Equal((int)HttpStatusCode.BadRequest, deletedResult.Status);
         }
     }
 }
