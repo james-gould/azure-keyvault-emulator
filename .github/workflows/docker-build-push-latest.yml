@@ -26,7 +26,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          dotnet test --verbosity minimal
+          dotnet test
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
