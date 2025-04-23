@@ -1,5 +1,5 @@
-﻿using Azure;
-using Azure.Security.KeyVault.Secrets;
+﻿using Azure.Security.KeyVault.Secrets;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
@@ -9,7 +9,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task GetDeletedSecretReturnsPreviousDeletedSecretTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "getDeletedSecretName";
             var secretValue = "getSelectedSecretPassword";
@@ -20,10 +20,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(secret.Name, deletedAction.Value.Name);
 
-            var shouldFail = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secret.Name));
-
-            Assert.Equal((int)HttpStatusCode.BadRequest, shouldFail.Status);
-
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secret.Name));
+           
             var fromDeletedSource = await client.GetDeletedSecretAsync(secret.Name);
 
             Assert.Equal(secret.Name, fromDeletedSource.Value.Name);
@@ -32,14 +30,12 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task GetDeletedSecretsPagesForCorrectCountTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var multiSecretName = "multiDelete";
-            var multitude = Random.Shared.Next(30, 100);
 
-            var tasks = Enumerable.Range(0, multitude).Select(i => client.SetSecretAsync(multiSecretName, $"{i}value"));
-
-            await Task.WhenAll(tasks);
+            var executionCount = await RequestSetup
+                .CreateMultiple(26, 51, i => client.SetSecretAsync(multiSecretName, $"{i}value", fixture.CancellationToken));
 
             var deletedOperation = await client.StartDeleteSecretAsync(multiSecretName);
 
@@ -59,7 +55,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task PurgeDeletedSecretRemovesFromDeletedCacheTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "purgingSecret";
             var secretValue = "purgedValue";
@@ -78,17 +74,15 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             await client.PurgeDeletedSecretAsync(secretName);
 
-            var deletedEndpointResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetDeletedSecretAsync(secretName));
-            var baseEndpointResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secretName));
+            await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
 
-            Assert.Equal((int)HttpStatusCode.BadRequest, deletedEndpointResult.Status);
-            Assert.Equal((int)HttpStatusCode.BadRequest, baseEndpointResult.Status);
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
         }
 
         [Fact]
         public async Task RecoverDeletedSecretRestoresToPrimaryCacheTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "recoveredDeletedSecret";
             var secretValue = "recoveredPassword";
@@ -109,9 +103,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(secretName, afterRecovery.Value.Name);
 
-            var deletedResult = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetDeletedSecretAsync(secretName));
+            await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
 
-            Assert.Equal((int)HttpStatusCode.BadRequest, deletedResult.Status);
         }
     }
 }

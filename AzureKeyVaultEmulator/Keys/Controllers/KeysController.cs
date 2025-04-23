@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Shared.Models.Keys.RequestModels;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +13,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
     {
         [HttpPost("{name}/create")]
         public IActionResult CreateKey(
-            [RegularExpression("[a-zA-Z0-9-]+")][FromRoute] string name,
+            [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromBody] CreateKeyModel requestBody)
         {
@@ -50,6 +49,44 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(keyResult);
         }
 
+        // Azure.Security.KeyVault.Keys v4.7.0 doesn't provide {name}/{version}
+        // But the REST API spec expects it. One of the two is out of date:
+        // https://learn.microsoft.com/en-us/rest/api/keyvault/keys/update-key/update-key
+
+        [HttpPatch("{name}/{version}")]
+        public IActionResult UpdateKeyWithVersion(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [ApiVersion] string apiVersion,
+            [FromBody] UpdateKeyRequest request)
+        {
+            var result = keyService.UpdateKey(name, version, request.Attributes, request.Tags);
+
+            return Ok(result);
+        }
+
+        
+        [HttpPatch("{name}")]
+        public IActionResult UpdateKeyWithoutVersion(
+            [FromRoute] string name,
+            [ApiVersion] string apiVersion,
+            [FromBody] UpdateKeyRequest request)
+        {
+            var result = keyService.UpdateKey(name, "", request.Attributes, request.Tags);
+
+            return Ok(result);
+        }
+
+        [HttpDelete("{name}")]
+        public IActionResult DeleteKey(
+            [FromRoute] string name,
+            [ApiVersion] string apiVersion)
+        {
+            var result = keyService.DeleteKey(name);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         public IActionResult GetKeys(
             [ApiVersion] string apiVersion,
@@ -71,7 +108,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromQuery] int maxResults = 25,
-            [FromBody] string skipToken = "")
+            [SkipToken] string skipToken = "")
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -112,7 +149,6 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         [HttpPost("{name}/backup")]
         public IActionResult BackupKey(
             [FromRoute] string name,
-            [FromRoute] string version,
             [ApiVersion] string apiVersion)
         {
             var result = keyService.BackupKey(name);
@@ -121,21 +157,11 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         }
 
         [HttpPost("restore")]
-        public IActionResult BackupKey(
-            [FromBody] string value,
-            [ApiVersion] string apiVersion)
+        public IActionResult RestoreKey(
+            [FromBody] ValueModel<string> backedUpKey,
+            [ApiVersion]string apiVersion)
         {
-            var result = keyService.BackupKey(value);
-
-            return Ok(result);
-        }
-
-        [HttpPost("rng")]
-        public IActionResult GetRandomBytes(
-            [FromBody] int count,
-            [ApiVersion] string apiVersion)
-        {
-            var result = keyService.GetRandomBytes(count);
+            var result = keyService.RestoreKey(backedUpKey.Value);
 
             return Ok(result);
         }
@@ -153,11 +179,10 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         [HttpPut("{name}/rotationpolicy")]
         public IActionResult UpdateKeyRotationPolicy(
             [FromRoute] string name,
-            [FromBody] KeyRotationAttributes attributes,
-            [FromBody] IEnumerable<LifetimeActions> lifetimeActions,
+            [FromBody] KeyRotationPolicy policy,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.UpdateKeyRotationPolicy(name, attributes, lifetimeActions);
+            var result = keyService.UpdateKeyRotationPolicy(name, policy.Attributes, policy.LifetimeActions);
 
             return Ok(result);
         }
@@ -185,6 +210,17 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
+        [HttpPost("{name}/sign")]
+        public IActionResult SignWithKey(
+            [FromRoute] string name,
+            [FromBody] SignKeyRequest model,
+            [ApiVersion] string apiVersion)
+        {
+            var result = keyService.SignWithKey(name, string.Empty, model.SigningAlgorithm, model.Value);
+
+            return Ok(result);
+        }
+
         [HttpPost("{name}/{version}/sign")]
         public IActionResult SignWithKey(
             [FromRoute] string name,
@@ -204,6 +240,16 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromBody] VerifyHashRequest req)
         {
             var result = keyService.VerifyDigest(name, version, req.Digest, req.Value);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{name}/verify")]
+        public IActionResult VerifyHash(
+            [FromRoute] string name,
+            [FromBody] VerifyHashRequest req)
+        {
+            var result = keyService.VerifyDigest(name, string.Empty, req.Digest, req.Value);
 
             return Ok(result);
         }

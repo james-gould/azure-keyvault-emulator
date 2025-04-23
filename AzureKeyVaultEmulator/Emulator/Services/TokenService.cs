@@ -55,12 +55,12 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             string headerClaimType,
             string headerClaimValue)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey));
+            var key = AuthConstants.SigningKey;
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "localazurekeyvault.localhost.com",
-                audience: "localazurekeyvault.localhost.com",
+                issuer: AuthConstants.EmulatorIss,
+                audience: AuthConstants.EmulatorIss,
                 claims: [.. payloadClaims],
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);
@@ -72,7 +72,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
 
         private static string CreateToken(IEnumerable<Claim> claims)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthConstants.IssuerSigningKey));
+            var key = AuthConstants.SigningKey;
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

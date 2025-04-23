@@ -1,5 +1,8 @@
+using Azure.Identity;
+using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.Aspire.Client;
-using Microsoft.Extensions.Azure;
+using AzureKeyVaultEmulator.Shared.Constants;
+using AzureKeyVaultEmulator.Shared.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,19 +15,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
+var vaultUri = builder.Configuration.GetConnectionString(AspireConstants.EmulatorServiceName) ?? string.Empty;
 
-if (builder.Environment.IsDevelopment())
-    builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, certificates: true, keys: true);
-else
-    builder.Services.AddAzureClients(client =>
-    {
-        var asUri = new Uri(vaultUri);
-
-        client.AddSecretClient(asUri);
-        client.AddKeyClient(asUri);
-        client.AddCertificateClient(asUri);
-    });
+builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, certificates: true, keys: true);
 
 var app = builder.Build();
 
@@ -43,8 +36,18 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/", () =>
+app.MapGet("/", async () =>
 {
+    var client = new CertificateClient(new Uri(AuthConstants.EmulatorUri), new DefaultAzureCredential());
+
+    var certName = Guid.NewGuid().Neat();
+
+    var op = await client.StartCreateCertificateAsync(certName, CertificatePolicy.Default);
+
+    await op.WaitForCompletionAsync();
+
+    var cert = await client.GetCertificateAsync(certName);
+
     return "alive";
 });
 

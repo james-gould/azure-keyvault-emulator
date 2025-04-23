@@ -3,20 +3,22 @@ using AzureKeyVaultEmulator.Shared.Constants;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var useEmulatorContainer = bool.Parse(Environment.GetEnvironmentVariable("UseEmulator") ?? "false");
-var keyVaultServiceName = "keyvault";
+// Integration tests seem to fail due to an unavailable endpoint when referencing another project?
+// Haven't seen it before, likely something wonky with the Client library and creating of an Aspire resource
+var useDeployedDockerContainer = false;
 
-if (useEmulatorContainer)
+if (useDeployedDockerContainer)
 {
-    var keyVault = builder
-        .AddAzureKeyVault(keyVaultServiceName)
-        .RunAsEmulator();
+    //var keyVault = builder
+    //    .AddAzureKeyVault(keyVaultServiceName)
+    //    .RunAsEmulator();
 
-    //var keyVault = builder.AddAzureKeyVaultEmulator(keyVaultServiceName);
+    var keyVault = builder.AddAzureKeyVaultEmulator(AspireConstants.EmulatorServiceName);
 
     var webApi = builder
         .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
-        .WithReference(keyVault);
+        .WithReference(keyVault)
+        .WaitFor(keyVault);
 }
 else
 {

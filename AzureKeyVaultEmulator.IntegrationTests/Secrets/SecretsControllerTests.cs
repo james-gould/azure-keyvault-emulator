@@ -1,5 +1,5 @@
-﻿using Azure;
-using Azure.Security.KeyVault.Secrets;
+﻿using Azure.Security.KeyVault.Secrets;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
@@ -9,7 +9,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task GetSecretReturnsCorrectValueTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var createdSecret = await fixture.CreateSecretAsync();
 
@@ -23,7 +23,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task SetSecretCreatesSecretInMemoryTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var createdSecret = await client.SetSecretAsync(new KeyVaultSecret(fixture.DefaultSecretName, fixture.DefaultSecretValue));
 
@@ -38,7 +38,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task GetSecretAfterDeletingProvidesKeyVaultErrorTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var deletedName = "deletedSecret";
             var deletedValue = "iShouldBeDeleted";
@@ -52,15 +52,14 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.NotNull(deletedSecret.Value);
             Assert.Equal(deletedName, deletedSecret.Value.Name);
 
-            var gottenAfterDeleted = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(deletedName));
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(deletedName));
 
-            Assert.Equal((int)HttpStatusCode.BadRequest, gottenAfterDeleted.Status);
         }
 
         [Fact]
         public async Task BackupSecretAsyncReturnsEncodedNameTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "myBackedUpSecret";
 
@@ -74,14 +73,12 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task GetSecretVersionsPagesAllSecretsByNameTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "multipleSecrets";
-            var copies = Random.Shared.Next(30, 100);
-            var tasks = Enumerable.Range(0, copies)
-                                  .Select(i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
-            await Task.WhenAll(tasks);
+            var executionCount = await RequestSetup
+                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
             var properties = client.GetPropertiesOfSecretVersionsAsync(secretName, fixture.CancellationToken);
 
@@ -94,20 +91,18 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             }
 
             // Creating secret adds base secret + versioned one
-            Assert.Equal(copies + 1, versions.Count);
+            Assert.Equal(executionCount + 1, versions.Count);
         }
 
         [Fact]
         public async Task GetSecretsPagesAllSecretsCreatedTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
-            var multipleCount = Random.Shared.Next(51, 300);
             var secretName = "mulitudeTesting";
-            var tasks = Enumerable.Range(0, multipleCount)
-                                  .Select(i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
-            await Task.WhenAll(tasks);
+            var executionCount = await RequestSetup
+                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
 
             var testSecrets = new List<SecretProperties?>();
 
@@ -117,13 +112,13 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
                 if (secret.Name.Equals(secretName, StringComparison.CurrentCultureIgnoreCase))
                     testSecrets.Add(secret);
 
-            Assert.Equal(multipleCount + 1, testSecrets.Count);
+            Assert.Equal(executionCount + 1, testSecrets.Count);
         }
 
         [Fact]
         public async Task RestoreSecretTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secretName = "restoringSecretName";
             var secretValue = "shouldBeRestored";
@@ -141,7 +136,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task UpdateSecretAppliesChangesTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secret = await fixture.CreateSecretAsync();
 
@@ -159,7 +154,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         [Fact]
         public async Task DeleteSecretBehavesCorrectlyTest()
         {
-            var client = await fixture.GetSecretClientAsync();
+            var client = await fixture.GetClientAsync();
 
             var secret = await fixture.CreateSecretAsync();
 
@@ -167,9 +162,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(deletedOperation.Value.Value, secret.Value);
 
-            var result = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secret.Name));
-
-            Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secret.Name));
         }
     }
 }

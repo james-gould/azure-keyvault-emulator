@@ -8,16 +8,6 @@ namespace AzureKeyVaultEmulator.Keys.Controllers;
 [Authorize]
 public class DeletedKeysController(IKeyService keyService, ITokenService tokenService) : Controller
 {
-    [HttpDelete("keys/{name}")]
-    public IActionResult DeleteKey(
-        [FromRoute] string name,
-        [ApiVersion] string apiVersion)
-    {
-        var result = keyService.DeleteKey(name);
-
-        return Ok(result);
-    }
-
     [HttpGet("deletedkeys/{name}")]
     public IActionResult GetDeletedKey(
         [FromRoute] string name,

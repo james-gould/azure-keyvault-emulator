@@ -11,18 +11,17 @@ namespace AzureKeyVaultEmulator.Keys.Services
     {
         private static readonly ConcurrentDictionary<string, KeyBundle> _keys = new();
         private static readonly ConcurrentDictionary<string, KeyRotationPolicy> _keyRotations = new();
-        private static readonly ConcurrentDictionary<string, string> _digests = new();
 
         private static readonly ConcurrentDictionary<string, KeyBundle> _deletedKeys = new();
 
-        public KeyBundle? GetKey(string name)
+        public KeyBundle GetKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             return _keys.SafeGet(name);
         }
 
-        public KeyBundle? GetKey(string name, string version)
+        public KeyBundle GetKey(string name, string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -30,24 +29,18 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return _keys.SafeGet(name.GetCacheId(version));
         }
 
-        public KeyBundle? CreateKey(string name, CreateKeyModel key)
+        public KeyBundle CreateKey(string name, CreateKeyModel key)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             var JWKS = GetJWKSFromModel(key.KeySize, key.KeyType);
 
             var version = Guid.NewGuid().ToString();
-            var keyUrl = new UriBuilder
-            {
-                Scheme = httpContextAccessor.HttpContext?.Request.Scheme,
-                Host = httpContextAccessor.HttpContext?.Request.Host.Host,
-                Port = httpContextAccessor.HttpContext?.Request.Host.Port ?? -1,
-                Path = $"keys/{name}/{version}"
-            };
+            var keyUrl = httpContextAccessor.BuildIdentifierUri(name, version, "keys");
 
             JWKS.KeyName = name;
             JWKS.KeyVersion = version;
-            JWKS.KeyIdentifier = keyUrl.Uri.ToString();
+            JWKS.KeyIdentifier = keyUrl;
             JWKS.KeyOperations = key.KeyOperations;
 
             var response = new KeyBundle
@@ -63,19 +56,23 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return response;
         }
 
-        public KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes)
+        public KeyAttributesModel? UpdateKey(
+            string name,
+            string version,
+            KeyAttributesModel attributes,
+            Dictionary<string, string> tags)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
             var cacheId = name.GetCacheId(version);
 
             var key = _keys.SafeGet(cacheId);
 
-            if (string.IsNullOrEmpty(attributes.ContentType))
-                key.Attributes.ContentType = attributes.ContentType;
-
+            key.Attributes = attributes;
             key.Attributes.RecoverableDays = attributes.RecoverableDays;
+
+            foreach(var tag in tags)
+                key.Tags.TryAdd(tag.Key, tag.Value);
 
             key.Attributes.Update();
 
@@ -112,7 +109,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var foundKey = _keys.SafeGet(name.GetCacheId());
 
-            var encrypted = Base64UrlEncoder.Encode(foundKey.Key.Encrypt(keyOperationParameters));
+            var encrypted = EncodingUtils.Base64UrlEncode(foundKey.Key.Encrypt(keyOperationParameters));
 
             return new KeyOperationResult
             {
@@ -137,13 +134,13 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public ValueResponse? BackupKey(string name)
+        public ValueModel<string>? BackupKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             var foundKey = _keys.SafeGet(name.GetCacheId());
 
-            return new ValueResponse
+            return new ValueModel<string>
             {
                 Value = encryptionService.CreateKeyVaultJwe(foundKey)
             };
@@ -156,7 +153,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return encryptionService.DecryptFromKeyVaultJwe<KeyBundle>(jweBody);
         }
 
-        public ValueResponse GetRandomBytes(int count)
+        public ValueModel<string> GetRandomBytes(int count)
         {
             if (count > 128)
                 throw new ArgumentException($"{nameof(count)} cannot exceed 128 when generating random bytes.");
@@ -165,7 +162,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             Random.Shared.NextBytes(bytes);
 
-            return new ValueResponse
+            return new ValueModel<string>
             {
                 Value = EncodingUtils.Base64UrlEncode(bytes)
             };
@@ -191,20 +188,20 @@ namespace AzureKeyVaultEmulator.Keys.Services
             var policyExists = _keyRotations.TryGetValue(name, out var keyRotationPolicy);
 
             if (!policyExists || keyRotationPolicy is null)
-                keyRotationPolicy = new(name);
+                keyRotationPolicy = new();
 
             keyRotationPolicy.Attributes = attributes;
+            keyRotationPolicy.LifetimeActions = lifetimeActions;
 
             keyRotationPolicy.Attributes.Update();
-
-            keyRotationPolicy.LifetimeActions = lifetimeActions;
+            keyRotationPolicy.SetIdFromKeyName(name);
 
             _keyRotations.AddOrUpdate(name, keyRotationPolicy, (_, _) => keyRotationPolicy);
 
             return keyRotationPolicy;
         }
 
-        public ListResult<KeyBundle> GetKeys(int maxResults = 25, int skipCount = 25)
+        public ListResult<KeyItemBundle> GetKeys(int maxResults = 25, int skipCount = 25)
         {
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
@@ -216,14 +213,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var requiresPaging = items.Count() >= maxResults;
 
-            return new ListResult<KeyBundle>
+            return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items.Select(x => x.Value)
+                Values = items.Select(x => ToKeyItemBundle(x.Value))
             };
         }
 
-        public ListResult<KeyBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25)
+        public ListResult<KeyItemBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -239,14 +236,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var requiresPaging = maxedItems.Count() >= maxResults;
 
-            return new ListResult<KeyBundle>
+            return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems.Select(x => x.Value)
+                Values = maxedItems.Select(x => ToKeyItemBundle(x.Value))
             };
         }
 
-        public ValueResponse ReleaseKey(string name,string version)
+        public ValueModel<string> ReleaseKey(string name,string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -259,7 +256,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var release = new KeyReleaseVM(aasJwt);
 
-            return new ValueResponse
+            return new ValueModel<string>
             {
                 Value = encryptionService.CreateKeyVaultJwe(release)
             };
@@ -290,41 +287,40 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return response;
         }
 
-        public KeyOperationResult SignWithKey(string name, string version, string algo, string value)
+        public KeyOperationResult SignWithKey(string name, string version, string algo, string digest)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
             ArgumentException.ThrowIfNullOrWhiteSpace(algo);
-            ArgumentException.ThrowIfNullOrWhiteSpace(value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(digest);
 
             var cacheId = name.GetCacheId(version);
 
             var key = _keys.SafeGet(cacheId);
 
-            var (hash, sig) = encryptionService.SignAndHashData(value);
-
-            _digests.TryAdd(cacheId, hash);
+            var signature = encryptionService.SignWithKey(digest);
 
             return new KeyOperationResult
             {
-                KeyIdentifier = $"{AuthConstants.EmulatorUri}/keys/{name}/{key.Key.KeyIdentifier}",
-                Data = sig
+                KeyIdentifier = key.Key.KeyIdentifier,
+                Data = signature
             };
         }
 
-        public bool VerifyDigest(string name, string version, string digest, string signature)
+        public ValueModel<bool> VerifyDigest(string name, string version, string digest, string signature)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
             ArgumentException.ThrowIfNullOrWhiteSpace(signature);
 
-            var cacheId = name.GetCacheId(version);
+            // Key unused here because we are signing with global RSA.
+            // Might be worth breaking this out in the future to allow for direct key signing
+            // Would be better behaviour, but maybe too much for a mocking tool :)
+            var key = _keys.SafeGet(name.GetCacheId(version));
 
-            var key = _keys.SafeGet(cacheId);
-            var cachedDigest = _digests.SafeGet(cacheId);
-
-            return encryptionService.VerifyData(cachedDigest, signature);
+            return new ValueModel<bool>
+            {
+                Value = encryptionService.VerifyData(digest, signature)
+            };
         }
 
         public KeyOperationResult WrapKey(string name, string version, KeyOperationParameters para)
@@ -367,23 +363,29 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
+            var parentKey = _keys.SafeGet(name.GetCacheId());
+
             var keys = _keys.Where(x => x.Key.Contains(name));
 
             if (!keys.Any())
                 throw new InvalidOperationException($"Cannot find any keys with name: {name}");
 
-            _ = keys.Select(x => _keys.Remove(x.Key, out _));
+            foreach (var item in keys)
+            {
+                _keys.Remove(item.Key, out _);
+                _deletedKeys.TryAdd(name.GetCacheId(item.Value.Key.KeyVersion), item.Value);
+            }
 
-            keys.Select(x => _deletedKeys.TryAdd(x.Key, x.Value));
-
-            var topLevel = keys.First().Value;
-
+            _deletedKeys.TryAdd(name.GetCacheId(), parentKey);
+            
             return new DeletedKeyBundle
             {
-                Attributes = topLevel.Attributes,
-                RecoveryId = $"/deletedkeys/{name}/recover",
-                Tags = topLevel.Tags,
-                Key = new JsonWebKey(JsonSerializer.Serialize(topLevel.Key)),
+                Name = name,
+                Kid = parentKey.Key.KeyIdentifier,
+                Attributes = parentKey.Attributes,
+                RecoveryId = $"{AuthConstants.EmulatorUri}/deletedkeys/{name}",
+                Tags = parentKey.Tags,
+                Key = new JsonWebKey(JsonSerializer.Serialize(parentKey.Key)),
             };
         }
 
@@ -401,7 +403,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var allItems = _deletedKeys.ToList();
 
-            if (!allItems.Any())
+            if (allItems.Count == 0)
                 return new();
 
             var maxedItems = allItems.Skip(skipCount).Take(maxResults);
@@ -438,15 +440,26 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return toBeRestored;
         }
 
+        private KeyItemBundle ToKeyItemBundle(KeyBundle bundle)
+        {
+            return new KeyItemBundle
+            {
+                KeyAttributes = bundle.Attributes,
+                KeyId = bundle.Key.KeyIdentifier,
+                Managed = false,
+                Tags = bundle.Tags
+            };
+        }
+
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
         {
-            switch (keyType)
+            switch (keyType.ToUpper())
             {
-                case RSAKeyTypes.RSA:
+                case SupportedKeyTypes.RSA:
                     var rsaKey = RsaKeyFactory.CreateRsaKey(keySize);
                     return new JsonWebKeyModel(rsaKey);
 
-                case RSAKeyTypes.EC:
+                case SupportedKeyTypes.EC:
                     throw new NotImplementedException("Elliptic Curve keys are not currently supported.");
 
                 default:
