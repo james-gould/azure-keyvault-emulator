@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Check branches
         run: |
-          if [ ${{ github.head_ref }} != "dev" ] && [ ${{ github.base_ref }} == "main" ]; then
+          if [ ${{ github.head_ref }} != "development" ] && [ ${{ github.base_ref }} == "master" ]; then
             echo "Merge requests to main branch are only allowed from dev branch."
             exit 1
           fi
