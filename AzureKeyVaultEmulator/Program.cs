@@ -33,7 +33,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseForwardedHeaders();
-
+app.UseMiddleware<ClientRequestIdMiddleware>();
 app.UseMiddleware<KeyVaultErrorMiddleware>();
 
 app.UseAuthentication();
