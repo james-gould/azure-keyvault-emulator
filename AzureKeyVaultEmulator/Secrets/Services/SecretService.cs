@@ -68,10 +68,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             var cacheId = name.GetCacheId();
 
-            var exists = _secrets.TryGetValue(cacheId, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Cannot backup secret by name {name} because it does not exist");
+            var secret = _secrets.SafeGet(cacheId);
 
             return new ValueModel<string>
             {
@@ -83,10 +80,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             var cacheId = name.GetCacheId();
 
-            var exists = _deletedSecrets.TryGetValue(cacheId, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Cannot get deleted secret with name: {name} because it does not exist");
+            var secret = _secrets.SafeGet(cacheId);
 
             return secret;
         }
@@ -156,9 +150,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var exists = _deletedSecrets.TryGetValue(name, out _);
-
-            if (!exists)
+            var secret = _secrets.SafeGet(name);
+            
+            if (secret is null)
                 throw new SecretException($"Not deleted secret with the name: {name} was found");
 
             _deletedSecrets.Remove(name, out _);
@@ -168,10 +162,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var exists = _deletedSecrets.TryGetValue(name, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Cannot recover secret with name: {name}, secret not found");
+            var secret = _secrets.SafeGet(name);
 
             var added = _secrets.TryAdd(name, secret);
 
@@ -197,10 +188,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var cacheId = name.GetCacheId(version);
 
-            var exists = _secrets.TryGetValue(cacheId, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Cannot find secret with name {name} and version {version}");
+            var secret = _secrets.SafeGet(cacheId);
 
             if (!string.IsNullOrEmpty(attributes.ContentType))
                 secret.Attributes.ContentType = attributes.ContentType;
