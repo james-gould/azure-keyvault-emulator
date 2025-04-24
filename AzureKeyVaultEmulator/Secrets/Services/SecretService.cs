@@ -79,7 +79,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         public SecretBundle? GetDeletedSecret(string name)
         {
             var cacheId = name.GetCacheId();
-
+            
             var secret = _secrets.SafeGet(cacheId);
 
             return secret;
@@ -152,16 +152,13 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var secret = _secrets.SafeGet(name);
             
-            if (secret is null)
-                throw new SecretException($"Not deleted secret with the name: {name} was found");
-
             _deletedSecrets.Remove(name, out _);
         }
 
         public SecretBundle? RecoverDeletedSecret(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
+            
             var secret = _secrets.SafeGet(name);
 
             var added = _secrets.TryAdd(name, secret);
