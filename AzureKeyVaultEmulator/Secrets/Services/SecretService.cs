@@ -8,7 +8,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         IEncryptionService encryption) : ISecretService
     {
         private static readonly ConcurrentDictionary<string, SecretBundle> _secrets = new();
-        private static readonly ConcurrentDictionary<string, SecretBundle?> _deletedSecrets = new();
+        private static readonly ConcurrentDictionary<string, SecretBundle> _deletedSecrets = new();
 
         public SecretBundle GetSecret(string name, string version = "")
         {
@@ -59,7 +59,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Value = secret.Value
             };
 
-            _deletedSecrets.TryAdd(cacheId, secret);
+            _deletedSecrets.SafeAddOrUpdate(cacheId, secret);
 
             return deleted;
         }
@@ -68,10 +68,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             var cacheId = name.GetCacheId();
 
-            var exists = _secrets.TryGetValue(cacheId, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Cannot backup secret by name {name} because it does not exist");
+            var secret = _secrets.SafeGet(cacheId);
 
             return new ValueModel<string>
             {
@@ -82,11 +79,8 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         public SecretBundle? GetDeletedSecret(string name)
         {
             var cacheId = name.GetCacheId();
-
-            var exists = _deletedSecrets.TryGetValue(cacheId, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Cannot get deleted secret with name: {name} because it does not exist");
+            
+            var secret = _deletedSecrets.SafeGet(cacheId);
 
             return secret;
         }
@@ -156,22 +150,38 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var exists = _deletedSecrets.TryGetValue(name, out _);
+            var secret = _deletedSecrets.SafeGet(name);
+            
+            _deletedSecrets.SafeRemove(name);
+        }
 
-            if (!exists)
-                throw new SecretException($"Not deleted secret with the name: {name} was found");
+        public SecretBundle RecoverDeletedSecret(string name)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            
+            var secret = _deletedSecrets.SafeGet(name);
 
+            _secrets.SafeAddOrUpdate(name, secret);
+
+            _deletedSecrets.SafeRemove(name);
+
+            return secret;
+        }
+
+        public void PurgeDeletedSecret(string name)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var secret = _secrets.SafeGet(name);
+            
             _deletedSecrets.Remove(name, out _);
         }
 
         public SecretBundle? RecoverDeletedSecret(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
-            var exists = _deletedSecrets.TryGetValue(name, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Cannot recover secret with name: {name}, secret not found");
+            
+            var secret = _secrets.SafeGet(name);
 
             var added = _secrets.TryAdd(name, secret);
 
@@ -197,10 +207,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var cacheId = name.GetCacheId(version);
 
-            var exists = _secrets.TryGetValue(cacheId, out var secret);
-
-            if (!exists || secret is null)
-                throw new SecretException($"Cannot find secret with name {name} and version {version}");
+            var secret = _secrets.SafeGet(cacheId);
 
             if (!string.IsNullOrEmpty(attributes.ContentType))
                 secret.Attributes.ContentType = attributes.ContentType;

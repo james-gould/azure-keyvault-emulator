@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography;
-using Azure;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
@@ -48,9 +47,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
-        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetKeyAsync(keyName));
-
-        Assert.Equal((int)HttpStatusCode.BadRequest, exception.Status);
+        await Assert.RequestFailsAsync(() => client.GetKeyAsync(keyName));
     }
 
     [Fact]
@@ -219,10 +216,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var key = await fixture.CreateKeyAsync(keyName);
 
-        var exception = await Assert
-            .ThrowsAsync<RequestFailedException>(() => client.GetKeyRotationPolicyAsync(keyName));
-
-        Assert.Equal((int)HttpStatusCode.BadRequest, exception.Status);
+        await Assert.RequestFailsAsync(() => client.GetKeyRotationPolicyAsync(keyName));
 
         var policy = new KeyRotationPolicy
         {
