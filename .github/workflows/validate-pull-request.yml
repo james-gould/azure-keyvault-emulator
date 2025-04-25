@@ -16,3 +16,23 @@ jobs:
             echo "Merge requests to master branch are only allowed from development branch, please edit your PR to target development instead."
             exit 1
           fi
+
+  run-integration-tests:
+    runs-on: ubunutu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install SSL Certificates
+        run: |
+          dotnet dev-certs https --trust
+
+      - name: Run Integration Tests
+        run: |
+          dotnet test
