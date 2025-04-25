@@ -7,7 +7,7 @@ on:
       - synchronize
       - edited
 jobs:
-  check-branches:
+  validate-pr:
     runs-on: ubuntu-latest
     steps:
       - name: Check branches
@@ -16,11 +16,7 @@ jobs:
             echo "Merge requests to master branch are only allowed from development branch, please edit your PR to target development instead."
             exit 1
           fi
-
-  run-integration-tests:
-    runs-on: ubunutu-latest
-
-    steps:
+          
       - name: Checkout Repository
         uses: actions/checkout@v4
 
