@@ -5,7 +5,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
     public interface IEncryptionService : IDisposable
     {
         string CreateKeyVaultJwe(object value);
-        T DecryptFromKeyVaultJwe<T>(string jwe);
+        T DecryptFromKeyVaultJwe<T>(string jwe) where T : notnull;
         string SignWithKey(string data);
         bool VerifyData(string hash, string signature);
     }
@@ -41,6 +41,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
         }
 
         public T DecryptFromKeyVaultJwe<T>(string jweToken)
+            where T : notnull
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(jweToken);
 
@@ -69,7 +70,8 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             if (string.IsNullOrEmpty(json))
                 throw new InvalidOperationException($"Failed to decrypt JSON string for {nameof(T)}");
 
-            return JsonSerializer.Deserialize<T>(json) ?? throw new InvalidOperationException($"Failed to deserialize JSON to {nameof(T)}");
+            return JsonSerializer.Deserialize<T>(json)
+                ?? throw new SecretException($"Failed to deserialize JSON to {nameof(T)}");
         }
 
         public string CreateKeyVaultJwe(object value)

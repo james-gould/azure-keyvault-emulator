@@ -8,7 +8,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         IEncryptionService encryption) : ISecretService
     {
         private static readonly ConcurrentDictionary<string, SecretBundle> _secrets = new();
-        private static readonly ConcurrentDictionary<string, SecretBundle?> _deletedSecrets = new();
+        private static readonly ConcurrentDictionary<string, SecretBundle> _deletedSecrets = new();
 
         public SecretBundle GetSecret(string name, string version = "")
         {
@@ -59,7 +59,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Value = secret.Value
             };
 
-            _deletedSecrets.TryAdd(cacheId, secret);
+            _deletedSecrets.SafeAddOrUpdate(cacheId, secret);
 
             return deleted;
         }
@@ -80,7 +80,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             var cacheId = name.GetCacheId();
             
-            var secret = _secrets.SafeGet(cacheId);
+            var secret = _deletedSecrets.SafeGet(cacheId);
 
             return secret;
         }
@@ -150,32 +150,29 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var secret = _secrets.SafeGet(name);
+            var secret = _deletedSecrets.SafeGet(name);
             
-            _deletedSecrets.Remove(name, out _);
+            _deletedSecrets.SafeRemove(name);
         }
 
-        public SecretBundle? RecoverDeletedSecret(string name)
+        public SecretBundle RecoverDeletedSecret(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             
-            var secret = _secrets.SafeGet(name);
+            var secret = _deletedSecrets.SafeGet(name);
 
-            var added = _secrets.TryAdd(name, secret);
+            _secrets.SafeAddOrUpdate(name, secret);
 
-            if (!added)
-                throw new SecretException($"Failed to recover the secret from deleted storage, no action taken");
+            _deletedSecrets.SafeRemove(name);
 
-            _deletedSecrets.Remove(name, out _);
-
-            return secret!;
+            return secret;
         }
 
-        public SecretBundle? RestoreSecret(string encodedSecretId)
+        public SecretBundle RestoreSecret(string encodedSecretId)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            return encryption.DecryptFromKeyVaultJwe<SecretBundle?>(encodedSecretId);
+            return encryption.DecryptFromKeyVaultJwe<SecretBundle>(encodedSecretId);
         }
 
         public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
