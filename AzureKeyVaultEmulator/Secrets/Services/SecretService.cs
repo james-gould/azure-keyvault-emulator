@@ -168,36 +168,11 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return secret;
         }
 
-        public void PurgeDeletedSecret(string name)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
-            var secret = _secrets.SafeGet(name);
-            
-            _deletedSecrets.Remove(name, out _);
-        }
-
-        public SecretBundle? RecoverDeletedSecret(string name)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            
-            var secret = _secrets.SafeGet(name);
-
-            var added = _secrets.TryAdd(name, secret);
-
-            if (!added)
-                throw new SecretException($"Failed to recover the secret from deleted storage, no action taken");
-
-            _deletedSecrets.Remove(name, out _);
-
-            return secret!;
-        }
-
-        public SecretBundle? RestoreSecret(string encodedSecretId)
+        public SecretBundle RestoreSecret(string encodedSecretId)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            return encryption.DecryptFromKeyVaultJwe<SecretBundle?>(encodedSecretId);
+            return encryption.DecryptFromKeyVaultJwe<SecretBundle>(encodedSecretId);
         }
 
         public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
