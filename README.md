@@ -75,7 +75,7 @@ public async Task<string> GetSecretValue(string name)
 {
     var secret = await _secretClient.GetSecretAsync(name);
 
-    return secret.Value
+    return secret.Value;
 }
 ```
 
