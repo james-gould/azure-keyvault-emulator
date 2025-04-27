@@ -255,7 +255,6 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         //var imported = (await client.ImportKeyAsync(null)).Value;
     }
 
-    //[Fact(Skip = "Failing due to VerifyAsync rejecting the signature. Requires fix")]
     [Fact]
     public async Task SignAndVerifyWithKeySucceeds()
     {
