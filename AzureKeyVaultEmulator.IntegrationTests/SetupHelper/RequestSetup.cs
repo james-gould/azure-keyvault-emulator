@@ -56,7 +56,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper
 
             Random.Shared.NextBytes(bytes);
 
-            return bytes.NormaliseForBase64();
+            return bytes;
         }
     }
 }
