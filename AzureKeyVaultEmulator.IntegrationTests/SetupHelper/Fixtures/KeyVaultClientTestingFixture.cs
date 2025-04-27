@@ -26,9 +26,6 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
     private HttpClient? _testingClient;
     private string _bearerToken = string.Empty;
 
-    private CancellationTokenSource _cancellationTokenSource = new(TimeSpan.FromSeconds(30));
-    public CancellationToken CancellationToken => _cancellationTokenSource.Token;
-
     // Used to ensure no duplicates are used during high concurrency testing
     private readonly ConcurrentBag<string> _spentGuids = [];
     public string FreshlyGeneratedGuid => GetCleanGuid();

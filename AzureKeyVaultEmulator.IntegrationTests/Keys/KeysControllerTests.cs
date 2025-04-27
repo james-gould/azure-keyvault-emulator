@@ -123,7 +123,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         List<string> matchingKeys = [];
 
-        await foreach (var key in client.GetPropertiesOfKeysAsync(fixture.CancellationToken))
+        await foreach (var key in client.GetPropertiesOfKeysAsync())
             if(!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
                 matchingKeys.Add(key.Name);
 
@@ -156,7 +156,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
-        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken)).Value;
+        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa)).Value;
 
         Assert.Equal(keyName, key.Name);
 
@@ -166,11 +166,11 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var cryptoClient = client.GetCryptographyClient(keyName, key.Properties.Version);
 
-        var encrypted = await cryptoClient.EncryptAsync(algo, data, fixture.CancellationToken);
+        var encrypted = await cryptoClient.EncryptAsync(algo, data);
 
         Assert.NotEqual(data, encrypted.Ciphertext);
 
-        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext, fixture.CancellationToken);
+        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext);
 
         Assert.NotEqual(decrypted.Plaintext, encrypted.Ciphertext);
         Assert.Equal(decrypted.Plaintext, data);
