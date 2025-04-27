@@ -6,8 +6,8 @@ namespace AzureKeyVaultEmulator.Emulator.Services
     {
         string CreateKeyVaultJwe(object value);
         T DecryptFromKeyVaultJwe<T>(string jwe) where T : notnull;
-        string SignWithKey(string data);
-        bool VerifyData(string hash, string signature);
+        string SignWithKey(RSA key, string data);
+        bool VerifyData(RSA key, string hash, string signature);
     }
 
     public class EncryptionService : IEncryptionService
@@ -23,21 +23,21 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             _rsa.ImportFromPem(RsaPem.FullPem);
         }
 
-        public string SignWithKey(string data)
+        public string SignWithKey(RSA key, string data)
         {
             var bytes = data.Base64UrlDecode();
 
-            var signedBytes = _rsa.SignData(bytes, _hashingAlgorithm, _padding);
+            var signedBytes = key.SignData(bytes, _hashingAlgorithm, _padding);
 
             return signedBytes.Base64UrlEncode();
         }
 
-        public bool VerifyData(string digest, string signature)
+        public bool VerifyData(RSA key, string digest, string signature)
         {
             var hashBytes = digest.Base64UrlDecode();
             var sigBytes = signature.Base64UrlDecode();
 
-            return _rsa.VerifyHash(hashBytes, sigBytes, _hashingAlgorithm, _padding);
+            return key.VerifyData(hashBytes, sigBytes, _hashingAlgorithm, _padding);
         }
 
         public T DecryptFromKeyVaultJwe<T>(string jweToken)
@@ -99,7 +99,9 @@ namespace AzureKeyVaultEmulator.Emulator.Services
 
             var jwe = $"{headerBytes.Base64UrlEncode()}.{keyBytes.Base64UrlEncode()}.{aes.IV.Base64UrlEncode()}.{payloadBytes.Base64UrlEncode()}";
 
-            return jwe.Base64UrlEncode();
+            var bytes = Encoding.UTF8.GetBytes(jwe);
+
+            return bytes.Base64UrlEncode();
         }
 
         public void Dispose()

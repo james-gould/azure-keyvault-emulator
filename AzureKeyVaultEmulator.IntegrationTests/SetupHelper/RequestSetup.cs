@@ -45,9 +45,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper
 
         public static string CreateRandomData(int size = 512)
         {
-            byte[] bytes = new byte[size];
-
-            Random.Shared.NextBytes(bytes);
+            var bytes = CreateRandomBytes(size);
 
             return EncodingUtils.Base64UrlEncode(bytes);
         }
