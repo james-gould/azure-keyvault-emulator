@@ -111,7 +111,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.KeysAreEqual(createdKey, fromDeletedStore);
     }
 
-    [Fact(Skip = "Github Actions is failing due to free tier limitations. This works locally and passes.")]
+    [Fact]
     public async Task GetAllKeyVersionsWillCycle()
     {
         var client = await fixture.GetClientAsync();
@@ -119,7 +119,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken));
+            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         List<string> matchingKeys = [];
 
@@ -130,7 +130,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(executionCount + 1, matchingKeys.Count);
     }
 
-    [Fact(Skip = "Github Actions is failing due to free tier limitations. This works locally and passes.")]
+    [Fact]
     public async Task GetOneHundredKeyVersionsCyclesThroughLink()
     {
         var client = await fixture.GetClientAsync();
@@ -138,7 +138,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken));
+            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         List<string> matchingKeys = [];
 
