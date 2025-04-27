@@ -19,7 +19,7 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
 
     internal readonly RetryPolicy _clientRetryPolicy = new(
         maxRetries: 5,
-        DelayStrategy.CreateExponentialDelayStrategy(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(10)));
+        DelayStrategy.CreateExponentialDelayStrategy(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(100)));
         
     private ClientSetupVM? _setupModel;
 
