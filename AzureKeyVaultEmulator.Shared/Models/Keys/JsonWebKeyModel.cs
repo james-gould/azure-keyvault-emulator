@@ -65,8 +65,11 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         [JsonPropertyName("y")]
         public string Y { get; set; } = string.Empty;
 
-        private readonly RSA _rsaKey;
-        private readonly RSAParameters _rsaParameters;
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+        public readonly RSA _rsaKey;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+        public readonly RSAParameters _rsaParameters;
 
         public JsonWebKeyModel() : this(RSA.Create())
         {
