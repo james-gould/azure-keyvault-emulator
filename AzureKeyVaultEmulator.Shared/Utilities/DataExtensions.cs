@@ -1,7 +1,11 @@
-﻿namespace AzureKeyVaultEmulator.Shared.Utilities;
+﻿using System.Text.RegularExpressions;
+
+namespace AzureKeyVaultEmulator.Shared.Utilities;
 
 public static class DataExtensions
 {
+    private static readonly Regex _base64Normalise = new(@"^[\w/\:.-]+;base64,", RegexOptions.Compiled);
+
     /// <summary>
     /// Converts a <see cref="DateTime"/> to a <see cref="DateTimeOffset"/> and returns the epoch time.
     /// </summary>
@@ -26,5 +30,19 @@ public static class DataExtensions
     public static string Neat(this Guid guid)
     {
         return guid.ToString("n");
+    }
+
+    /// <summary>
+    /// Normalises Base64, replacing - with + and _ with /.
+    /// </summary>
+    /// <param name="bytes">The bytes to normalise</param>
+    /// <returns>Normalised <paramref name="bytes"/> which will convert to Base64</returns>
+    public static byte[] NormaliseForBase64(this byte[] bytes)
+    {
+        var str = Convert.ToBase64String(bytes);
+
+        var normalised = _base64Normalise.Replace(str, string.Empty);
+
+        return Convert.FromBase64String(normalised);
     }
 }
