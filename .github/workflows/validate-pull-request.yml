@@ -18,7 +18,7 @@ jobs:
           fi
 
   run-integration-tests:
-    runs-on: ubunutu-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
