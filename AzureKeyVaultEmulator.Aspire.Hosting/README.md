@@ -28,10 +28,6 @@ var keyVault = builder
     .WithReference(keyvault); // reference as normal
 ```
 
-> [!WARNING]
-> This will still attempt to provision resources (or confirm they already exist), at runtime your connection string will be a `localhost` URL. <br /><br />
-> When using the emulator no requests will be made to/from the hosted resource. This will start an empty key vault in a container.
-
 To use directly without needing to set up any Azure configuration:
 
 ```csharp

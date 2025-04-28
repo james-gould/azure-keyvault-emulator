@@ -21,9 +21,6 @@
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 </Project>
