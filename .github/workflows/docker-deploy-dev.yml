@@ -52,6 +52,6 @@ jobs:
 
   closed-without-merge:
     if: github.event.pull_request.merged == false
-    steps::
+    steps:
       - run: |
           echo PR #${{ github.event.number }} has been closed without merging.
