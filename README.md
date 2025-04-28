@@ -39,9 +39,6 @@ var webApi = builder
     .WithReference(keyVault); // reference as normal
 ```
 
-> [!WARNING]
-> Using `.WaitForCompletion(keyVault)` will hang the `AppHost` indefinitely, use `.WaitFor(keyVault)`. 
-
 3. Install the [Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package into your application using Azure Key Vault:
 
 ```
