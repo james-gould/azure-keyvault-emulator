@@ -111,7 +111,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.KeysAreEqual(createdKey, fromDeletedStore);
     }
 
-    [Fact(Skip = "Github Actions is failing due to free tier limitations. This works locally and passes.")]
+    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
     public async Task GetAllKeyVersionsWillCycle()
     {
         var client = await fixture.GetClientAsync();
@@ -119,18 +119,18 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken));
+            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         List<string> matchingKeys = [];
 
-        await foreach (var key in client.GetPropertiesOfKeysAsync(fixture.CancellationToken))
+        await foreach (var key in client.GetPropertiesOfKeysAsync())
             if(!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
                 matchingKeys.Add(key.Name);
 
         Assert.Equal(executionCount + 1, matchingKeys.Count);
     }
 
-    [Fact(Skip = "Github Actions is failing due to free tier limitations. This works locally and passes.")]
+    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
     public async Task GetOneHundredKeyVersionsCyclesThroughLink()
     {
         var client = await fixture.GetClientAsync();
@@ -138,7 +138,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken));
+            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         List<string> matchingKeys = [];
 
@@ -156,7 +156,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
-        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa, cancellationToken: fixture.CancellationToken)).Value;
+        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa)).Value;
 
         Assert.Equal(keyName, key.Name);
 
@@ -166,11 +166,11 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var cryptoClient = client.GetCryptographyClient(keyName, key.Properties.Version);
 
-        var encrypted = await cryptoClient.EncryptAsync(algo, data, fixture.CancellationToken);
+        var encrypted = await cryptoClient.EncryptAsync(algo, data);
 
         Assert.NotEqual(data, encrypted.Ciphertext);
 
-        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext, fixture.CancellationToken);
+        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext);
 
         Assert.NotEqual(decrypted.Plaintext, encrypted.Ciphertext);
         Assert.Equal(decrypted.Plaintext, data);
@@ -255,7 +255,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         //var imported = (await client.ImportKeyAsync(null)).Value;
     }
 
-    [Fact(Skip = "Failing due to VerifyAsync rejecting the signature. Requires fix")]
+    [Fact]
     public async Task SignAndVerifyWithKeySucceeds()
     {
         // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Keys_4.7.0/sdk/keyvault/Azure.Security.KeyVault.Keys/samples/Sample5_SignVerify.md
@@ -267,8 +267,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var cryptoProvider = await fixture.GetCryptographyClientAsync(key);
 
-        var data = RequestSetup.CreateRandomBytes(64);
-        var digest = SHA256.HashData(data);
+        var digest = RequestSetup.CreateRandomBytes(64);
 
         var signAlgorithm = SignatureAlgorithm.RS256;
 
@@ -277,6 +276,32 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var verifyResult = await cryptoProvider.VerifyAsync(signAlgorithm, digest, signResult.Signature);
 
         Assert.True(verifyResult.IsValid);
+    }
+
+    [Fact]
+    public async Task SigningAndVerifyingWithDifferentKeysWillFail()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var signKeyName = fixture.FreshlyGeneratedGuid;
+        var verifyKeyName = fixture.FreshlyGeneratedGuid;
+
+        var signKey = await fixture.CreateKeyAsync(signKeyName);
+        var verifyKey = await fixture.CreateKeyAsync(verifyKeyName);
+
+        var signProvider = await fixture.GetCryptographyClientAsync(signKey);
+        var verifyProvider = await fixture.GetCryptographyClientAsync(verifyKey);
+
+        var data = RequestSetup.CreateRandomBytes(64);
+        var digest = SHA256.HashData(data);
+
+        var signAlgorithm = SignatureAlgorithm.RS256;
+
+        var signResult = await signProvider.SignAsync(signAlgorithm, digest);
+
+        var verifyResult = await verifyProvider.VerifyAsync(signAlgorithm, digest, signResult.Signature);
+
+        Assert.False(verifyResult?.IsValid);
     }
 
     [Fact]

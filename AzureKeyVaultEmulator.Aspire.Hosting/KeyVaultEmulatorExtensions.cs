@@ -1,8 +1,8 @@
 ﻿using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
-using AzureKeyVaultEmulator.Aspire.Hosting;
+using System.Net.Sockets;
 
-namespace AzureKeyVaultEmulator.Hosting.Aspire
+namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     public static class KeyVaultEmulatorExtensions
     {
@@ -13,7 +13,7 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
         /// <param name="name">The name of the resource that will output as a connection string.</param>
         /// <param name="lifetime"></param>
         /// <returns></returns>
-        public static IResourceBuilder<KeyVaultDirectEmulatorResource> AddAzureKeyVaultEmulator(
+        public static IResourceBuilder<AzureKeyVaultResource> AddAzureKeyVaultEmulator(
             this IDistributedApplicationBuilder builder,
             [ResourceName] string name,
             ContainerLifetime lifetime = ContainerLifetime.Session)
@@ -21,81 +21,57 @@ namespace AzureKeyVaultEmulator.Hosting.Aspire
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var resource = new KeyVaultDirectEmulatorResource(name);
-
             return builder
-                .AddResource(resource)
-                .WithImage(KeyVaultEmulatorContainerImageTags.Image)
-                .WithImageTag(KeyVaultEmulatorContainerImageTags.Tag)
-                .WithImageRegistry(KeyVaultEmulatorContainerImageTags.Registry)
-                .WithHttpsEndpoint(
-                    name: KeyVaultEmulatorContainerImageTags.Name,
-                    port: KeyVaultEmulatorContainerImageTags.Port,
-                    targetPort: KeyVaultEmulatorContainerImageTags.Port)
-                .WithLifetime(lifetime);
+                    .AddAzureKeyVault(name)
+                    .RunAsEmulator(lifetime);
         }
 
         /// <summary>
-        ///  Configures a container to run the AzureKeyVaultEmulator application, overwriting the <see cref="AzureKeyVaultResource"/> builder.
+        ///  Run the <see cref="AzureKeyVaultResource"/> as a container locally.
         /// </summary>
-        /// <param name="builder">The original builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
-        /// <param name="configureContainer">Provides the ability to configure the container as you need it to run.</param>
-        /// <returns>A new <see cref="IResourceBuilder{T}"/></returns>
-        public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
+        /// <param name="builder">The builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
+        /// <param name="lifetime">Configures the <see cref="ContainerLifetime"/> of the emulator container, defaulted as <see cref="ContainerLifetime.Session"/>.</param>
+        /// <returns>The original <paramref name="builder"/> updated to run the emulated Azure Key Vault.</returns>
+        public static IResourceBuilder<AzureKeyVaultResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            Action<IResourceBuilder<KeyVaultEmulatorResource>>? configureContainer = null)
+            ContainerLifetime lifetime = ContainerLifetime.Session)
         {
-            var emulatedResource = new KeyVaultEmulatorResource(builder.Resource);
-            var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(emulatedResource);
+            ArgumentNullException.ThrowIfNull(builder);
 
-            surrogateBuilder
+            if (builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
+                return builder;
+
+            builder
                 .WithAnnotation(new ContainerImageAnnotation
                 {
-                    Image = KeyVaultEmulatorContainerImageTags.Image,
-                    Registry = KeyVaultEmulatorContainerImageTags.Registry,
-                    Tag = KeyVaultEmulatorContainerImageTags.Tag
+                    Registry = KeyVaultEmulatorConstants.Registry,
+                    Image = KeyVaultEmulatorConstants.Image,
+                    Tag = KeyVaultEmulatorConstants.Tag,
                 })
-                .WithHttpsEndpoint(
-                    name: KeyVaultEmulatorContainerImageTags.Name,
-                    port: KeyVaultEmulatorContainerImageTags.Port,
-                    targetPort: KeyVaultEmulatorContainerImageTags.Port
-                )
-                .WithUrl("https://localhost:4997");
+                .WithAnnotation(new EndpointAnnotation(ProtocolType.Tcp)
+                {
+                    Port = KeyVaultEmulatorConstants.Port,
+                    TargetPort = KeyVaultEmulatorConstants.Port,
+                    UriScheme = "https",
+                    Name = "https"
+                })
+                .WithAnnotation(new ContainerLifetimeAnnotation { Lifetime = lifetime });
 
-            configureContainer?.Invoke(surrogateBuilder);
+            builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorConstants.Endpoint);
 
-            return surrogateBuilder;
+            return builder;
         }
 
         /// <summary>
-        /// Provides the baseline KeyVault emulator with a specified <see cref="ContainerLifetime"/>
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="lifetime"></param>
-        /// <returns></returns>
-        public static IResourceBuilder<KeyVaultEmulatorResource> RunAsEmulator(
-            this IResourceBuilder<AzureKeyVaultResource> builder,
-            ContainerLifetime lifetime)
-        {
-            var emulatedBuilder = RunAsEmulator(builder, null);
-
-            emulatedBuilder.WithLifetime(lifetime);
-
-            return emulatedBuilder;
-        }
-
-        /// <summary>
-        /// Implements the existing extension method for the <see cref="AzureKeyVaultResource"/>. <br />
-        /// Does not actually create role assignments, simply prevents build issues when opting for the emulator!
+        /// <para>Implements the existing extension method for the <see cref="AzureKeyVaultResource"/>.</para>
+        /// <para>Does not actually create role assignments, simply prevents build issues when opting for the emulator!</para>
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="builder">The resource to which the specified roles will be assigned.</param>
-        /// <param name="target">The target Azure Key Vault resource.</param>
         /// <param name="roles">The built-in Key Vault roles to be assigned.</param>
         /// <returns>The UNCHANGED <see cref="IResourceBuilder{T}"/> with no role assignments created.</returns>
-        public static IResourceBuilder<T> WithRoleAssignments<T>(
-            this IResourceBuilder<T> builder,
-            IResourceBuilder<KeyVaultEmulatorResource> target,
+        public static IResourceBuilder<AzureKeyVaultResource> WithRoleAssignments<T>(
+            this IResourceBuilder<AzureKeyVaultResource> builder,
             params KeyVaultBuiltInRole[] roles)
             where T : IResource
                 => builder;

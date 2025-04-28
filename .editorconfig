@@ -178,6 +178,9 @@ dotnet_diagnostic.CA2201.severity = suggestion
 # Prefer concrete type instead of var
 dotnet_diagnostic.IDE0008.severity = silent
 
+# Prefer not using GeneratedAttribute format
+dotnet_diagnostic.SYSLIB1045 = silent
+
 # C++ Files
 [*.{cpp,h,in}]
 curly_bracket_next_line = true

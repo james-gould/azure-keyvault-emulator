@@ -44,6 +44,6 @@ public class SecretsTestingFixture : KeyVaultClientTestingFixture<SecretClient>
 
         _secretClient = await GetClientAsync();
 
-        return await _secretClient.SetSecretAsync(secretName, secretValue, CancellationToken);
+        return await _secretClient.SetSecretAsync(secretName, secretValue);
     }
 }

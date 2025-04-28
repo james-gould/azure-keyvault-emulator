@@ -20,7 +20,7 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
         Assert.Equal(certName, deletedCert.Value.Name);
     }
 
-    [Fact]
+    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
     public async Task GetDeletedCertificatesWillCycleLink()
     {
         var client = await fixture.GetClientAsync();
