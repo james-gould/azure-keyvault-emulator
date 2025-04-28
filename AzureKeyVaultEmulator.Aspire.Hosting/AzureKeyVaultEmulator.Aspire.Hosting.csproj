@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -13,7 +13,7 @@
     <Company>James Gould</Company>
     <Description>.NET Aspire AppHost support for the Azure KeyVault Emulator</Description>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-	  <PackageTags>.net aspire, aspire, aspire.host, aspire.hosting</PackageTags>
+    <PackageTags>.net aspire, aspire, aspire.host, aspire.hosting</PackageTags>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>
