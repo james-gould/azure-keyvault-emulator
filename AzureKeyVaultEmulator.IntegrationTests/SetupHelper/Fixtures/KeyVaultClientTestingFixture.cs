@@ -35,7 +35,7 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>([], (x, y) => x.DisableDashboard = true);
+            .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>(["--test"], (x, y) => x.DisableDashboard = true);
 
         _app = await builder.BuildAsync();
 
