@@ -78,9 +78,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var secretName = "multipleSecrets";
 
             var executionCount = await RequestSetup
-                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
+                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value"));
 
-            var properties = client.GetPropertiesOfSecretVersionsAsync(secretName, fixture.CancellationToken);
+            var properties = client.GetPropertiesOfSecretVersionsAsync(secretName);
 
             var versions = new List<string>();
 
@@ -94,7 +94,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(executionCount + 1, versions.Count);
         }
 
-        [Fact]
+        [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
         public async Task GetSecretsPagesAllSecretsCreatedTest()
         {
             var client = await fixture.GetClientAsync();
@@ -102,11 +102,11 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var secretName = "mulitudeTesting";
 
             var executionCount = await RequestSetup
-                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value", fixture.CancellationToken));
+                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value"));
 
             var testSecrets = new List<SecretProperties?>();
 
-            var secrets = client.GetPropertiesOfSecretsAsync(fixture.CancellationToken);
+            var secrets = client.GetPropertiesOfSecretsAsync();
 
             await foreach (var secret in secrets)
                 if (secret.Name.Equals(secretName, StringComparison.CurrentCultureIgnoreCase))

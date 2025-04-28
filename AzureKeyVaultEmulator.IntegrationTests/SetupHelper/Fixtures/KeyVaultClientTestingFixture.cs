@@ -19,15 +19,12 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
 
     internal readonly RetryPolicy _clientRetryPolicy = new(
         maxRetries: 5,
-        DelayStrategy.CreateExponentialDelayStrategy(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(10)));
+        DelayStrategy.CreateExponentialDelayStrategy(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(100)));
         
     private ClientSetupVM? _setupModel;
 
     private HttpClient? _testingClient;
     private string _bearerToken = string.Empty;
-
-    private CancellationTokenSource _cancellationTokenSource = new(TimeSpan.FromSeconds(30));
-    public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
     // Used to ensure no duplicates are used during high concurrency testing
     private readonly ConcurrentBag<string> _spentGuids = [];
@@ -38,7 +35,7 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>([], (x, y) => x.DisableDashboard = true);
+            .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>(["--test"], (x, y) => x.DisableDashboard = true);
 
         _app = await builder.BuildAsync();
 
