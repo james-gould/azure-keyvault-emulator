@@ -4,7 +4,6 @@ using AzureKeyVaultEmulator.Shared.Constants;
 var builder = DistributedApplication.CreateBuilder();
 
 // Horrendous bodge for integration testing but doing a full RootCommand pattern here for 1 arg feels... overkill;
-
 var integrationTestRun = args.Where(x => x.Equals("--test")).FirstOrDefault() is not null;
 
 if (integrationTestRun)
