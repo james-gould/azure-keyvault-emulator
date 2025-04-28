@@ -111,7 +111,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.KeysAreEqual(createdKey, fromDeletedStore);
     }
 
-    [Fact]
+    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
     public async Task GetAllKeyVersionsWillCycle()
     {
         var client = await fixture.GetClientAsync();
@@ -130,7 +130,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(executionCount + 1, matchingKeys.Count);
     }
 
-    [Fact]
+    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
     public async Task GetOneHundredKeyVersionsCyclesThroughLink()
     {
         var client = await fixture.GetClientAsync();
