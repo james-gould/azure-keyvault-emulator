@@ -23,7 +23,6 @@ dotnet add package AzureKeyVaultEmulator.Aspire.Hosting
 2. Next you can either override an existing Aspire `AzureKeyVaultResource` or directly include the `AzureKeyVaultEmulator`. 
 
 ```csharp
-
 var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
 
 // With existing resource, requires Azure configuration in your AppHost
@@ -31,7 +30,7 @@ var keyVault = builder
     .AddAzureKeyVault(keyVaultServiceName)
     .RunAsEmulator(); // Add this line
 
-// OR directly add the emulator as a resource, no configuration required
+// Or directly add the emulator as a resource, no configuration required
 var keyVault = builder.AddAzureKeyVaultEmulator(keyVaultServiceName);
 
 var webApi = builder
