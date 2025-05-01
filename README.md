@@ -6,7 +6,7 @@ A fully featured, emulated version of the [Azure Key Vault](https://azure.micros
 
 The emulator does **not** connect to or update an existing Azure Key Vault, it simply mimics the API (with identical functionality) allowing you to build applications without needing to host a real resource.
 
-You can find a [sample application here](https://github.com/james-gould/azure-keyvault-emulator/tree/master/Samples/KeyVaultEmulatorSample).
+You can find a [sample application here](https://github.com/james-gould/azure-keyvault-emulator/tree/master/Samples/KeyVaultEmulatorSample) or you can [read the full launch blog post here!](https://jamesgould.dev/posts/Azure-Key-Vault-Emulator/)
 
 ## Prerequisites
 
