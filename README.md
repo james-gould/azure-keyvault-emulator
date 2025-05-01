@@ -60,7 +60,7 @@ builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, c
 ```
 
 > [!NOTE]
-> The `AzureKeyVaultEmulator.Client` library is not required for the emulator, it simply creates the Azure clients requested with `DisableChallengeResourceVerification = true`. You can easily skip this dependency by disabling that setting yourself, [or by copying and tweaking this code into your application](https://github.com/james-gould/azure-keyvault-emulator/blob/development/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51).
+> The `AzureKeyVaultEmulator.Client` library is not required for the emulator, it simply creates the requested Azure clients  with `DisableChallengeResourceVerification = true`. You can easily skip this dependency by disabling that setting yourself, [or by copying and tweaking this code into your application](https://github.com/james-gould/azure-keyvault-emulator/blob/development/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51).
 
 5. Now you can use your `AzureClients` as normal dependency injected services:
 
