@@ -1,0 +1,19 @@
+﻿namespace AzureKeyVaultEmulator.Aspire.Hosting;
+
+public sealed class KeyVaultEmulatorCertConstants
+{
+    private const string _rootName = "emulator";
+
+    public const string ParentDirectory = "keyvaultemulator";
+
+    public const string Pfx = $"{_rootName}.pfx";
+    public const string Crt = $"{_rootName}.crt";
+    public const string Pword = _rootName;
+
+    public const string CertsDirectory = "certs";
+
+    public const string Subject = "CN=localhost";
+
+    public const string OSXPath = "/Library/Application Support";
+    public const string LinuxPath = "/var/lib";
+}

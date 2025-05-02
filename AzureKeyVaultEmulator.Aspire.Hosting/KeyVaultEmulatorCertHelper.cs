@@ -1,0 +1,161 @@
+﻿using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
+using System.Text;
+using System.Diagnostics;
+
+namespace AzureKeyVaultEmulator.Aspire.Hosting;
+
+internal static class KeyVaultEmulatorCertHelper
+{
+    /// <summary>
+    /// <para>Gets the path where the certificates are stored on the host machine.</para>
+    /// <para>This is then used with the -v arg in Docker to mount the directory as a volume.</para>
+    /// </summary>
+    /// <returns></returns>
+    internal static string GetCertStoragePath()
+    {
+        string? baseDir;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            baseDir = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            baseDir = KeyVaultEmulatorCertConstants.OSXPath;
+        }
+        else
+        {
+            baseDir = KeyVaultEmulatorCertConstants.LinuxPath;
+        }
+
+        return Path.Combine(
+            baseDir,
+            KeyVaultEmulatorCertConstants.ParentDirectory,
+            KeyVaultEmulatorCertConstants.CertsDirectory
+        );
+    }
+
+    /// <summary>
+    /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
+    /// </summary>
+    internal static async Task TryGenerateCertificate()
+    {
+        var path = GetCertStoragePath();
+
+        var pfxPath = Path.Combine(path, KeyVaultEmulatorCertConstants.Pfx);
+        var crtPath = Path.Combine(path, KeyVaultEmulatorCertConstants.Crt);
+
+        var pfxExists = Path.Exists(pfxPath);
+        var crtExists = Path.Exists(crtPath);
+
+        // Both required certs exist so noop.
+        if (pfxExists && crtExists)
+            return;
+
+        // One has been deleted, try to remove them both and regenerate
+        if((crtExists && !pfxExists) || (pfxExists && !crtExists))
+            TryRemovePreviousCerts(pfxPath, crtPath);
+
+        // Then create files and place at {path}
+        var (pfx, cert) = await GenerateAndSaveCert(pfxPath, crtPath);
+
+        await TryWriteToStoreAsync(pfx, pfxPath, cert);
+    }
+
+    private static async Task<(X509Certificate2 pfx, string pem)> GenerateAndSaveCert(string pfxPath, string pemPath)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(pfxPath);
+        ArgumentException.ThrowIfNullOrEmpty(pemPath);
+
+        var subject = KeyVaultEmulatorCertConstants.Subject;
+        var ecdsa = ECDsa.Create();
+
+        var request = new CertificateRequest(subject, ecdsa, HashAlgorithmName.SHA256);
+        request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
+        request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+        var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
+
+        var pfxBytes = cert.Export(X509ContentType.Pfx, KeyVaultEmulatorCertConstants.Pword);
+
+        var pem = ExportToPem(cert);
+
+        await File.WriteAllBytesAsync(pfxPath, pfxBytes);
+        await File.WriteAllTextAsync(pemPath, pem);
+
+        return (cert, pem);
+    }
+
+    private static string ExportToPem(X509Certificate2 cert)
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("-----BEGIN CERTIFICATE-----");
+        builder.AppendLine(Convert.ToBase64String(cert.RawData, Base64FormattingOptions.InsertLineBreaks));
+        builder.AppendLine("-----END CERTIFICATE-----");
+
+        return builder.ToString();
+    }
+
+    private static async Task TryWriteToStoreAsync(X509Certificate2 pfx, string pfxPath, string pem)
+    {
+        if(OperatingSystem.IsWindows())
+                InstallToWindowsTrustStore(pfx);
+
+        else if(OperatingSystem.IsLinux())
+            await InstallToLinuxShareAsync(pem);
+
+        else if (OperatingSystem.IsMacOS())
+            PromptMacUser(pfxPath);
+    }
+
+    private static void InstallToWindowsTrustStore(X509Certificate2 cert)
+    {
+        ArgumentNullException.ThrowIfNull(cert);
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            throw new InvalidOperationException($"Attempted to install to Windows trust store when OS type is different");
+
+        using var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
+
+        store.Open(OpenFlags.ReadWrite);
+        store.Add(cert);
+    }
+
+    public static async Task InstallToLinuxShareAsync(string pem)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(pem);
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            throw new InvalidOperationException($"Attempted to install to Windows trust store when OS type is different");
+
+        var destination = $"{KeyVaultEmulatorCertConstants.LinuxPath}/{KeyVaultEmulatorCertConstants.Crt}";
+
+        await File.WriteAllTextAsync(destination, pem);
+    }
+
+    public static void PromptMacUser(string pfxPath)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(pfxPath);
+
+        Debug.WriteLine("To install on macOS trust store, run:");
+        Debug.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");
+    }
+
+    private static void TryRemovePreviousCerts(string pfx, string crt)
+    {
+        if (File.Exists(pfx))
+        {
+            File.Delete(pfx);
+            Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.ParentDirectory} PFX and deleted it.");
+        }
+
+        if (File.Exists(crt))
+        {
+            File.Delete(crt);
+            Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.ParentDirectory} PFX and deleted it.");
+        }
+    }
+}

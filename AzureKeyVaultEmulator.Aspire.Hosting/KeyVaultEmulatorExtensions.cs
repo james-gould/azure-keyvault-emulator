@@ -41,13 +41,27 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             if (builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
                 return builder;
 
-            builder
-                .WithAnnotation(new ContainerImageAnnotation
-                {
-                    Registry = KeyVaultEmulatorConstants.Registry,
-                    Image = KeyVaultEmulatorConstants.Image,
-                    Tag = KeyVaultEmulatorConstants.Tag,
-                })
+            // Might blow up
+            builder.WithAnnotation(new ContainerImageAnnotation
+            {
+                Image = "",
+            });
+
+            builder.ApplicationBuilder
+                .AddContainer(
+                    name: KeyVaultEmulatorConstants.Image,
+                    image: KeyVaultEmulatorConstants.Image,
+                    tag: KeyVaultEmulatorConstants.Tag
+                )
+                .WithArgs("-v C:/ProgramData/keyvaultemulator/certs:/certs:ro")
+
+            //builder
+            //    .WithAnnotation(new ContainerImageAnnotation
+            //    {
+            //        Registry = KeyVaultEmulatorConstants.Registry,
+            //        Image = KeyVaultEmulatorConstants.Image,
+            //        Tag = KeyVaultEmulatorConstants.Tag,
+            //    })
                 .WithAnnotation(new EndpointAnnotation(ProtocolType.Tcp)
                 {
                     Port = KeyVaultEmulatorConstants.Port,
