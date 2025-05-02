@@ -115,9 +115,6 @@ internal static class KeyVaultEmulatorCertHelper
     {
         ArgumentNullException.ThrowIfNull(cert);
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            throw new InvalidOperationException($"Attempted to install to Windows trust store when OS type is different");
-
         using var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
 
         store.Open(OpenFlags.ReadWrite);
@@ -127,9 +124,6 @@ internal static class KeyVaultEmulatorCertHelper
     private static async Task InstallToLinuxShareAsync(string pem)
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
-
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            throw new InvalidOperationException($"Attempted to install to Windows trust store when OS type is different");
 
         var destination = $"{KeyVaultEmulatorCertConstants.LinuxPath}/{KeyVaultEmulatorCertConstants.Crt}";
 
