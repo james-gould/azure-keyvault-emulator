@@ -41,6 +41,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             if (builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
                 return builder;
 
+            var hostCertificatePath = KeyVaultEmulatorCertHelper.GetCertStoragePath();
+
             // Might blow up
             builder.WithAnnotation(new ContainerImageAnnotation
             {
@@ -53,7 +55,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     image: KeyVaultEmulatorConstants.Image,
                     tag: KeyVaultEmulatorConstants.Tag
                 )
-                .WithArgs("-v C:/ProgramData/keyvaultemulator/certs:/certs:ro")
+                .WithArgs($"-v {hostCertificatePath}:/certs:ro")
 
             //builder
             //    .WithAnnotation(new ContainerImageAnnotation
