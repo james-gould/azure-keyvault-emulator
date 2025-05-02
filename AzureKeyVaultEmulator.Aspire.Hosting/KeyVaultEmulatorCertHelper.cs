@@ -59,12 +59,12 @@ internal static class KeyVaultEmulatorCertHelper
             TryRemovePreviousCerts(pfxPath, crtPath);
 
         // Then create files and place at {path}
-        var (pfx, cert) = await GenerateAndSaveCert(pfxPath, crtPath);
+        var (pfx, cert) = await GenerateAndSaveCertAsync(pfxPath, crtPath);
 
         await TryWriteToStoreAsync(pfx, pfxPath, cert);
     }
 
-    private static async Task<(X509Certificate2 pfx, string pem)> GenerateAndSaveCert(string pfxPath, string pemPath)
+    private static async Task<(X509Certificate2 pfx, string pem)> GenerateAndSaveCertAsync(string pfxPath, string pemPath)
     {
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
         ArgumentException.ThrowIfNullOrEmpty(pemPath);
