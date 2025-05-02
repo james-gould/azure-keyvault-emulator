@@ -47,6 +47,8 @@ internal static class KeyVaultEmulatorCertHelper
         var crtExists = Path.Exists(crtPath);
 
         // Both required certs exist so noop.
+        // Will also require a cert check for expiration
+        // Out of scope for now
         if (pfxExists && crtExists)
             return;
 
