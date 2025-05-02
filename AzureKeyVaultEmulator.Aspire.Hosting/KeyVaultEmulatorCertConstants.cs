@@ -6,8 +6,11 @@ public sealed class KeyVaultEmulatorCertConstants
 
     public const string ParentDirectory = "keyvaultemulator";
 
+    // PFX is referenced in the Dockerfile, update both is this changes.
     public const string Pfx = $"{_rootName}.pfx";
     public const string Crt = $"{_rootName}.crt";
+
+    // This is also referenced in the Dockerfile, update both if this changes.
     public const string Pword = _rootName;
 
     public const string CertsDirectory = "certs";
