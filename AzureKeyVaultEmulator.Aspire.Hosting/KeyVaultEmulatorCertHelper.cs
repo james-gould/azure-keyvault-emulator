@@ -18,17 +18,13 @@ internal static class KeyVaultEmulatorCertHelper
         string? baseDir;
 
         if (OperatingSystem.IsWindows())
-        {
             baseDir = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-        }
+
         else if (OperatingSystem.IsMacOS())
-        {
             baseDir = KeyVaultEmulatorCertConstants.OSXPath;
-        }
+
         else
-        {
             baseDir = KeyVaultEmulatorCertConstants.LinuxPath;
-        }
 
         return Path.Combine(
             baseDir,
