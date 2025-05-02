@@ -124,7 +124,7 @@ internal static class KeyVaultEmulatorCertHelper
         store.Add(cert);
     }
 
-    public static async Task InstallToLinuxShareAsync(string pem)
+    private static async Task InstallToLinuxShareAsync(string pem)
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
 
@@ -136,7 +136,7 @@ internal static class KeyVaultEmulatorCertHelper
         await File.WriteAllTextAsync(destination, pem);
     }
 
-    public static void PromptMacUser(string pfxPath)
+    private static void PromptMacUser(string pfxPath)
     {
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
 
