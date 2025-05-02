@@ -40,7 +40,7 @@ internal static class KeyVaultEmulatorCertHelper
     /// <summary>
     /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
     /// </summary>
-    internal static async Task TryGenerateCertificate()
+    internal static async Task TryGenerateCertificateAsync()
     {
         var path = GetCertStoragePath();
 
