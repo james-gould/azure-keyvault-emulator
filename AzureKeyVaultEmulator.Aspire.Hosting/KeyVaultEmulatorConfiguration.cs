@@ -22,8 +22,8 @@ public sealed class KeyVaultEmulatorConfiguration
     public bool ShouldGenerateCertificates { get; set; } = true;
 
     /// <summary>
-    /// <para>Hooks in an IHostLifetime service to remove the certificates from your local machine on AppHost shutdown.</para>
-    /// <para>If you do not set a value for <see cref="LocalCertificatePath"/> the default local user directory will be used for your OS.</para>
+    /// <para>Cleans up the generated SSL certificates on application shutdown.</para>
+    /// <para>If you do not set a value for <see cref="LocalCertificatePath"/>, the default local user directory will be used for your OS.</para>
     /// <para>Default: <see langword="false"/></para>
     /// </summary>
     public bool ForceCleanupOnShutdown { get; set; } = false;
