@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Diagnostics;
+using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
@@ -12,9 +13,10 @@ internal static class KeyVaultEmulatorCertHelper
     /// <para>This is then used with the -v arg in Docker to mount the directory as a volume.</para>
     /// </summary>
     /// <returns></returns>
-    internal static string GetCertStoragePath()
+    internal static string GetConfigurableCertStoragePath(string? baseDir = null)
     {
-        string? baseDir;
+        if (!string.IsNullOrEmpty(baseDir))
+            return baseDir;
 
         if (OperatingSystem.IsWindows())
             baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -27,7 +29,7 @@ internal static class KeyVaultEmulatorCertHelper
 
         return Path.Combine(
             baseDir,
-            KeyVaultEmulatorCertConstants.ParentDirectory,
+            KeyVaultEmulatorCertConstants.HostParentDirectory,
             "certs"
         );
     }
@@ -35,9 +37,9 @@ internal static class KeyVaultEmulatorCertHelper
     /// <summary>
     /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
     /// </summary>
-    internal static string ValidateOrGenerateCertificate()
+    internal static string ValidateOrGenerateCertificate(string? certPath = null)
     {
-        var certPath = GetCertStoragePath();
+        certPath = GetConfigurableCertStoragePath(certPath);
 
         var exists = Directory.Exists(certPath);
 
@@ -147,13 +149,13 @@ internal static class KeyVaultEmulatorCertHelper
         if (File.Exists(pfx))
         {
             File.Delete(pfx);
-            Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.ParentDirectory} PFX and deleted it.");
+            Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
 
         if (File.Exists(crt))
         {
             File.Delete(crt);
-            Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.ParentDirectory} PFX and deleted it.");
+            Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
     }
 }

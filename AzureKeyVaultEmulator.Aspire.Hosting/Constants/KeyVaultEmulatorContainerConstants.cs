@@ -1,6 +1,6 @@
 ﻿namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
-    internal partial class KeyVaultEmulatorConstants
+    internal partial class KeyVaultEmulatorContainerConstants
     {
         // Container
 
@@ -10,7 +10,7 @@
         public const int Port = 4997;
     }
 
-    internal partial class KeyVaultEmulatorConstants
+    internal partial class KeyVaultEmulatorContainerConstants
     {
         // Connection related
 

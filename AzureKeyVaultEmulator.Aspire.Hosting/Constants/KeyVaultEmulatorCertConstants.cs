@@ -1,10 +1,11 @@
-﻿namespace AzureKeyVaultEmulator.Aspire.Hosting;
+﻿namespace AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 
 public sealed class KeyVaultEmulatorCertConstants
 {
     private const string _rootName = "emulator";
 
-    public const string ParentDirectory = "keyvaultemulator";
+    public const string HostParentDirectory = "keyvaultemulator";
+    public const string HostChildDirectory = "certs";
 
     // PFX is referenced in the Dockerfile, update both is this changes.
     public const string Pfx = $"{_rootName}.pfx";
@@ -13,7 +14,7 @@ public sealed class KeyVaultEmulatorCertConstants
     // This is also referenced in the Dockerfile, update both if this changes.
     public const string Pword = _rootName;
 
-    public const string CertsDirectory = "/certs";
+    public const string CertMountTarget = "/certs";
 
     public const string Subject = "CN=localhost";
 

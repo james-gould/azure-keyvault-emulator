@@ -1,5 +1,6 @@
 ﻿using Aspire.Hosting.Azure;
-using Azure.Provisioning.KeyVault;
+using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net.Sockets;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
@@ -11,19 +12,21 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// </summary>
         /// <param name="builder">The <see cref="IDistributedApplicationBuilder"/> to add the container to.</param>
         /// <param name="name">The name of the resource that will output as a connection string.</param>
-        /// <param name="lifetime"></param>
+        /// <param name="lifetime">Sets the <see cref="ContainerLifetime"/> of the Azure Key Vault Emulator container, allowing for desired destruction of secure data on shutdown.</param>
+        /// <param name="options">Optional granular configuration of the Azure Key Vault Emulator.</param>
         /// <returns></returns>
         public static IResourceBuilder<AzureKeyVaultResource> AddAzureKeyVaultEmulator(
             this IDistributedApplicationBuilder builder,
             [ResourceName] string name,
-            ContainerLifetime lifetime = ContainerLifetime.Session)
+            ContainerLifetime lifetime = ContainerLifetime.Session,
+            KeyVaultEmulatorConfiguration? options = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             return builder
                     .AddAzureKeyVault(name)
-                    .RunAsEmulator(lifetime);
+                    .RunAsEmulator(lifetime, options);
         }
 
         /// <summary>
@@ -31,56 +34,95 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// </summary>
         /// <param name="builder">The builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
         /// <param name="lifetime">Configures the <see cref="ContainerLifetime"/> of the emulator container, defaulted as <see cref="ContainerLifetime.Session"/>.</param>
+        /// <param name="options">Optional granular configuration of the Azure Key Vault Emulator.</param>
         /// <returns>The original <paramref name="builder"/> updated to run the emulated Azure Key Vault.</returns>
         public static IResourceBuilder<AzureKeyVaultResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            ContainerLifetime lifetime = ContainerLifetime.Session)
+            ContainerLifetime lifetime = ContainerLifetime.Session,
+            KeyVaultEmulatorConfiguration? options = null)
+        {
+            return builder.InnerAddEmulator(lifetime, options);
+        }
+
+        private static IResourceBuilder<AzureKeyVaultResource> InnerAddEmulator(
+            this IResourceBuilder<AzureKeyVaultResource> builder,
+            ContainerLifetime lifetime = ContainerLifetime.Session,
+            KeyVaultEmulatorConfiguration? options = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
 
             if (builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
                 return builder;
 
-            var hostCertificatePath = KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate();
+            options ??= new();
+
+            if (!options.IsValidCustomisable)
+                throw new KeyNotFoundException($"The configuration of {nameof(KeyVaultEmulatorConfiguration)} is not valid.");
+
+            var hostCertificatePath = GetLocalCertificatePath(options);
+
+            ArgumentException.ThrowIfNullOrEmpty(hostCertificatePath);
 
             builder
                 .WithAnnotation(new ContainerImageAnnotation
                 {
-                    //Registry = KeyVaultEmulatorConstants.Registry,
-                    Image = KeyVaultEmulatorConstants.Image,
-                    Tag = KeyVaultEmulatorConstants.Tag,
+                    Registry = KeyVaultEmulatorContainerConstants.Registry,
+                    Image = KeyVaultEmulatorContainerConstants.Image,
+                    Tag = KeyVaultEmulatorContainerConstants.Tag,
                 })
                 .WithAnnotation(new ContainerMountAnnotation(
                     source: hostCertificatePath,
-                    target: KeyVaultEmulatorCertConstants.CertsDirectory,
+                    target: KeyVaultEmulatorCertConstants.CertMountTarget,
                     type: ContainerMountType.BindMount,
                     isReadOnly: true))
                 .WithAnnotation(new ContainerLifetimeAnnotation { Lifetime = lifetime })
                 .WithAnnotation(new EndpointAnnotation(ProtocolType.Tcp)
                 {
-                    Port = KeyVaultEmulatorConstants.Port,
-                    TargetPort = KeyVaultEmulatorConstants.Port,
+                    Port = KeyVaultEmulatorContainerConstants.Port,
+                    TargetPort = KeyVaultEmulatorContainerConstants.Port,
                     UriScheme = "https",
                     Name = "https"
                 });
 
-            builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorConstants.Endpoint);
+            builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorContainerConstants.Endpoint);
+
+            builder.RegisterOptionalLifecycleHandler(options, hostCertificatePath);
 
             return builder;
         }
 
         /// <summary>
-        /// <para>Implements the existing extension method for the <see cref="AzureKeyVaultResource"/>.</para>
-        /// <para>Does not actually create role assignments, simply prevents build issues when opting for the emulator!</para>
+        /// Gets the directory for the local certificates, required to mount it into the Emulator container as a volume.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder">The resource to which the specified roles will be assigned.</param>
-        /// <param name="roles">The built-in Key Vault roles to be assigned.</param>
-        /// <returns>The UNCHANGED <see cref="IResourceBuilder{T}"/> with no role assignments created.</returns>
-        public static IResourceBuilder<AzureKeyVaultResource> WithRoleAssignments<T>(
+        /// <param name="options">The granular configuration of the Emulator.</param>
+        /// <returns>The absolute path on the host machine, containing the required certificates to achieve valid, trusted SSL.</returns>
+        private static string GetLocalCertificatePath(KeyVaultEmulatorConfiguration options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            return options.ShouldGenerateCertificates
+                    ? KeyVaultEmulatorCertHelper.GetConfigurableCertStoragePath(options.LocalCertificatePath)
+                    : options.LocalCertificatePath;
+        }
+
+        /// <summary>
+        /// if <see cref="KeyVaultEmulatorConfiguration.ForceCleanupOnShutdown"/> toggled on, register an instance of <see cref="KeyVaultEmulatorLifecycleService"/>
+        /// </summary>
+        /// <param name="builder">The builder being overridden.</param>
+        /// <param name="options">The granular options for the Azure Key Vault Emulator.</param>
+        /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="GetLocalCertificatePath(KeyVaultEmulatorConfiguration)"/></param>
+        private static void RegisterOptionalLifecycleHandler(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            params KeyVaultBuiltInRole[] roles)
-            where T : IResource
-                => builder;
+            KeyVaultEmulatorConfiguration options,
+            string hostMachineCertificatePath)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(options);
+            ArgumentException.ThrowIfNullOrEmpty(hostMachineCertificatePath);
+
+            if (options.ForceCleanupOnShutdown)
+                builder.ApplicationBuilder.Services.AddHostedService(
+                    provider => new KeyVaultEmulatorLifecycleService(hostMachineCertificatePath));
+        }
     }
 }
