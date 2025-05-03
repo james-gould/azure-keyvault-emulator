@@ -31,7 +31,7 @@ internal static class KeyVaultEmulatorCertHelper
         return Path.Combine(
             baseDir,
             KeyVaultEmulatorCertConstants.HostParentDirectory,
-            "certs"
+            KeyVaultEmulatorCertConstants.HostChildDirectory
         );
     }
 
