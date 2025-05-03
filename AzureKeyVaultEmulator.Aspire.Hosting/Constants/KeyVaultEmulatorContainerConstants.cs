@@ -11,7 +11,7 @@
 #if DEBUG
         public const string Tag = "dev-unstable";
 #else
-        public const string Tag = "latest";
+        public const string Tag = "windows";
 #endif
     }
 
