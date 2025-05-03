@@ -9,6 +9,67 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     public static class KeyVaultEmulatorExtensions
     {
+        #region Obselete
+
+        /// <summary>
+        /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
+        /// </summary>
+        /// <param name="builder">The <see cref="IDistributedApplicationBuilder"/> to add the container to.</param>
+        /// <param name="name">The name of the resource that will output as a connection string.</param>
+        /// <param name="lifetime"></param>
+        /// <returns></returns>
+        [Obsolete("Due to localhost SSL requirements, this is now obselete. Please upgrade your package, this signature will be removed soon.")]
+        public static IResourceBuilder<AzureKeyVaultResource> AddAzureKeyVaultEmulator(
+            this IDistributedApplicationBuilder builder,
+            [ResourceName] string name,
+            ContainerLifetime lifetime = ContainerLifetime.Session)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            return builder
+                    .AddAzureKeyVault(name)
+                    .RunAsEmulator(lifetime);
+        }
+
+        /// <summary>
+        ///  Run the <see cref="AzureKeyVaultResource"/> as a container locally.
+        /// </summary>
+        /// <param name="builder">The builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
+        /// <param name="lifetime">Configures the <see cref="ContainerLifetime"/> of the emulator container, defaulted as <see cref="ContainerLifetime.Session"/>.</param>
+        /// <returns>The original <paramref name="builder"/> updated to run the emulated Azure Key Vault.</returns>
+        [Obsolete("Due to localhost SSL requirements, this is now obselete. Please upgrade your package, this signature will be removed soon.")]
+        public static IResourceBuilder<AzureKeyVaultResource> RunAsEmulator(
+            this IResourceBuilder<AzureKeyVaultResource> builder,
+            ContainerLifetime lifetime = ContainerLifetime.Session)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+
+            if (builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
+                return builder;
+
+            builder
+                .WithAnnotation(new ContainerImageAnnotation
+                {
+                    Registry = KeyVaultEmulatorContainerConstants.Registry,
+                    Image = KeyVaultEmulatorContainerConstants.Image,
+                    Tag = KeyVaultEmulatorContainerConstants.Tag,
+                })
+                .WithAnnotation(new EndpointAnnotation(ProtocolType.Tcp)
+                {
+                    Port = KeyVaultEmulatorContainerConstants.Port,
+                    TargetPort = KeyVaultEmulatorContainerConstants.Port,
+                    UriScheme = "https",
+                    Name = "https"
+                })
+                .WithAnnotation(new ContainerLifetimeAnnotation { Lifetime = lifetime });
+
+            builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorContainerConstants.Endpoint);
+
+            return builder;
+        }
+        #endregion
+
         /// <summary>
         /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
         /// </summary>
