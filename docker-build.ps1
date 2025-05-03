@@ -36,7 +36,7 @@ if ($push) {
         }
     }
 
-    Write-Host "Pushing image to Docker Hub..."
+    Write-Host "Pushing image to Docker Hub ${tagName}:${version}"
     docker push "${tagName}:${version}"
     ThrowIfFailed "Push failed. Check Docker login or repo permissions."
     Write-Host "Push succeeded."
