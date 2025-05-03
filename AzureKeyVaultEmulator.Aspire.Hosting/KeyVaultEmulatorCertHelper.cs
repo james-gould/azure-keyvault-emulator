@@ -47,9 +47,9 @@ internal static class KeyVaultEmulatorCertHelper
 
         var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
 
-        var exists = Directory.Exists(certPath);
+        var certDirExists = Directory.Exists(certPath);
 
-        if(!exists)
+        if(!certDirExists)
             Directory.CreateDirectory(certPath);
 
         var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
