@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
-internal sealed class KeyVaultEmulatorLifecycleService(string certificatePath) : IHostedService, IAsyncDisposable
+internal sealed class KeyVaultEmulatorLifecycleService(string certificatePath, IHostApplicationLifetime? lifetime) : IHostedService, IAsyncDisposable
 {
     private EmulatorCertificates? _certs;
 
@@ -14,6 +14,8 @@ internal sealed class KeyVaultEmulatorLifecycleService(string certificatePath) :
         var pem = Path.Combine(certificatePath, KeyVaultEmulatorCertConstants.Crt);
 
         _certs = new(pfx, pem);
+        if(lifetime is not null)
+            lifetime.ApplicationStopping.Register(ExecuteCertificateCleanup);
 
         return Task.CompletedTask;
     }

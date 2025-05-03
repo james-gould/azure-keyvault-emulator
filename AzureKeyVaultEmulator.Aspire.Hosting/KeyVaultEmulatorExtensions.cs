@@ -3,6 +3,7 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Net.Sockets;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
@@ -138,8 +139,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             ArgumentException.ThrowIfNullOrEmpty(hostMachineCertificatePath);
 
             if (options.ForceCleanupOnShutdown)
-                builder.ApplicationBuilder.Services.AddHostedService(
-                    provider => new KeyVaultEmulatorLifecycleService(hostMachineCertificatePath));
+                builder.ApplicationBuilder.Services.AddHostedService(provider =>
+                {
+                    var lifetime = provider.GetService<IHostApplicationLifetime>();
+
+                    return new KeyVaultEmulatorLifecycleService(hostMachineCertificatePath, lifetime);
+                });
         }
 
         /// <summary>
