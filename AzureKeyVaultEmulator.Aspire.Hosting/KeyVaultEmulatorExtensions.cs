@@ -41,37 +41,28 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             if (builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
                 return builder;
 
-            var hostCertificatePath = KeyVaultEmulatorCertHelper.GetCertStoragePath();
+            var hostCertificatePath = KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate();
 
-            // Might blow up
-            builder.WithAnnotation(new ContainerImageAnnotation
-            {
-                Image = "",
-            });
-
-            builder.ApplicationBuilder
-                .AddContainer(
-                    name: KeyVaultEmulatorConstants.Image,
-                    image: KeyVaultEmulatorConstants.Image,
-                    tag: KeyVaultEmulatorConstants.Tag
-                )
-                .WithArgs($"-v {hostCertificatePath}:/certs:ro")
-
-            //builder
-            //    .WithAnnotation(new ContainerImageAnnotation
-            //    {
-            //        Registry = KeyVaultEmulatorConstants.Registry,
-            //        Image = KeyVaultEmulatorConstants.Image,
-            //        Tag = KeyVaultEmulatorConstants.Tag,
-            //    })
+            builder
+                .WithAnnotation(new ContainerImageAnnotation
+                {
+                    //Registry = KeyVaultEmulatorConstants.Registry,
+                    Image = KeyVaultEmulatorConstants.Image,
+                    Tag = KeyVaultEmulatorConstants.Tag,
+                })
+                .WithAnnotation(new ContainerMountAnnotation(
+                    source: hostCertificatePath,
+                    target: KeyVaultEmulatorCertConstants.CertsDirectory,
+                    type: ContainerMountType.BindMount,
+                    isReadOnly: true))
+                .WithAnnotation(new ContainerLifetimeAnnotation { Lifetime = lifetime })
                 .WithAnnotation(new EndpointAnnotation(ProtocolType.Tcp)
                 {
                     Port = KeyVaultEmulatorConstants.Port,
                     TargetPort = KeyVaultEmulatorConstants.Port,
                     UriScheme = "https",
                     Name = "https"
-                })
-                .WithAnnotation(new ContainerLifetimeAnnotation { Lifetime = lifetime });
+                });
 
             builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorConstants.Endpoint);
 

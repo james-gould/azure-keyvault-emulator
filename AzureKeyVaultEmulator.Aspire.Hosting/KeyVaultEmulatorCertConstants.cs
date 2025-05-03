@@ -13,7 +13,7 @@ public sealed class KeyVaultEmulatorCertConstants
     // This is also referenced in the Dockerfile, update both if this changes.
     public const string Pword = _rootName;
 
-    public const string CertsDirectory = "certs";
+    public const string CertsDirectory = "/certs";
 
     public const string Subject = "CN=localhost";
 

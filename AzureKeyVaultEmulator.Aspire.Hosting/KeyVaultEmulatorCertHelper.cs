@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using System.Text;
 using System.Diagnostics;
@@ -18,7 +17,7 @@ internal static class KeyVaultEmulatorCertHelper
         string? baseDir;
 
         if (OperatingSystem.IsWindows())
-            baseDir = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         else if (OperatingSystem.IsMacOS())
             baseDir = KeyVaultEmulatorCertConstants.OSXPath;
@@ -29,19 +28,24 @@ internal static class KeyVaultEmulatorCertHelper
         return Path.Combine(
             baseDir,
             KeyVaultEmulatorCertConstants.ParentDirectory,
-            KeyVaultEmulatorCertConstants.CertsDirectory
+            "certs"
         );
     }
 
     /// <summary>
     /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
     /// </summary>
-    internal static async Task TryGenerateCertificateAsync()
+    internal static string ValidateOrGenerateCertificate()
     {
-        var path = GetCertStoragePath();
+        var certPath = GetCertStoragePath();
 
-        var pfxPath = Path.Combine(path, KeyVaultEmulatorCertConstants.Pfx);
-        var crtPath = Path.Combine(path, KeyVaultEmulatorCertConstants.Crt);
+        var exists = Directory.Exists(certPath);
+
+        if(!exists)
+            Directory.CreateDirectory(certPath);
+
+        var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
+        var crtPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Crt);
 
         var pfxExists = Path.Exists(pfxPath);
         var crtExists = Path.Exists(crtPath);
@@ -50,19 +54,21 @@ internal static class KeyVaultEmulatorCertHelper
         // Will also require a cert check for expiration
         // Out of scope for now
         if (pfxExists && crtExists)
-            return;
+            return certPath;
 
         // One has been deleted, try to remove them both and regenerate
         if((crtExists && !pfxExists) || (pfxExists && !crtExists))
             TryRemovePreviousCerts(pfxPath, crtPath);
 
         // Then create files and place at {path}
-        var (pfx, cert) = await GenerateAndSaveCertAsync(pfxPath, crtPath);
+        var (pfx, cert) = GenerateAndSaveCert(pfxPath, crtPath);
 
-        await TryWriteToStoreAsync(pfx, pfxPath, cert);
+        TryWriteToStore(pfx, pfxPath, cert);
+
+        return certPath;
     }
 
-    private static async Task<(X509Certificate2 pfx, string pem)> GenerateAndSaveCertAsync(string pfxPath, string pemPath)
+    private static (X509Certificate2 pfx, string pem) GenerateAndSaveCert(string pfxPath, string pemPath)
     {
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
         ArgumentException.ThrowIfNullOrEmpty(pemPath);
@@ -80,8 +86,8 @@ internal static class KeyVaultEmulatorCertHelper
 
         var pem = ExportToPem(cert);
 
-        await File.WriteAllBytesAsync(pfxPath, pfxBytes);
-        await File.WriteAllTextAsync(pemPath, pem);
+        File.WriteAllBytes(pfxPath, pfxBytes);
+        File.WriteAllText(pemPath, pem);
 
         return (cert, pem);
     }
@@ -97,13 +103,13 @@ internal static class KeyVaultEmulatorCertHelper
         return builder.ToString();
     }
 
-    private static async Task TryWriteToStoreAsync(X509Certificate2 pfx, string pfxPath, string pem)
+    private static void TryWriteToStore(X509Certificate2 pfx, string pfxPath, string pem)
     {
         if(OperatingSystem.IsWindows())
                 InstallToWindowsTrustStore(pfx);
 
         else if(OperatingSystem.IsLinux())
-            await InstallToLinuxShareAsync(pem);
+            InstallToLinuxShare(pem);
 
         else if (OperatingSystem.IsMacOS())
             PromptMacUser(pfxPath);
@@ -113,19 +119,19 @@ internal static class KeyVaultEmulatorCertHelper
     {
         ArgumentNullException.ThrowIfNull(cert);
 
-        using var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
+        using var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
 
         store.Open(OpenFlags.ReadWrite);
         store.Add(cert);
     }
 
-    private static async Task InstallToLinuxShareAsync(string pem)
+    private static void InstallToLinuxShare(string pem)
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
 
         var destination = $"{KeyVaultEmulatorCertConstants.LinuxPath}/{KeyVaultEmulatorCertConstants.Crt}";
 
-        await File.WriteAllTextAsync(destination, pem);
+        File.WriteAllText(destination, pem);
     }
 
     private static void PromptMacUser(string pfxPath)
