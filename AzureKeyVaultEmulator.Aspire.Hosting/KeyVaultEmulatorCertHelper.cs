@@ -106,7 +106,7 @@ internal static class KeyVaultEmulatorCertHelper
             var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
 
             if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
-                throw new KeyVaultEmulatorException("PEM/CRT is required for a Linux host machine but was missing.");
+                throw new KeyVaultEmulatorException("CRT is required for a Linux host machine but was missing at path: {pfxPath}.");
 
             return (pfx, pem);
 #elif NET8_0
