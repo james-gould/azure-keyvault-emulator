@@ -4,6 +4,7 @@ using System.Text;
 using System.Diagnostics;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
+using System.Net;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
@@ -135,12 +136,16 @@ internal static class KeyVaultEmulatorCertHelper
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
         ArgumentException.ThrowIfNullOrEmpty(pemPath);
 
-        var subject = KeyVaultEmulatorCertConstants.Subject;
-        var ecdsa = ECDsa.Create();
+        var subject = new X500DistinguishedName($"CN={KeyVaultEmulatorCertConstants.Subject}");
+        using var rsa = RSA.Create();
 
-        var request = new CertificateRequest(subject, ecdsa, HashAlgorithmName.SHA256);
+        var request = new CertificateRequest(subject, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+
+        var san = BuildSubjectAlternativeNames();
+
         request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
         request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+        request.CertificateExtensions.Add(san);
 
         var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
 
@@ -152,6 +157,16 @@ internal static class KeyVaultEmulatorCertHelper
         File.WriteAllText(pemPath, pem);
 
         return (cert, pem);
+    }
+
+    private static X509Extension BuildSubjectAlternativeNames()
+    {
+        var builder = new SubjectAlternativeNameBuilder();
+
+        builder.AddDnsName("localhost");
+        builder.AddIpAddress(IPAddress.Parse("127.0.0.1"));
+
+        return builder.Build();
     }
 
     /// <summary>
