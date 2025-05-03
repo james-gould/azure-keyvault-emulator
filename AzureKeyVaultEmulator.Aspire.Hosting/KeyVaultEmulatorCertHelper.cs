@@ -49,9 +49,7 @@ internal static class KeyVaultEmulatorCertHelper
 
         var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
 
-        var certDirExists = Directory.Exists(certPath);
-
-        if(!certDirExists)
+        if(!Directory.Exists(certPath))
             Directory.CreateDirectory(certPath);
 
         var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
@@ -204,10 +202,7 @@ internal static class KeyVaultEmulatorCertHelper
         }
         catch (Exception)
         {
-            throw new KeyVaultEmulatorException(@"
-                Failed to insert SSL certificates into local Trust Store.
-                If this is your first time using the Emulator, or have enabled ForceCleanupOnShutdown, you need to run as Administrator for this process.
-            ");
+            throw new KeyVaultEmulatorException("Failed to insert SSL certificates into local Trust Store. If this is your first time using the Emulator, or have enabled ForceCleanupOnShutdown, you need to run as Administrator for this process.");
         }
     }
 
@@ -219,7 +214,7 @@ internal static class KeyVaultEmulatorCertHelper
     {
         ArgumentNullException.ThrowIfNull(cert);
 
-        using var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+        using var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
 
         store.Open(OpenFlags.ReadWrite);
         store.Add(cert);
