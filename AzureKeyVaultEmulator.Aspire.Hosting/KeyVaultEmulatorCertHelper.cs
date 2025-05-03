@@ -13,7 +13,7 @@ internal static class KeyVaultEmulatorCertHelper
     /// <para>Gets the path where the certificates are stored on the host machine.</para>
     /// <para>This is then used with the -v arg in Docker to mount the directory as a volume.</para>
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The parent directory containing the certificates.</returns>
     internal static string GetConfigurableCertStoragePath(string? baseDir = null)
     {
         if (!string.IsNullOrEmpty(baseDir))
@@ -38,6 +38,8 @@ internal static class KeyVaultEmulatorCertHelper
     /// <summary>
     /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
     /// </summary>
+    /// <param name="options">The granular options for configuring the Azure Key Vault Emulator.</param>
+    /// <returns>The base directory containing certificates.</returns>
     internal static string ValidateOrGenerateCertificate(KeyVaultEmulatorOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -64,7 +66,8 @@ internal static class KeyVaultEmulatorCertHelper
         if (pfxExists && crtExists)
             return certPath;
 
-        // One has been deleted, try to remove them both and regenerate
+        // One has been deleted, try to remove them both and regenerate.
+        // Only if users allow us to conduct IO on the certificates for the Emulator.
         if((crtExists && !pfxExists) || (pfxExists && !crtExists) && options.ShouldGenerateCertificates)
             TryRemovePreviousCerts(pfxPath, crtPath);
 
@@ -73,11 +76,18 @@ internal static class KeyVaultEmulatorCertHelper
                             ? GenerateAndSaveCert(pfxPath, crtPath)
                             : LoadExistingCertificatesToStore(pfxPath, crtPath);
 
-        TryWriteToStore(pfx, pfxPath, cert);
+        TryWriteToStore(options, pfx, pfxPath, cert);
 
         return certPath;
     }
 
+    /// <summary>
+    /// Attempts to load existing certificates to the host trust store.
+    /// </summary>
+    /// <param name="pfxPath">The path to the PFX.</param>
+    /// <param name="pemPath">The path to the PEM.</param>
+    /// <returns>A full <see cref="X509Certificate2"/> and associated PEM from the RawData.</returns>
+    /// <exception cref="KeyVaultEmulatorException"></exception>
     private static (X509Certificate2 pfx, string pem) LoadExistingCertificatesToStore(
         string pfxPath,
         string? pemPath = null)
@@ -116,6 +126,12 @@ internal static class KeyVaultEmulatorCertHelper
         }
     }
 
+    /// <summary>
+    /// Creates and writes to disk a PFX and associated PEM, to then be mounted into the Azure Key Vault Emulator.
+    /// </summary>
+    /// <param name="pfxPath">The path to write the PFX to.</param>
+    /// <param name="pemPath">The path to write the PEM to.</param>
+    /// <returns>A complete <see cref="X509Certificate2"/> and associated PEM from the RawData.</returns>
     private static (X509Certificate2 pfx, string pem) GenerateAndSaveCert(string pfxPath, string pemPath)
     {
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
@@ -140,6 +156,11 @@ internal static class KeyVaultEmulatorCertHelper
         return (cert, pem);
     }
 
+    /// <summary>
+    /// Given a PFX, export the RawData.
+    /// </summary>
+    /// <param name="cert">The PFX to export from.</param>
+    /// <returns>The raw data from the PFX, formatted as a PEM certificate.</returns>
     private static string ExportToPem(X509Certificate2 cert)
     {
         var builder = new StringBuilder();
@@ -151,8 +172,25 @@ internal static class KeyVaultEmulatorCertHelper
         return builder.ToString();
     }
 
-    private static void TryWriteToStore(X509Certificate2 pfx, string pfxPath, string pem)
+    /// <summary>
+    /// Will attempt to install the SSL certificates into the trust store, if permitted.
+    /// </summary>
+    /// <param name="options">The granular options used to disable attempted writes.</param>
+    /// <param name="pfx">The <see cref="X509Certificate2"/> with password to use for secure connections.</param>
+    /// <param name="pfxPath">The path to <paramref name="pfx"/></param>
+    /// <param name="pem">The raw data or loaded PEM from <paramref name="pfx"/></param>
+    /// <exception cref="KeyVaultEmulatorException"></exception>
+    private static void TryWriteToStore(
+        KeyVaultEmulatorOptions options,
+        X509Certificate2 pfx,
+        string pfxPath,
+        string pem)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (!options.LoadCertificatesIntoTrustStore)
+            return;
+
         try
         {
             if (OperatingSystem.IsWindows())
@@ -173,6 +211,10 @@ internal static class KeyVaultEmulatorCertHelper
         }
     }
 
+    /// <summary>
+    /// Installs the <paramref name="cert"/> to the Windows TrustStore.
+    /// </summary>
+    /// <param name="cert">The <see cref="X509Certificate2"/> to install.</param>
     private static void InstallToWindowsTrustStore(X509Certificate2 cert)
     {
         ArgumentNullException.ThrowIfNull(cert);
@@ -183,6 +225,10 @@ internal static class KeyVaultEmulatorCertHelper
         store.Add(cert);
     }
 
+    /// <summary>
+    /// Installs the PEM to the Linux /usr/ area as a trusted root CA.
+    /// </summary>
+    /// <param name="pem">The CRT/PEM to install.</param>
     private static void InstallToLinuxShare(string pem)
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
@@ -192,6 +238,11 @@ internal static class KeyVaultEmulatorCertHelper
         File.WriteAllText(destination, pem);
     }
 
+    /// <summary>
+    /// <para>Prompts a MacOS user to run a specific command, with <paramref name="pfxPath"/>, to install the certificates.</para>
+    /// <para>We are unable to perform this from .NET, the user must do this manually via Terminal.</para>
+    /// </summary>
+    /// <param name="pfxPath">The path to the PFX to install.</param>
     private static void PromptMacUser(string pfxPath)
     {
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
@@ -200,17 +251,22 @@ internal static class KeyVaultEmulatorCertHelper
         Debug.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");
     }
 
-    private static void TryRemovePreviousCerts(string pfx, string crt)
+    /// <summary>
+    /// Attempts to remove lingering certificates if they need to be regenerated.
+    /// </summary>
+    /// <param name="pfx">Potential PFX to remove.</param>
+    /// <param name="pem">Potential PEM to remove.</param>
+    private static void TryRemovePreviousCerts(string pfx, string pem)
     {
-        if (File.Exists(pfx))
+        if (!string.IsNullOrEmpty(pfx) && File.Exists(pfx))
         {
             File.Delete(pfx);
             Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
 
-        if (File.Exists(crt))
+        if (!string.IsNullOrEmpty(pem) && File.Exists(pem))
         {
-            File.Delete(crt);
+            File.Delete(pem);
             Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
     }

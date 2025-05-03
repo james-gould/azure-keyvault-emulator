@@ -12,10 +12,17 @@ public sealed class KeyVaultEmulatorOptions
     public string LocalCertificatePath { get; set; } = string.Empty;
 
     /// <summary>
+    /// <para>Determines if the Emulator should attempt to load the certificates into the host machine's trust store.</para>
+    /// <para>Warning: this requires Administration rights.</para>
+    /// <para>Unused if the certificates are already present, removing the administration priviledge requirement.</para>
+    /// </summary>
+    public bool LoadCertificatesIntoTrustStore { get; set; } = true;
+
+    /// <summary>
     /// <para>Disables the Azure Key Vault Emulator creating a self signed SSL certificate for you at runtime.</para>
     /// <para>
-    /// Using this option will require you to provide a certificate in PFX and CRT format within the same directory.
-    /// The directory must be set via <see cref="LocalCertificatePath"/> and contain both files.
+    /// Using this option will require you to provide a certificate in PFX (and optionally a CRT) format within the same directory.
+    /// The directory must also be set via <see cref="LocalCertificatePath"/>.
     /// </para>
     /// <para>The PFX password MUST be "emulator" - all lowercase without the double quotes. This limitation is being looked into.</para>
     /// </summary>
@@ -32,5 +39,9 @@ public sealed class KeyVaultEmulatorOptions
     /// Used to internally validate the configuration of the emulator before performing any IO.
     /// </summary>
     internal bool IsValidCustomisable
-        => ShouldGenerateCertificates ? ShouldGenerateCertificates : !string.IsNullOrEmpty(LocalCertificatePath);
+        => ShouldGenerateCertificates
+            // Validates that the Emulator can generate a self signed SSL certificate and load into the trust store.
+            ? (ShouldGenerateCertificates && LoadCertificatesIntoTrustStore)
+            // Validates the host machine has provided a local path containing preconfigured certificates
+            : !string.IsNullOrEmpty(LocalCertificatePath);
 }
