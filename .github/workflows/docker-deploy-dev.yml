@@ -51,7 +51,8 @@ jobs:
           docker push jamesgoulddev/azure-keyvault-emulator:dev-${VERSION}
 
   closed-without-merge:
+    runs-on: ubuntu-latest
     if: github.event.pull_request.merged == false
-    steps::
+    steps:
       - run: |
           echo PR #${{ github.event.number }} has been closed without merging.

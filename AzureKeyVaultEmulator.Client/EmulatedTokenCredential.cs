@@ -54,7 +54,7 @@ namespace AzureKeyVaultEmulator.Aspire.Client
 
                 response.EnsureSuccessStatusCode();
 
-                return await response.Content.ReadAsStringAsync();
+                return _token = await response.Content.ReadAsStringAsync();
             }
             catch
             {
