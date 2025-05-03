@@ -6,6 +6,11 @@
 public sealed class KeyVaultEmulatorOptions
 {
     /// <summary>
+    /// Sets the lifetime of the Azure Key Vault Emulator container on the host machine.
+    /// </summary>
+    public ContainerLifetime Lifetime { get; set; } = ContainerLifetime.Session;
+
+    /// <summary>
     /// <para>Specify the directory to be used as a mount for the Azure Key Vault Emulator.</para>
     /// <para>Warning: your container runtime must have read access to this directory.</para>
     /// </summary>

@@ -149,6 +149,10 @@ internal static class KeyVaultEmulatorCertHelper
 
         var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
 
+        if (OperatingSystem.IsWindows())
+            // Setting FriendlyName is only supported on Windows for some reason.
+            cert.FriendlyName = "Azure Key Vault Emulator";
+
         var pfxBytes = cert.Export(X509ContentType.Pfx, KeyVaultEmulatorCertConstants.Pword);
 
         var pem = ExportToPem(cert);
