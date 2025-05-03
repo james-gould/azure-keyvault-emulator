@@ -65,35 +65,47 @@ internal static class KeyVaultEmulatorCertHelper
             return certPath;
 
         // One has been deleted, try to remove them both and regenerate
-        if((crtExists && !pfxExists) || (pfxExists && !crtExists))
+        if((crtExists && !pfxExists) || (pfxExists && !crtExists) && options.ShouldGenerateCertificates)
             TryRemovePreviousCerts(pfxPath, crtPath);
 
         // Then create files and place at {path}
-        var (pfx, cert) = GenerateAndSaveCert(pfxPath, crtPath);
+        var (pfx, cert) = options.ShouldGenerateCertificates
+                            ? GenerateAndSaveCert(pfxPath, crtPath)
+                            : LoadExistingCertificatesToStore(pfxPath, crtPath);
 
         TryWriteToStore(pfx, pfxPath, cert);
 
         return certPath;
     }
 
-    private static (X509Certificate2 pfx, string pem) LoadExistingCertificatesToStore(string pfxPath)
+    private static (X509Certificate2 pfx, string pem) LoadExistingCertificatesToStore(
+        string pfxPath,
+        string? pemPath = null)
     {
         ArgumentNullException.ThrowIfNull(pfxPath);
 
         if (!File.Exists(pfxPath))
             throw new KeyVaultEmulatorException($"PFX not found at path: {pfxPath}");
 
+        var shouldWritePem = string.IsNullOrEmpty(pemPath) && !File.Exists(pemPath);
+
         try
         {
 
 #if NET9_0_OR_GREATER
             var pfx = X509CertificateLoader.LoadCertificateFromFile(pfxPath);
-            var pem = ExportToPem(pfx);
+            var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
+
+            if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
+                throw new KeyVaultEmulatorException("PEM/CRT is required for a Linux host machine but was missing.");
 
             return (pfx, pem);
 #elif NET8_0
             var pfx = new X509Certificate2(pfxPath, KeyVaultEmulatorCertConstants.Pword);
-            var pem = ExportToPem(pfx);
+            var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
+
+            if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
+                throw new KeyVaultEmulatorException("PEM/CRT is required for a Linux host machine but was missing.");
 
             return (pfx, pem);
 #endif
