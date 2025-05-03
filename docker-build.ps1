@@ -1,16 +1,23 @@
 # ./docker-build.ps1 run push
 
-param ($run, $push)
+param ($run, $push, $dev)
 
 start powershell -wait {./local-certs/makecert.ps1}
 
 $tagName = "jamesgoulddev/azure-keyvault-emulator"
 $version = "latest"
 
-write-host "Executing docker build with tag: $tagName"
+if($dev)
+{
+    $version = "dev-unstable"
+}
+
+write-host "Executing docker build with tag: $tagName and version: $version"
 
 try { docker build --tag ${tagName}:${version} . }
 catch { "Build failed" }
+
+exit
 
 if($run -and !$error)
 {

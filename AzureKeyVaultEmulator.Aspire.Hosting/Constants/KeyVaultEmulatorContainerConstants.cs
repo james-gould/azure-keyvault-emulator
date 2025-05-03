@@ -6,8 +6,13 @@
 
         public const string Registry = "docker.io";
         public const string Image = "jamesgoulddev/azure-keyvault-emulator";
-        public const string Tag = "latest";
         public const int Port = 4997;
+
+#if DEBUG
+        public const string Tag = "dev-unstable";
+#else
+        public const string Tag = "latest";
+#endif
     }
 
     internal partial class KeyVaultEmulatorContainerConstants
