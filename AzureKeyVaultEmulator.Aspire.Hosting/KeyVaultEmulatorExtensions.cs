@@ -16,15 +16,15 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// <param name="name">The name of the resource that will output as a connection string.</param>
         /// <param name="lifetime">Sets the <see cref="ContainerLifetime"/> of the Azure Key Vault Emulator container, allowing for desired destruction of secure data on shutdown.</param>
         /// <param name="options">Optional granular configuration of the Azure Key Vault Emulator.</param>
-        /// <param name="configSectionName">Optional configuration section name to create <see cref="KeyVaultEmulatorConfiguration"/>.</param>
+        /// <param name="configSectionName">Optional configuration section name to create <see cref="KeyVaultEmulatorOptions"/>.</param>
         /// <returns>The original <paramref name="builder"/> updated to run the emulated Azure Key Vault.</returns>
-        /// <exception cref="KeyVaultEmulatorException">When the <see cref="KeyVaultEmulatorConfiguration"/> is not valid.</exception>
+        /// <exception cref="KeyVaultEmulatorException">When the <see cref="KeyVaultEmulatorOptions"/> is not valid.</exception>
         /// <exception cref="ArgumentNullException">When required parameters are null or defaulted.</exception>
         public static IResourceBuilder<AzureKeyVaultResource> AddAzureKeyVaultEmulator(
             this IDistributedApplicationBuilder builder,
             [ResourceName] string name,
             ContainerLifetime lifetime = ContainerLifetime.Session,
-            KeyVaultEmulatorConfiguration? options = null,
+            KeyVaultEmulatorOptions? options = null,
             string? configSectionName = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -43,14 +43,14 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// <param name="builder">The builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
         /// <param name="lifetime">Configures the <see cref="ContainerLifetime"/> of the emulator container, defaulted as <see cref="ContainerLifetime.Session"/>.</param>
         /// <param name="options">Optional granular configuration of the Azure Key Vault Emulator.</param>
-        /// <param name="configSectionName">Optional configuration section name to create <see cref="KeyVaultEmulatorConfiguration"/>.</param>
+        /// <param name="configSectionName">Optional configuration section name to create <see cref="KeyVaultEmulatorOptions"/>.</param>
         /// <returns>The original <paramref name="builder"/> updated to run the emulated Azure Key Vault.</returns>
-        /// <exception cref="KeyVaultEmulatorException">When the <see cref="KeyVaultEmulatorConfiguration"/> is not valid.</exception>
+        /// <exception cref="KeyVaultEmulatorException">When the <see cref="KeyVaultEmulatorOptions"/> is not valid.</exception>
         /// <exception cref="ArgumentNullException">When required parameters are null or defaulted.</exception>
         public static IResourceBuilder<AzureKeyVaultResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
             ContainerLifetime lifetime = ContainerLifetime.Session,
-            KeyVaultEmulatorConfiguration? options = null,
+            KeyVaultEmulatorOptions? options = null,
             string? configSectionName = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -68,11 +68,11 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// <param name="lifetime">Configures the <see cref="ContainerLifetime"/> of the emulator container, defaulted as <see cref="ContainerLifetime.Session"/>.</param>
         /// <param name="options">Optional granular configuration of the Azure Key Vault Emulator.</param>
         /// <returns>The original <paramref name="builder"/> updated to run the emulated Azure Key Vault.</returns>
-        /// <exception cref="KeyVaultEmulatorException">When the <see cref="KeyVaultEmulatorConfiguration"/> is not valid.</exception>
+        /// <exception cref="KeyVaultEmulatorException">When the <see cref="KeyVaultEmulatorOptions"/> is not valid.</exception>
         /// <exception cref="ArgumentNullException">When required parameters are null or defaulted.</exception>
         private static IResourceBuilder<AzureKeyVaultResource> InnerAddEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            KeyVaultEmulatorConfiguration options,
+            KeyVaultEmulatorOptions options,
             ContainerLifetime lifetime = ContainerLifetime.Session)
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -82,7 +82,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                 return builder;
 
             if (!options.IsValidCustomisable)
-                throw new KeyVaultEmulatorException($"The configuration of {nameof(KeyVaultEmulatorConfiguration)} is not valid.");
+                throw new KeyVaultEmulatorException($"The configuration of {nameof(KeyVaultEmulatorOptions)} is not valid.");
 
             var hostCertificatePath = CreateOrGetLocalCertificates(options);
 
@@ -121,7 +121,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// </summary>
         /// <param name="options">The granular configuration of the Emulator.</param>
         /// <returns>The absolute path on the host machine, containing the required certificates to achieve valid, trusted SSL.</returns>
-        private static string CreateOrGetLocalCertificates(KeyVaultEmulatorConfiguration options)
+        private static string CreateOrGetLocalCertificates(KeyVaultEmulatorOptions options)
         {
             ArgumentNullException.ThrowIfNull(options);
 
@@ -131,14 +131,14 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         }
 
         /// <summary>
-        /// if <see cref="KeyVaultEmulatorConfiguration.ForceCleanupOnShutdown"/> toggled on, register an instance of <see cref="KeyVaultEmulatorLifecycleService"/>
+        /// if <see cref="KeyVaultEmulatorOptions.ForceCleanupOnShutdown"/> toggled on, register an instance of <see cref="KeyVaultEmulatorLifecycleService"/>
         /// </summary>
         /// <param name="builder">The builder being overridden.</param>
         /// <param name="options">The granular options for the Azure Key Vault Emulator.</param>
-        /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="CreateOrGetLocalCertificates(KeyVaultEmulatorConfiguration)"/></param>
+        /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="CreateOrGetLocalCertificates(KeyVaultEmulatorOptions)"/></param>
         private static void RegisterOptionalLifecycleHandler(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            KeyVaultEmulatorConfiguration options,
+            KeyVaultEmulatorOptions options,
             string hostMachineCertificatePath)
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -151,16 +151,16 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="KeyVaultEmulatorConfiguration"/> from either IConfiguration, direct instantsiation or defaults the values.
+        /// Creates an instance of <see cref="KeyVaultEmulatorOptions"/> from either IConfiguration, direct instantsiation or defaults the values.
         /// </summary>
         /// <param name="builder">The builder for the <see cref="AzureKeyVaultResource"/> resource.</param>
         /// <param name="options">Optional granular configuration of the Azure Key Vault Emulator.</param>
-        /// <param name="configSectionName">Optional configuration section name to create <see cref="KeyVaultEmulatorConfiguration"/>.</param>
+        /// <param name="configSectionName">Optional configuration section name to create <see cref="KeyVaultEmulatorOptions"/>.</param>
         /// <returns></returns>
-        private static KeyVaultEmulatorConfiguration GetOrCreateConfigurationOptions(
+        private static KeyVaultEmulatorOptions GetOrCreateConfigurationOptions(
             this IDistributedApplicationBuilder builder,
             string? configSectionName = null,
-            KeyVaultEmulatorConfiguration? options = null)
+            KeyVaultEmulatorOptions? options = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
 
@@ -170,7 +170,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             try
             {
                 if (!string.IsNullOrEmpty(configSectionName))
-                    options = builder.Configuration.GetSection(configSectionName).Get<KeyVaultEmulatorConfiguration>();
+                    options = builder.Configuration.GetSection(configSectionName).Get<KeyVaultEmulatorOptions>();
             }
             catch { }
 

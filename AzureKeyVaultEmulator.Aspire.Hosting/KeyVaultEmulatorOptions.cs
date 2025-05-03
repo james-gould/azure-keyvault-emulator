@@ -3,7 +3,7 @@
 /// <summary>
 /// Allows for granular configuration of the Azure Key Vault Emulator.
 /// </summary>
-public sealed class KeyVaultEmulatorConfiguration
+public sealed class KeyVaultEmulatorOptions
 {
     /// <summary>
     /// <para>Specify the directory to be used as a mount for the Azure Key Vault Emulator.</para>

@@ -38,7 +38,7 @@ internal static class KeyVaultEmulatorCertHelper
     /// <summary>
     /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
     /// </summary>
-    internal static string ValidateOrGenerateCertificate(KeyVaultEmulatorConfiguration options)
+    internal static string ValidateOrGenerateCertificate(KeyVaultEmulatorOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
