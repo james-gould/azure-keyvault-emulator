@@ -27,14 +27,13 @@ ENV ASPNETCORE_URLS=https://+:4997
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/emulator.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=emulator
 
-# Installs the crt to the trust store
-# Or fails and prevents the container from spinning up.
-RUN bash -c '[ -f /certs/emulator.crt ] && cp /certs/emulator.crt /usr/local/share/ca-certificates/emulator.crt && update-ca-certificates'
-
 # Copy published .NET application
 COPY --from=build /out ./
 
 # Expose 4997 so host can reach it
 EXPOSE 4997
 
-ENTRYPOINT ["dotnet", "AzureKeyVaultEmulator.dll"]
+# When the container starts we EXPECT a volume to map to certs/
+# and we then need to install the certificates into the container for trusted SSL.
+# If this fails the container kills, which is expected and good.
+ENTRYPOINT ["bash", "-c", "cp /certs/emulator.crt /usr/local/share/ca-certificates/emulator.crt && update-ca-certificates && exec dotnet AzureKeyVaultEmulator.dll"]

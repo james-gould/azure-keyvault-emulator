@@ -1,49 +1,43 @@
-# ./docker-build.ps1 run push
+param (
+    [switch]$run,
+    [switch]$push,
+    [switch]$dev
+)
 
-param ($run, $push, $dev)
-
-start powershell -wait {./local-certs/makecert.ps1}
+function ThrowIfFailed($message) {
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host $message
+        exit 1
+    }
+}
 
 $tagName = "jamesgoulddev/azure-keyvault-emulator"
-$version = "latest"
+$version = if ($dev) { "dev-unstable" } else { "latest" }
 
-if($dev)
-{
-    $version = "dev-unstable"
+Write-Host "Executing docker build with tag: $tagName and version: $version"
+
+docker build --tag "${tagName}:${version}" .
+ThrowIfFailed "Build failed. Exiting."
+
+Write-Host "Build succeeded."
+
+if ($run) {
+    Write-Host "Running docker container..."
+    docker run -p 80:8080 --name keyvault-emulator "${tagName}:${version}"
+    ThrowIfFailed "Container failed to start. Exiting."
 }
 
-write-host "Executing docker build with tag: $tagName and version: $version"
-
-try { docker build --tag ${tagName}:${version} . }
-catch { "Build failed" }
-
-exit
-
-if($run -and !$error)
-{
-    write-host "Running docker container, param run has value $run"
-
-    docker run -p 80:8080 --name keyvault-emulator ${tagName}
-}
-else 
-{
-    if($error)
-    {
-        write-host "Failed to build image, exiting script."
-        exit
+if ($push) {
+    if ($version -eq "latest") {
+        $confirmation = Read-Host "You are about to push the 'latest' tag. Continue? (y/N)"
+        if ($confirmation -notin @("y", "Y")) {
+            Write-Host "Push cancelled by user."
+            exit 0
+        }
     }
-    
-    write-host "Build complete, ready and available in your local container images."
+
+    Write-Host "Pushing image to Docker Hub..."
+    docker push "${tagName}:${version}"
+    ThrowIfFailed "Push failed. Check Docker login or repo permissions."
+    Write-Host "Push succeeded."
 }
-
-if ($push -and !$error) 
-{
-    write-host "Pushing to public docker registry: $tagName with version: $version"
-
-    $error.clear()
-    
-    try { docker push ${tagName}:${version} }
-    catch { "Push failed" }
-}
-
-if($error) { "You do not have permissions to push to the registry, or are not logged in!" }
