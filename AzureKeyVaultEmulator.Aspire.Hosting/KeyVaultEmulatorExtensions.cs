@@ -84,7 +84,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             if (!options.IsValidCustomisable)
                 throw new KeyVaultEmulatorException($"The configuration of {nameof(KeyVaultEmulatorConfiguration)} is not valid.");
 
-            var hostCertificatePath = GetLocalCertificatePath(options);
+            var hostCertificatePath = CreateOrGetLocalCertificates(options);
 
             ArgumentException.ThrowIfNullOrEmpty(hostCertificatePath);
 
@@ -121,12 +121,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// </summary>
         /// <param name="options">The granular configuration of the Emulator.</param>
         /// <returns>The absolute path on the host machine, containing the required certificates to achieve valid, trusted SSL.</returns>
-        private static string GetLocalCertificatePath(KeyVaultEmulatorConfiguration options)
+        private static string CreateOrGetLocalCertificates(KeyVaultEmulatorConfiguration options)
         {
             ArgumentNullException.ThrowIfNull(options);
 
             return options.ShouldGenerateCertificates
-                    ? KeyVaultEmulatorCertHelper.GetConfigurableCertStoragePath(options.LocalCertificatePath)
+                    ? KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options)
                     : options.LocalCertificatePath;
         }
 
@@ -135,7 +135,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// </summary>
         /// <param name="builder">The builder being overridden.</param>
         /// <param name="options">The granular options for the Azure Key Vault Emulator.</param>
-        /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="GetLocalCertificatePath(KeyVaultEmulatorConfiguration)"/></param>
+        /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="CreateOrGetLocalCertificates(KeyVaultEmulatorConfiguration)"/></param>
         private static void RegisterOptionalLifecycleHandler(
             this IResourceBuilder<AzureKeyVaultResource> builder,
             KeyVaultEmulatorConfiguration options,

@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Diagnostics;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
+using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
@@ -37,9 +38,14 @@ internal static class KeyVaultEmulatorCertHelper
     /// <summary>
     /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
     /// </summary>
-    internal static string ValidateOrGenerateCertificate(string? certPath = null)
+    internal static string ValidateOrGenerateCertificate(KeyVaultEmulatorConfiguration options)
     {
-        certPath = GetConfigurableCertStoragePath(certPath);
+        ArgumentNullException.ThrowIfNull(options);
+
+        if(!options.ShouldGenerateCertificates)
+            return options.LocalCertificatePath;
+
+        var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
 
         var exists = Directory.Exists(certPath);
 
@@ -68,6 +74,34 @@ internal static class KeyVaultEmulatorCertHelper
         TryWriteToStore(pfx, pfxPath, cert);
 
         return certPath;
+    }
+
+    private static (X509Certificate2 pfx, string pem) LoadExistingCertificatesToStore(string pfxPath)
+    {
+        ArgumentNullException.ThrowIfNull(pfxPath);
+
+        if (!File.Exists(pfxPath))
+            throw new KeyVaultEmulatorException($"PFX not found at path: {pfxPath}");
+
+        try
+        {
+
+#if NET9_0_OR_GREATER
+            var pfx = X509CertificateLoader.LoadCertificateFromFile(pfxPath);
+            var pem = ExportToPem(pfx);
+
+            return (pfx, pem);
+#elif NET8_0
+            var pfx = new X509Certificate2(pfxPath, KeyVaultEmulatorCertConstants.Pword);
+            var pem = ExportToPem(pfx);
+
+            return (pfx, pem);
+#endif
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 
     private static (X509Certificate2 pfx, string pem) GenerateAndSaveCert(string pfxPath, string pemPath)
@@ -107,14 +141,24 @@ internal static class KeyVaultEmulatorCertHelper
 
     private static void TryWriteToStore(X509Certificate2 pfx, string pfxPath, string pem)
     {
-        if(OperatingSystem.IsWindows())
+        try
+        {
+            if (OperatingSystem.IsWindows())
                 InstallToWindowsTrustStore(pfx);
 
-        else if(OperatingSystem.IsLinux())
-            InstallToLinuxShare(pem);
+            else if (OperatingSystem.IsLinux())
+                InstallToLinuxShare(pem);
 
-        else if (OperatingSystem.IsMacOS())
-            PromptMacUser(pfxPath);
+            else if (OperatingSystem.IsMacOS())
+                PromptMacUser(pfxPath);
+        }
+        catch (Exception)
+        {
+            throw new KeyVaultEmulatorException(@"
+                Failed to insert SSL certificates into local Trust Store.
+                If this is your first time using the Emulator, or have enabled ForceCleanupOnShutdown, you need to run as Administrator for this process.
+            ");
+        }
     }
 
     private static void InstallToWindowsTrustStore(X509Certificate2 cert)
