@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using AzureKeyVaultEmulator.Shared.Exceptions;
 
 namespace AzureKeyVaultEmulator.Shared.Utilities;
 
@@ -18,7 +19,7 @@ public static class DictionaryUtils
         var exists = dict.TryGetValue(name, out T? value);
 
         if (!exists || value is null)
-            throw new ArgumentException($"Could not find {name} in vault.");
+            throw new MissingItemException($"Could not find {name} in vault.");
 
         return value;
     }
