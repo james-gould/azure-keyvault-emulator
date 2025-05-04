@@ -9,11 +9,14 @@ public partial class Assert
     /// </summary>
     /// <typeparam name="TResult">The response object for <paramref name="clientAction"/></typeparam>
     /// <param name="clientAction">The client func to execute expecting a failure.</param>
-    public static async Task RequestFailsAsync<TResult>(Func<Task<TResult>> clientAction)
+    /// <param name="expectedStatusCode">Denotes the expected status code for the request, typically NotFound.</param>
+    public static async Task RequestFailsAsync<TResult>(
+        Func<Task<TResult>> clientAction,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.NotFound)
         where TResult : class
     {
         var exception = await ThrowsAsync<RequestFailedException>(clientAction);
 
-        Equal((int)HttpStatusCode.BadRequest, exception?.Status);
+        Equal((int)expectedStatusCode, exception?.Status);
     }
 }

@@ -28,7 +28,9 @@ namespace AzureKeyVaultEmulator.Middleware
                     Message = e.Message
                 };
 
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                var status = e is MissingItemException ? HttpStatusCode.NotFound : HttpStatusCode.BadRequest;
+
+                context.Response.StatusCode = (int)status;
                 await context.Response.WriteAsJsonAsync(errorResponse);
 
                 return;

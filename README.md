@@ -12,17 +12,18 @@ You can find a [sample application here](https://github.com/james-gould/azure-ke
 
 ## Prerequisites
 
-- [Docker](https://www.docker.com/)
+- If you're running the Emulator for the first time [you need to prepare your environment once.](https://github.com/james-gould/azure-keyvault-emulator/blob/development/CONFIG.md)
+- [Docker](https://www.docker.com/) or [Podman](https://podman.io/) installed on your machine.
 
-## Quickstart (.NET Aspire)
+## Quickstart with .NET Aspire
 
-1. Install the [Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
+### 1. Install the [AzureKeyVaultEmulator.Aspire.Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
 
 ```
 dotnet add package AzureKeyVaultEmulator.Aspire.Hosting
 ```
 
-2. Next you can either override an existing Aspire `AzureKeyVaultResource` or directly include the `AzureKeyVaultEmulator`. 
+### 2. Next you can either override an existing Aspire `AzureKeyVaultResource` or directly include the `AzureKeyVaultEmulator`. 
 
 ```csharp
 var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
@@ -40,13 +41,15 @@ var webApi = builder
     .WithReference(keyVault); // reference as normal
 ```
 
-3. Optionally install the [Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package into your application using Azure Key Vault:
+### 3. Next you need to allow requests to the Emulator using the Azure SDK. 
+
+This can be done easily by installing the [AzureKeyVaultEmulator.Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package:
 
 ```
 dotnet add package AzureKeyVaultEmulator.Client
 ```
 
-4. Get the connection string that `.NET Aspire` has injected for you and dependency inject the `AzureClients` you need:
+And then inject your clients:
 
 ```csharp
 // Injected by Aspire using the name "keyvault".
@@ -59,10 +62,24 @@ builder.Services.AddAzureKeyVaultEmulator(vaultUri);
 builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, certificates: false);
 ```
 
-> [!NOTE]
-> The `AzureKeyVaultEmulator.Client` library is not required for the emulator, it simply creates the requested Azure clients  with `DisableChallengeResourceVerification = true`. You can easily skip this dependency by disabling that setting yourself, [or by copying and tweaking this code into your application](https://github.com/james-gould/azure-keyvault-emulator/blob/development/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51).
+Or if don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`. 
 
-5. Now you can use your `AzureClients` as normal dependency injected services:
+Setting up a `SecretClient` for example:
+
+```cs
+// Injected by Aspire using the name "keyvault".
+var vaultUri = builder.Configuration.GetConnectionString("keyvault") ?? string.Empty;
+
+// Allows "localhost" to be used instead of "<vault-name>.vault.azure.net" as the vaultUri
+var options = new SecretClientOptions { DisableChallengeResourceVerification = true };
+
+// Inject a SecretClient into your DI container which doesn't validate the VaultUri
+builder.Services.AddTransient(s => new SecretClient(new Uri(vaultUri), new DefaultAzureCredential(), options));
+```
+
+[You can use this code from the client library](https://github.com/james-gould/azure-keyvault-emulator/blob/development/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) placing `EmulatedCredential` with `DefaultAzureCredential`.
+
+### 4. Now you can use your `AzureClients` as normal dependency injected services:
 
 ```csharp
 private SecretClient _secretClient;
@@ -103,7 +120,7 @@ else
 > [!NOTE]
 > There's a [pending PR](https://github.com/dotnet/aspire/pull/8408) to add support for the `KeyClient` and `CertificateClient` into the new `Aspire.Azure.Security.Client` package. Support for these 2 clients is expected in `.NET Aspire 9.3`.
 
-While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/DOCKER-SETUP.md):
+While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/certificateutilities/README.md):
 
 ```
 docker pull jamesgoulddev/azure-keyvault-emulator:latest
