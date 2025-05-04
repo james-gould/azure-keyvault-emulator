@@ -15,6 +15,7 @@
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <PackageTags>.net aspire, aspire, aspire.host, aspire.hosting</PackageTags>
     <IsPackable>true</IsPackable>
+    <UserSecretsId>c0273fdf-91dd-4646-856a-0f7cbcd39d13</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.2.1" />
