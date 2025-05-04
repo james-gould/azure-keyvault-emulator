@@ -92,6 +92,9 @@ sftp/
 newrelic/
 .idea/
 
+*.crt
+*.pfx
+
 # Fake GraphQL directives #
 ###########################
 _not-imported-dev.graphql
