@@ -23,7 +23,7 @@ You can find a [sample application here](https://github.com/james-gould/azure-ke
 dotnet add package AzureKeyVaultEmulator.Aspire.Hosting
 ```
 
-### 3. Override an existing Aspire resource or directly include the `AzureKeyVaultEmulator`: 
+### 2. Override an existing Aspire resource or directly include the `AzureKeyVaultEmulator`: 
 
 ```csharp
 var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
