@@ -6,4 +6,4 @@ write-host "Created emulator.crt with password emulator"
 
 dotnet dev-certs https -ep local-certs/emulator.pfx -p emulator -q
 
-write-host "Created emulator.pfx with password emulator"
+write-host "Created emulator.pfx with password emulator. You must now install these certificates locally as a Trusted Root CA Authority."
