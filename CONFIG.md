@@ -5,7 +5,7 @@
 
 The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your local machine - this is unavoidable but easy to solve.
 
-Due to this being a security requirement you may have access constraints on your machine; **this documentation is brief** but to make it easy to navigate use the table of contents below to navigate it a bit easier:
+**This documentation is brief** but to make it easy to navigate use the table of contents below to navigate it a bit easier:
 
 ## Table of contents
 
