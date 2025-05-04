@@ -23,7 +23,7 @@ You can find a [sample application here](https://github.com/james-gould/azure-ke
 dotnet add package AzureKeyVaultEmulator.Aspire.Hosting
 ```
 
-### 2. Either override an existing Aspire resource or directly add the Emulator:
+### 2. Next you can either override an existing Aspire `AzureKeyVaultResource` or directly include the `AzureKeyVaultEmulator`. 
 
 ```csharp
 var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
@@ -41,7 +41,7 @@ var webApi = builder
     .WithReference(keyVault); // reference as normal
 ```
 
-### 3. Permit requests to the Emulator using the Azure SDK:
+### 3. Next you need to allow requests to the Emulator using the Azure SDK. 
 
 This can be done easily by installing the [AzureKeyVaultEmulator.Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package:
 
@@ -77,9 +77,9 @@ var options = new SecretClientOptions { DisableChallengeResourceVerification = t
 builder.Services.AddTransient(s => new SecretClient(new Uri(vaultUri), new DefaultAzureCredential(), options));
 ```
 
-[You can use this code from the client library](https://github.com/james-gould/azure-keyvault-emulator/blob/development/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) replacing `EmulatedCredential` with `DefaultAzureCredential`.
+[You can use this code from the client library](https://github.com/james-gould/azure-keyvault-emulator/blob/development/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) placing `EmulatedCredential` with `DefaultAzureCredential`.
 
-### 4. Use your `AzureClients` as normal dependency injected services:
+### 4. Now you can use your `AzureClients` as normal dependency injected services:
 
 ```csharp
 private SecretClient _secretClient;
