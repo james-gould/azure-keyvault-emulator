@@ -41,7 +41,7 @@ var webApi = builder
     .WithReference(keyVault); // reference as normal
 ```
 
-### 3. Next you need to allow requests to the Emulator using the Azure SDK:
+### 3. Permit requests to the Emulator using the Azure SDK:
 
 This can be done easily by installing the [AzureKeyVaultEmulator.Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package:
 
