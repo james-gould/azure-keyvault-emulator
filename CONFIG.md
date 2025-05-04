@@ -97,7 +97,7 @@ If you run into SSL Connection issues, ie `UntrustedRoot`, your configuration is
 
 You do not need to use `.NET Aspire` to run the emulator, but you will have to generate the certificates yourself.
 
-- First read and finish the [certificate generation instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/certificateutilities/README.md) to prepare the certificates (3 minutes).
+- First follow the [certificate generation instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/CertificateUtilities/README.md) to prepare the certificates (3 minutes).
 - Follow the *Installing Certificates* section below to insert them into your host machine's Root Trust Store.
 - Place the generated files, `emulator.pfx` and `emulator.crt` into a directory that is unlikely to be accidentally deleted. 
     - Your local user directory is recommended, on Windows this would be `C:/Users/Name/keyvaultemulator/certs`.
