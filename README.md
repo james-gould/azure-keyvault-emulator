@@ -77,7 +77,7 @@ var options = new SecretClientOptions { DisableChallengeResourceVerification = t
 builder.Services.AddTransient(s => new SecretClient(new Uri(vaultUri), new DefaultAzureCredential(), options));
 ```
 
-[You can use this code from the client library](https://github.com/james-gould/azure-keyvault-emulator/blob/development/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) placing `EmulatedCredential` with `DefaultAzureCredential`.
+[You can use this code from the client library](https://github.com/james-gould/azure-keyvault-emulator/blob/development/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) replacing `EmulatedCredential` with `DefaultAzureCredential`.
 
 ### 4. Use your `AzureClients` as normal dependency injected services:
 
