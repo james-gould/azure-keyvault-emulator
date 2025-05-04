@@ -1,4 +1,4 @@
-﻿using Aspire.Hosting.Azure;
+using Aspire.Hosting.Azure;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using Microsoft.Extensions.Configuration;
