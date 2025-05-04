@@ -37,7 +37,7 @@ If you don't want to configure the container you're finished 🎉! Everything wi
 The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hosting` library behaves:
 
 - `LocalCertificatePath (string)`: Instructs the local path of the SSL certificates. Defaults to `""`.
-    - If unset/null your local user directory will be used, ie on Windows this is `C:/Users/Name/` with the certificates placed in `keyvaultemulator/certs` for the full path of `C:/Users/Name/keyvaultemulator/certs`.
+    - If unset/null your local user directory will be used, ie on Windows `C:/Users/Name/keyvaultemulator/certs`.
 - `ShouldGenerateCertificates (bool)`: Attempt to create the SSL certificates. Defaults to `true`.
 - `LoadCertificatesIntoTrustStore (bool)`: Attempt installation of the certificates, requires admin rights. Defaults to `true`.
 - `ForceCleanupOnShutdown (bool)`: Attempt to delete SSL certificates at `LocalCertificatePath` on shutdown. This is unstable and shouldn't be relied upon. Defaults to `false`.
@@ -100,7 +100,7 @@ You do not need to use `.NET Aspire` to run the emulator, but you will have to g
 - First read and finish the [certificate generation instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/certificateutilities/README.md) to prepare the certificates (3 minutes).
 - Follow the *Installing Certificates* section below to insert them into your host machine's Root Trust Store.
 - Place the generated files, `emulator.pfx` and `emulator.crt` into a directory that is unlikely to be accidentally deleted. 
-    - Your local user directory is recommended, on Windows this would be `C:/User/Name`, with the certs placed in `keyvaultemulator/certs` for the full path of `C:/Users/Name/keyvaultemulator/certs`.
+    - Your local user directory is recommended, on Windows this would be `C:/Users/Name/keyvaultemulator/certs`.
 - Mount that directory as a `volume` to `certs/` when you start the container so the certificates can be installed into the API.
     - For Docker this would be using the `-v C:/Users/Name/keyvaultemulator/certs:certs/:ro`.
 
