@@ -77,7 +77,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             if (!options.IsValidCustomisable)
                 throw new KeyVaultEmulatorException($"The configuration of {nameof(KeyVaultEmulatorOptions)} is not valid.");
 
-            var hostCertificatePath = CreateOrGetLocalCertificates(options);
+            var hostCertificatePath = GetOrCreateLocalCertificates(options);
 
             ArgumentException.ThrowIfNullOrEmpty(hostCertificatePath);
 
@@ -114,13 +114,16 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// </summary>
         /// <param name="options">The granular configuration of the Emulator.</param>
         /// <returns>The absolute path on the host machine, containing the required certificates to achieve valid, trusted SSL.</returns>
-        private static string CreateOrGetLocalCertificates(KeyVaultEmulatorOptions options)
+        private static string GetOrCreateLocalCertificates(KeyVaultEmulatorOptions options)
         {
             ArgumentNullException.ThrowIfNull(options);
 
-            return options.ShouldGenerateCertificates
-                    ? KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options)
-                    : options.LocalCertificatePath;
+            var certs = KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options);
+
+            if (options.LoadCertificatesIntoTrustStore)
+                KeyVaultEmulatorCertHelper.TryWriteToStore(options, certs.Pfx, certs.LocalCertificatePath, certs.pem);
+
+            return certs.LocalCertificatePath;
         }
 
         /// <summary>
@@ -128,7 +131,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// </summary>
         /// <param name="builder">The builder being overridden.</param>
         /// <param name="options">The granular options for the Azure Key Vault Emulator.</param>
-        /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="CreateOrGetLocalCertificates(KeyVaultEmulatorOptions)"/></param>
+        /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="GetOrCreateLocalCertificates(KeyVaultEmulatorOptions)"/></param>
         private static void RegisterOptionalLifecycleHandler(
             this IResourceBuilder<AzureKeyVaultResource> builder,
             KeyVaultEmulatorOptions options,
