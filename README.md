@@ -1,6 +1,6 @@
 # Azure Key Vault Emulator
 
-<p align="center"><img src="docs/assets/hero.png" height="50%" width="100%"></p>
+<p align="center"><img src="docs/assets/hero.png" height="25%" width="100%"></p>
 
 A fully featured, emulated version of the [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) runnable from your development machine.
 
