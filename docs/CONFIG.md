@@ -22,15 +22,15 @@ To make this as frictionless as possible the `AzureKeyVaultEmulator.Aspire.Hosti
 
 After initial launch and installation the `Hosting` library will detect the certificates on your machine and not attempt to generate or install them again.
 
-If you're unable to run your IDE (or a terminal) as `Administrator` you will need to use the [manual SSL instructions.](#local-docker)
-
 ### Automatic SSL
 
-To generate and install the certificates automatically simply run your IDE as `Administrator`; this is required due to Root Trust Store installation needing elevated priviledges. If you're using the `dotnet` CLI you will need to be running your terminal as `Administrator`.
+The Azure SDK requires SSL which the `Hosting` library will handle for you. On your first run of the Emulator you'll be prompted to install a `localhost` certificate, click `Yes` on the prompt. The certificates will be installed to your local user trusted authority store, not root, if you wish to remove them at any point. After the initial run you won't be prompted to install the certificate again. 
 
-Once the initial run has been done without errors, you **no longer** need to run your application (or IDE) as `Administrator`. 
+<p align="center">
+    <img src="assets/LocalhostPrompt.png">
+</p>
 
-If you don't want to configure the container you're finished 🎉! Everything will work as intended and you never need to read these docs again, feel free to restart your IDE/terminal without `Administrator` and use the Emulator to your heart's content.
+If you don't want to configure the container there's nothing left to read, enjoy the Emulator! 🎉
 
 ### Aspire Config
 
@@ -97,7 +97,7 @@ If you run into SSL Connection issues, ie `UntrustedRoot`, your configuration is
 
 You do not need to use `.NET Aspire` to run the emulator, but you will have to generate the certificates yourself.
 
-- First follow the [certificate generation instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/CertificateUtilities/README.md) to prepare the certificates (3 minutes).
+- First follow the [certificate generation instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CertificateUtilities/README.md) to prepare the certificates (3 minutes).
 - Follow the *Installing Certificates* section below to insert them into your host machine's Root Trust Store.
 - Place the generated files, `emulator.pfx` and `emulator.crt` into a directory that is unlikely to be accidentally deleted. 
     - Your local user directory is recommended, on Windows this would be `C:/Users/Name/keyvaultemulator/certs`.

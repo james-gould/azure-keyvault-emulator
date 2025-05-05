@@ -12,8 +12,8 @@ You can find a [sample application here](https://github.com/james-gould/azure-ke
 
 ## Prerequisites
 
-- If you're running the Emulator for the first time [you need to prepare your environment once.](https://github.com/james-gould/azure-keyvault-emulator/blob/development/CONFIG.md)
-- [Docker](https://www.docker.com/) or [Podman](https://podman.io/) installed on your machine.
+- If you're running the Emulator for the first time you will be prompted to install a `localhost` certificate to support the Emulator SSL. [Want to learn more or provide your own certificates?](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CONFIG.md)
+- You'll need either [Docker](https://www.docker.com/) or [Podman](https://podman.io/) installed on your machine.
 
 ## Quickstart with .NET Aspire
 
@@ -120,7 +120,7 @@ else
 > [!NOTE]
 > There's a [pending PR](https://github.com/dotnet/aspire/pull/8408) to add support for the `KeyClient` and `CertificateClient` into the new `Aspire.Azure.Security.Client` package. Support for these 2 clients is expected in `.NET Aspire 9.3`.
 
-While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/certificateutilities/README.md):
+While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CertificateUtilities/README.md):
 
 ```
 docker pull jamesgoulddev/azure-keyvault-emulator:latest

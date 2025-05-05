@@ -18,8 +18,8 @@ For obvious reasons one or both of these conditions may be unacceptable for you,
 
 If you have `.NET` installed you will have access to the CLI command `dotnet dev-certs` which creates valid, `localhost` SSL certificates. 
 
-- Windows: [dotnet/create-certs.ps1](https://github.com/james-gould/azure-keyvault-emulator/blob/development/dotnet/create-certs.ps1)
-- Linux/Mac: [dotnet/create-certs.sh](https://github.com/james-gould/azure-keyvault-emulator/blob/development/otnet/create-certs.sh)
+- Windows: [dotnet/create-certs.ps1](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CertificateUtilitiesdotnet/create-certs.ps1)
+- Linux/Mac: [dotnet/create-certs.sh](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CertificateUtilities/dotnet/create-certs.sh)
 
 If you don't want to run the script, and would rather execute the commands yourself, simply copy the (very brief) commands from the files into your local terminal.
 
@@ -38,7 +38,7 @@ If you're on Linux/MacOS and `openssl` isn't available simply run:
 
 `sudo apt-get install libssl-dev`.
 
-With `openssl` available on your command line, create `emulator.crt` you can now run [openssl/create-certs.sh](https://github.com/james-gould/azure-keyvault-emulator/blob/development/openssl/create-certs.sh).
+With `openssl` available on your command line, create `emulator.crt` you can now run [openssl/create-certs.sh](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CertificateUtilities/openssl/create-certs.sh).
 
 If you don't want to run the script, and would rather execute the commands yourself, simply copy the (very brief) commands from the files into your local terminal.
 
@@ -58,6 +58,6 @@ A limitation of the Emulator is the inability to define the name and password of
 
 ## Configure the Emulator to use your certificates
 
-You can now follow the [local system configuration](https://github.com/james-gould/azure-keyvault-emulator/blob/development/CONFIG.md) to manually set these up for the Emulator. 
+You can now follow the [local system configuration](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CONFIG.md) to manually set these up for the Emulator. 
 
 Don't worry, it's a very quick process.
