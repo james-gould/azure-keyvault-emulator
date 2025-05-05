@@ -46,7 +46,7 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
     - `Persistent`: On shutdown turn off the Emulator container, but do not `destroy` it.
     - These options do not interfere with the SSL certificates.
 
-There are two ways to utilise this configuration, **all of them are optional** and will default to allow automatic SSL on your machine.
+There are two ways to utilise this configuration, all of them are **optional** and will default to allow automatic SSL on your machine.
 
 With `User Secrets` you can create a configuration section with the following options:
 
