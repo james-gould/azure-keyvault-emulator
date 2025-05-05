@@ -14,8 +14,8 @@ internal sealed class KeyVaultEmulatorLifecycleService(string certificatePath, I
         var pem = Path.Combine(certificatePath, KeyVaultEmulatorCertConstants.Crt);
 
         _certs = new(pfx, pem);
-        if(lifetime is not null)
-            lifetime.ApplicationStopping.Register(ExecuteCertificateCleanup);
+
+        lifetime?.ApplicationStopping.Register(ExecuteCertificateCleanup);
 
         return Task.CompletedTask;
     }
