@@ -124,12 +124,6 @@ Yes. It's no different than the `SSL` constraints of developing `ASP.NET Core` a
 
 No. You only need to do this once, unless you uninstall and delete the certificates. If you remove them from your local machine you will need to repeat this process **once**, and then never again. Unless you remove them from your local machine... you get the idea.
 
-> I can't elevate my machine to `Administrator` or manually install `SSL` certificates. What now?
-
-You will unfortunately be unable to use the Azure Key Vault Emulator with the Azure Client SDK. 
-
-You can still use the container's REST API providing you disable SSL validation, which mimics the real [Azure Key Vault REST API](https://learn.microsoft.com/en-us/rest/api/keyvault/).
-
 > Is this required? Can we just use `HTTP`?
 
 Yes, it's required, and unfortunately we can't use HTTP. The Azure Client SDK enforces `HTTPS` (and thus SSL certificates) when checking the `vaultUri`. Without the certificates installed as trusted the connections from the SDK into the Emulator will timeout and throw an exception due to `UntrustedRoot`.
