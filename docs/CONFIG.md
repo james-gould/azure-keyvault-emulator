@@ -3,7 +3,7 @@
 > [!NOTE]
 > If you're using .NET Aspire the SSL will be installed for you without configuration required. If you wish to change how that works, or tweak the behaviour slightly, the documentation will show you how.
 
-The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your local machine - this is unavoidable but easy to solve.
+The Azure SDK enforces `SSL` which requires a Trusted Root Certificate Authority on your local machine - this is unavoidable but easy to solve.
 
 **This documentation is brief** but to make it easy to navigate use the table of contents below:
 
@@ -12,7 +12,7 @@ The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your 
 1. [Using .NET Aspire](#using-aspire)
     1. [Automatic SSL](#automatic-ssl)
     2. [(Optional) Granular Configuration](#aspire-config)
-2. [Manual Without Docker](#local-docker)
+2. [Manual With Docker](#local-docker)
     1. [Installing Manual Certificates](#installing-certificates)
 3. [FAQ](#FAQ)
 
@@ -98,8 +98,8 @@ If you run into SSL Connection issues, ie `UntrustedRoot`, your configuration is
 You do not need to use `.NET Aspire` to run the emulator, but you will have to generate the certificates yourself.
 
 - First follow the [certificate generation instructions](CertificateUtilities/README.md) to prepare the certificates (3 minutes).
-- Follow the *Installing Certificates* section below to insert them into your host machine's Root Trust Store.
-- Place the generated files, `emulator.pfx` and `emulator.crt` into a directory that is unlikely to be accidentally deleted. 
+- Follow the [installing certificates](#installing-certificates) section below to insert them into your host machine's Root Trust Store.
+- Place the generated files, `emulator.pfx` and `emulator.crt`, into a directory that is unlikely to be accidentally deleted. 
     - Your local user directory is recommended, on Windows this would be `C:/Users/Name/keyvaultemulator/certs`.
 - Mount that directory as a `volume` to `certs/` when you start the container so the certificates can be installed into the API.
     - For Docker this would be using the `-v C:/Users/Name/keyvaultemulator/certs:certs/:ro`.
@@ -119,6 +119,10 @@ The certificates must be installed as a **Trusted Root CA** to achieve SSL:
 > Is this safe?
 
 Yes. It's no different than the `SSL` constraints of developing `ASP.NET Core` applications locally, or trying to use a non-existing domain/DNS with `HTTPS`.  The only other viable option was for a real domain to be purchased with valid SSL and requiring users to edit their `hosts` file to map `localhost` to `<perm domain>` which was out of the question.
+
+> I'm using Linux and the SSL is still untrusted?
+
+Please exit your IDE/terminal running your application, run `sudo update-ca-certificates` and restart the container; subsequent uses of the Emulator will now be trusted.
 
 > Do I need to do this every time I want to use the Emulator?
 
