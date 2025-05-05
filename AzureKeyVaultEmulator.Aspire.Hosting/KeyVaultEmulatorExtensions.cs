@@ -118,9 +118,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         {
             ArgumentNullException.ThrowIfNull(options);
 
-            return options.ShouldGenerateCertificates
-                    ? KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options)
-                    : options.LocalCertificatePath;
+            var certs = KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options);
+
+            if (options.LoadCertificatesIntoTrustStore)
+                KeyVaultEmulatorCertHelper.TryWriteToStore(options, certs.Pfx, certs.LocalCertificatePath, certs.pem);
+
+            return certs.LocalCertificatePath;
         }
 
         /// <summary>

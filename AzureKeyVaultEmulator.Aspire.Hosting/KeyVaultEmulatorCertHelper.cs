@@ -5,6 +5,7 @@ using System.Diagnostics;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using System.Net;
+using AzureKeyVaultEmulator.Aspire.Hosting.Models;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
@@ -41,12 +42,12 @@ internal static class KeyVaultEmulatorCertHelper
     /// </summary>
     /// <param name="options">The granular options for configuring the Azure Key Vault Emulator.</param>
     /// <returns>The base directory containing certificates.</returns>
-    internal static string ValidateOrGenerateCertificate(KeyVaultEmulatorOptions options)
+    internal static CertificateLoaderVM ValidateOrGenerateCertificate(KeyVaultEmulatorOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if(!options.ShouldGenerateCertificates)
-            return options.LocalCertificatePath;
+        if (!string.IsNullOrEmpty(options.LocalCertificatePath) && !Directory.Exists(options.LocalCertificatePath))
+            throw new KeyVaultEmulatorException($"The local path specified for your SSL certificates does not exist.");
 
         var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
 
@@ -56,14 +57,14 @@ internal static class KeyVaultEmulatorCertHelper
         var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
         var crtPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Crt);
 
-        var pfxExists = Path.Exists(pfxPath);
-        var crtExists = Path.Exists(crtPath);
+        var pfxExists = File.Exists(pfxPath);
+        var crtExists = File.Exists(crtPath);
 
         // Both required certs exist so noop.
         // Will also require a cert check for expiration
         // Out of scope for now
-        if (pfxExists && crtExists)
-            return certPath;
+        if (pfxExists && crtExists && !options.LoadCertificatesIntoTrustStore)
+            return new(certPath);
 
         // One has been deleted, try to remove them both and regenerate.
         // Only if users allow us to conduct IO on the certificates for the Emulator.
@@ -71,13 +72,13 @@ internal static class KeyVaultEmulatorCertHelper
             TryRemovePreviousCerts(pfxPath, crtPath);
 
         // Then create files and place at {path}
-        var (pfx, cert) = options.ShouldGenerateCertificates
+        var (pfx, pem) = (options.ShouldGenerateCertificates)
                             ? GenerateAndSaveCert(pfxPath, crtPath)
-                            : LoadExistingCertificatesToStore(pfxPath, crtPath);
+                            : LoadExistingCertificatesToInstall(pfxPath, crtPath);
 
-        TryWriteToStore(options, pfx, pfxPath, cert);
+        //TryWriteToStore(options, pfx, pfxPath, cert);
 
-        return certPath;
+        return new(certPath) { Pfx = pfx, pem = pem };
     }
 
     /// <summary>
@@ -87,7 +88,7 @@ internal static class KeyVaultEmulatorCertHelper
     /// <param name="pemPath">The path to the PEM.</param>
     /// <returns>A full <see cref="X509Certificate2"/> and associated PEM from the RawData.</returns>
     /// <exception cref="KeyVaultEmulatorException"></exception>
-    private static (X509Certificate2 pfx, string pem) LoadExistingCertificatesToStore(
+    private static (X509Certificate2 pfx, string pem) LoadExistingCertificatesToInstall(
         string pfxPath,
         string? pemPath = null)
     {
@@ -96,7 +97,7 @@ internal static class KeyVaultEmulatorCertHelper
         if (!File.Exists(pfxPath))
             throw new KeyVaultEmulatorException($"PFX not found at path: {pfxPath}");
 
-        var shouldWritePem = string.IsNullOrEmpty(pemPath) && !File.Exists(pemPath);
+        var shouldWritePem = string.IsNullOrEmpty(pemPath) || !File.Exists(pemPath);
 
         try
         {
@@ -136,7 +137,7 @@ internal static class KeyVaultEmulatorCertHelper
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
         ArgumentException.ThrowIfNullOrEmpty(pemPath);
 
-        var subject = new X500DistinguishedName($"CN={KeyVaultEmulatorCertConstants.Subject}");
+        var subject = new X500DistinguishedName(KeyVaultEmulatorCertConstants.Subject);
         using var rsa = RSA.Create();
 
         var request = new CertificateRequest(subject, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -197,9 +198,9 @@ internal static class KeyVaultEmulatorCertHelper
     /// <param name="pfxPath">The path to <paramref name="pfx"/></param>
     /// <param name="pem">The raw data or loaded PEM from <paramref name="pfx"/></param>
     /// <exception cref="KeyVaultEmulatorException"></exception>
-    private static void TryWriteToStore(
+    internal static void TryWriteToStore(
         KeyVaultEmulatorOptions options,
-        X509Certificate2 pfx,
+        X509Certificate2? pfx,
         string pfxPath,
         string pem)
     {
@@ -229,11 +230,12 @@ internal static class KeyVaultEmulatorCertHelper
     /// Installs the <paramref name="cert"/> to the Windows TrustStore.
     /// </summary>
     /// <param name="cert">The <see cref="X509Certificate2"/> to install.</param>
-    private static void InstallToWindowsTrustStore(X509Certificate2 cert)
+    private static void InstallToWindowsTrustStore(X509Certificate2? cert)
     {
-        ArgumentNullException.ThrowIfNull(cert);
+        if (cert is null)
+            return;
 
-        using var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
+        using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
 
         store.Open(OpenFlags.ReadWrite);
         store.Add(cert);

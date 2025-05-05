@@ -1,4 +1,6 @@
-﻿namespace AzureKeyVaultEmulator.Aspire.Hosting;
+﻿using System.Security.Cryptography.X509Certificates;
+
+namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
 /// <summary>
 /// Allows for granular configuration of the Azure Key Vault Emulator.
@@ -46,7 +48,17 @@ public sealed class KeyVaultEmulatorOptions
     internal bool IsValidCustomisable
         => ShouldGenerateCertificates
             // Validates that the Emulator can generate a self signed SSL certificate and load into the trust store.
-            ? (ShouldGenerateCertificates && LoadCertificatesIntoTrustStore)
+            ? ShouldGenerateCertificates && LoadCertificatesIntoTrustStore
             // Validates the host machine has provided a local path containing preconfigured certificates
             : !string.IsNullOrEmpty(LocalCertificatePath);
+
+    /// <summary>
+    /// Used to carry the PFX through the generation and installation lifetime. Not passed as an option.
+    /// </summary>
+    internal X509Certificate2? PFX { get; set; }
+
+    /// <summary>
+    /// Used to carry the CRT through the generation and installation lifetime. Not passed as an option.
+    /// </summary>
+    internal string? CRT { get; set; }
 }
