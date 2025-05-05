@@ -1,7 +1,7 @@
 # Configuring your local system for the Emulator
 
 > [!NOTE]
-> If you're using /NET Aspire the SSL will be installed for you without configuration required.
+> If you're using .NET Aspire the SSL will be installed for you without configuration required. If you wish to change how that works, or tweak the behaviour slightly, the documentation will show you how.
 
 The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your local machine - this is unavoidable but easy to solve.
 
@@ -18,13 +18,11 @@ The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your 
 
 ## Using Aspire
 
-To make this as frictionless as possible the `AzureKeyVaultEmulator.Aspire.Hosting` library can automate **all** of this process for you in the background.
-
 ### Automatic SSL
 
 The `Hosting` library will handle the SSL certificate creation and installation for you. 
 
-On your first run of the Emulator you'll be prompted to install a `localhost` certificate, click `Yes` on the prompt. The certificates will be installed to your local user trusted authority store, not root, if you wish to remove it at any point. 
+On your first run of the Emulator you'll be prompted to install a `localhost` certificate, click `Yes` on the prompt. The certificate will be installed to your local user trusted authority store, not root, if you wish to remove it at any point. 
 
 After the initial run you won't be prompted to install the certificate again.
 
@@ -99,7 +97,7 @@ If you run into SSL Connection issues, ie `UntrustedRoot`, your configuration is
 
 You do not need to use `.NET Aspire` to run the emulator, but you will have to generate the certificates yourself.
 
-- First follow the [certificate generation instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CertificateUtilities/README.md) to prepare the certificates (3 minutes).
+- First follow the [certificate generation instructions](CertificateUtilities/README.md) to prepare the certificates (3 minutes).
 - Follow the *Installing Certificates* section below to insert them into your host machine's Root Trust Store.
 - Place the generated files, `emulator.pfx` and `emulator.crt` into a directory that is unlikely to be accidentally deleted. 
     - Your local user directory is recommended, on Windows this would be `C:/Users/Name/keyvaultemulator/certs`.
