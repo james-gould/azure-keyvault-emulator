@@ -21,7 +21,7 @@ public sealed class KeyVaultEmulatorOptions
     /// <summary>
     /// <para>Determines if the Emulator should attempt to load the certificates into the host machine's trust store.</para>
     /// <para>Warning: this requires Administration rights.</para>
-    /// <para>Unused if the certificates are already present, removing the administration priviledge requirement.</para>
+    /// <para>Unused if the certificates are already present, removing the administration privilege requirement.</para>
     /// </summary>
     public bool LoadCertificatesIntoTrustStore { get; set; } = true;
 

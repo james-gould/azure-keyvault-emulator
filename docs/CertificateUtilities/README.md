@@ -5,12 +5,7 @@
 
 The Azure Key Vault Client SDK requires `HTTPS` and trusted SSL for valid connections - breaking either of these conditions will cause all requests to fail at runtime.
 
-To support this the `AzureKeyVaultEmulator.Aspire.Hosting` library will generate and install these certificates for you in the background, but that requires:
-
-- Running your application with Administrator priviledges when you need the certificates installed.
-- Allowing a 3rd party application to install Trusted Root CA certificates on your machine.
-
-For obvious reasons one or both of these conditions may be unacceptable for you, your IT department, or anything else. Should that be the case you **are** still able to use the Emulator, but you will need to provide these certificates and have them as a Trusted Root CA on your local machine beforehand.
+The `AzureKeyVaultEmulator.Aspire.Hosting` library will generate and install these certificates for you. If you're not using Aspire, or wish to provide your own certificates, follow the instructions below to get started using the Emulator.
 
 ## Creating valid certificates
 

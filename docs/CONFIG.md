@@ -1,7 +1,7 @@
 # Configuring your local system for the Emulator
 
 > [!NOTE]
-> You only need to do this once, assuming you don't delete your certificates locally!
+> If you're using /NET Aspire the SSL will be installed for you without configuration required.
 
 The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your local machine - this is unavoidable but easy to solve.
 
@@ -9,7 +9,7 @@ The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your 
 
 ## Table of contents
 
-1. [.NET Aspire](#using-aspire)
+1. [Using .NET Aspire](#using-aspire)
     1. [Automatic SSL](#automatic-ssl)
     2. [(Optional) Granular Configuration](#aspire-config)
 2. [Manual Without Docker](#local-docker)
@@ -20,11 +20,13 @@ The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your 
 
 To make this as frictionless as possible the `AzureKeyVaultEmulator.Aspire.Hosting` library can automate **all** of this process for you in the background.
 
-After initial launch and installation the `Hosting` library will detect the certificates on your machine and not attempt to generate or install them again.
-
 ### Automatic SSL
 
-The Azure SDK requires SSL which the `Hosting` library will handle for you. On your first run of the Emulator you'll be prompted to install a `localhost` certificate, click `Yes` on the prompt. The certificates will be installed to your local user trusted authority store, not root, if you wish to remove them at any point. After the initial run you won't be prompted to install the certificate again. 
+The `Hosting` library will handle the SSL certificate creation and installation for you. 
+
+On your first run of the Emulator you'll be prompted to install a `localhost` certificate, click `Yes` on the prompt. The certificates will be installed to your local user trusted authority store, not root, if you wish to remove it at any point. 
+
+After the initial run you won't be prompted to install the certificate again.
 
 <p align="center">
     <img src="assets/LocalhostPrompt.png">

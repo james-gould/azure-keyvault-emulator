@@ -1,5 +1,7 @@
 # Azure Key Vault Emulator
 
+<p align="center"><img src="docs/assets/hero.png" height="50%" width="100%"></p>
+
 A fully featured, emulated version of the [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) runnable from your development machine.
 
 In a dev environment, currently, you need to have a real Azure Key Vault resource deployed and potentially being paid for in an active Azure subscription. If you’re like me and work for a fairly large company then the security policies around accessing these resources can be tough to navigate, meaning long delays during onboarding and potentially longer delays caused by multiple developers overwriting each other’s secure values.
@@ -12,7 +14,7 @@ You can find a [sample application here](https://github.com/james-gould/azure-ke
 
 ## Prerequisites
 
-- If you're running the Emulator for the first time you will be prompted to install a `localhost` certificate to support the Emulator SSL. [Want to learn more or provide your own certificates?](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CONFIG.md)
+- If you're running the Emulator for the first time you will be prompted to install a `localhost` certificate to support the Emulator SSL. [Want to learn more or provide your own certificates?](docs/CONFIG.md)
 - You'll need either [Docker](https://www.docker.com/) or [Podman](https://podman.io/) installed on your machine.
 
 ## Quickstart with .NET Aspire
@@ -117,7 +119,7 @@ else
     });
 ```
 
-While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/docs/CertificateUtilities/README.md):
+While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](docs/CertificateUtilities/README.md):
 
 ```
 docker pull jamesgoulddev/azure-keyvault-emulator:latest
