@@ -60,6 +60,8 @@ internal static class KeyVaultEmulatorCertHelper
         var pfxExists = File.Exists(pfxPath);
         var crtExists = File.Exists(crtPath);
 
+        var certsAlreadyExist = (pfxExists && crtExists);
+
         // Both required certs exist so noop.
         // Will also require a cert check for expiration
         // Out of scope for now
@@ -68,11 +70,11 @@ internal static class KeyVaultEmulatorCertHelper
 
         // One has been deleted, try to remove them both and regenerate.
         // Only if users allow us to conduct IO on the certificates for the Emulator.
-        if((crtExists && !pfxExists) || (pfxExists && !crtExists) && options.ShouldGenerateCertificates)
+        if(!certsAlreadyExist && options.ShouldGenerateCertificates)
             TryRemovePreviousCerts(pfxPath, crtPath);
 
         // Then create files and place at {path}
-        var (pfx, pem) = (options.ShouldGenerateCertificates)
+        var (pfx, pem) = (options.ShouldGenerateCertificates && !certsAlreadyExist)
                             ? GenerateAndSaveCert(pfxPath, crtPath)
                             : LoadExistingCertificatesToInstall(pfxPath, crtPath);
 
@@ -103,7 +105,7 @@ internal static class KeyVaultEmulatorCertHelper
         {
 
 #if NET9_0_OR_GREATER
-            var pfx = X509CertificateLoader.LoadCertificateFromFile(pfxPath);
+            var pfx = X509CertificateLoader.LoadPkcs12FromFile(pfxPath, KeyVaultEmulatorCertConstants.Pword);
             var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
 
             if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
