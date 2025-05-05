@@ -15,7 +15,7 @@ You can find a [sample application here](Samples/KeyVaultEmulatorSample) or you 
 ## Prerequisites
 
 - On your first run you will be prompted to install a `localhost` certificate to support the Emulator SSL. 
-    - [Want to learn more or provide your own certificates?](docs/CONFIG.md)
+    - [Not using .NET Aspire, want to learn more or provide your own certificates?](docs/CONFIG.md)
 - You'll need either [Docker](https://www.docker.com/) or [Podman](https://podman.io/) installed on your machine.
 
 ## Quickstart with .NET Aspire
