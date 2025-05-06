@@ -94,6 +94,7 @@ newrelic/
 
 *.crt
 *.pfx
+*.key
 
 # Fake GraphQL directives #
 ###########################
