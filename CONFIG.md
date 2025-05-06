@@ -1,36 +1,36 @@
 # Configuring your local system for the Emulator
 
 > [!NOTE]
-> If you're using .NET Aspire the SSL will be installed for you without configuration required. If you wish to change how that works, or tweak the behaviour slightly, the documentation will show you how.
+> You only need to do this once, assuming you don't delete your certificates locally!
 
-The Azure SDK enforces `SSL` which requires a Trusted Root Certificate Authority on your local machine - this is unavoidable but easy to solve.
+The Azure SDK enforces `SSL` which requires a Trusted Root CA Authority on your local machine - this is unavoidable but easy to solve.
 
 **This documentation is brief** but to make it easy to navigate use the table of contents below:
 
 ## Table of contents
 
-1. [Using .NET Aspire](#using-aspire)
+1. [.NET Aspire](#using-aspire)
     1. [Automatic SSL](#automatic-ssl)
     2. [(Optional) Granular Configuration](#aspire-config)
-2. [Manual With Docker](#local-docker)
+2. [Manual Without Docker](#local-docker)
     1. [Installing Manual Certificates](#installing-certificates)
 3. [FAQ](#FAQ)
 
 ## Using Aspire
 
+To make this as frictionless as possible the `AzureKeyVaultEmulator.Aspire.Hosting` library can automate **all** of this process for you in the background.
+
+After initial launch and installation the `Hosting` library will detect the certificates on your machine and not attempt to generate or install them again.
+
+If you're unable to run your IDE (or a terminal) as `Administrator` you will need to use the [manual SSL instructions.](#local-docker)
+
 ### Automatic SSL
 
-The `Hosting` library will handle the SSL certificate creation and installation for you. 
+To generate and install the certificates automatically simply run your IDE as `Administrator`; this is required due to Root Trust Store installation needing elevated priviledges. If you're using the `dotnet` CLI you will need to be running your terminal as `Administrator`.
 
-On your first run of the Emulator you'll be prompted to install a `localhost` certificate, click `Yes` on the prompt. The certificate will be installed to your local user trusted authority store, not root, if you wish to remove it at any point. 
+Once the initial run has been done without errors, you **no longer** need to run your application (or IDE) as `Administrator`. 
 
-After the initial run you won't be prompted to install the certificate again.
-
-<p align="center">
-    <img src="assets/LocalhostPrompt.png">
-</p>
-
-If you don't want to configure the container there's nothing left to read, enjoy the Emulator! 🎉
+If you don't want to configure the container you're finished 🎉! Everything will work as intended and you never need to read these docs again, feel free to restart your IDE/terminal without `Administrator` and use the Emulator to your heart's content.
 
 ### Aspire Config
 
@@ -46,7 +46,7 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
     - `Persistent`: On shutdown turn off the Emulator container, but do not `destroy` it.
     - These options do not interfere with the SSL certificates.
 
-There are two ways to utilise this configuration, all of them are **optional** and will default to allow automatic SSL on your machine.
+There are two ways to utilise this configuration, **all of them are optional** and will default to allow automatic SSL on your machine.
 
 With `User Secrets` you can create a configuration section with the following options:
 
@@ -92,11 +92,14 @@ If you run into SSL Connection issues, ie `UntrustedRoot`, your configuration is
 
 ## Local Docker
 
+> [!NOTE]
+> If you're unable to run your IDE or terminal as `Administrator` when using `.NET Aspire` you need to follow the below instructions, but can skip the *mount that directory...* bullet point. [You must also specify the directory containing your certificates to the Emulator](#aspire-config).
+
 You do not need to use `.NET Aspire` to run the emulator, but you will have to generate the certificates yourself.
 
-- First follow the [certificate generation instructions](CertificateUtilities/README.md) to prepare the certificates (3 minutes).
-- Follow the [installing certificates](#installing-certificates) section below to insert them into your host machine's Root Trust Store.
-- Place the generated files, `emulator.pfx` and `emulator.crt`, into a directory that is unlikely to be accidentally deleted. 
+- First follow the [certificate generation instructions](https://github.com/james-gould/azure-keyvault-emulator/blob/development/CertificateUtilities/README.md) to prepare the certificates (3 minutes).
+- Follow the *Installing Certificates* section below to insert them into your host machine's Root Trust Store.
+- Place the generated files, `emulator.pfx` and `emulator.crt` into a directory that is unlikely to be accidentally deleted. 
     - Your local user directory is recommended, on Windows this would be `C:/Users/Name/keyvaultemulator/certs`.
 - Mount that directory as a `volume` to `certs/` when you start the container so the certificates can be installed into the API.
     - For Docker this would be using the `-v C:/Users/Name/keyvaultemulator/certs:certs/:ro`.
@@ -117,13 +120,15 @@ The certificates must be installed as a **Trusted Root CA** to achieve SSL:
 
 Yes. It's no different than the `SSL` constraints of developing `ASP.NET Core` applications locally, or trying to use a non-existing domain/DNS with `HTTPS`.  The only other viable option was for a real domain to be purchased with valid SSL and requiring users to edit their `hosts` file to map `localhost` to `<perm domain>` which was out of the question.
 
-> I'm using Linux and the SSL is still untrusted?
-
-Please exit your IDE/terminal running your application, run `sudo update-ca-certificates` and restart the container; subsequent uses of the Emulator will now be trusted.
-
 > Do I need to do this every time I want to use the Emulator?
 
 No. You only need to do this once, unless you uninstall and delete the certificates. If you remove them from your local machine you will need to repeat this process **once**, and then never again. Unless you remove them from your local machine... you get the idea.
+
+> I can't elevate my machine to `Administrator` or manually install `SSL` certificates. What now?
+
+You will unfortunately be unable to use the Azure Key Vault Emulator with the Azure Client SDK. 
+
+You can still use the container's REST API providing you disable SSL validation, which mimics the real [Azure Key Vault REST API](https://learn.microsoft.com/en-us/rest/api/keyvault/).
 
 > Is this required? Can we just use `HTTP`?
 
