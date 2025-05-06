@@ -92,9 +92,6 @@ If you run into SSL Connection issues, ie `UntrustedRoot`, your configuration is
 
 ## Local Docker
 
-> [!NOTE]
-> If you're unable to run your IDE or terminal as `Administrator` when using `.NET Aspire` you need to follow the below instructions, but can skip the *mount that directory...* bullet point. [You must also specify the directory containing your certificates to the Emulator](#aspire-config).
-
 You do not need to use `.NET Aspire` to run the emulator, but you will have to generate the certificates yourself.
 
 - First follow the [certificate generation instructions](CertificateUtilities/README.md) to prepare the certificates (3 minutes).
