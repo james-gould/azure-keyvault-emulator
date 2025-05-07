@@ -10,7 +10,7 @@ Microsoft have put significant effort into making the cloud development experien
 
 The emulator does **not** connect to or update an existing Azure Key Vault, it simply mimics the API (with identical functionality) allowing you to build applications without needing to host a real resource.
 
-You can find a [sample application here](Samples/KeyVaultEmulatorSample) or you can [read the full launch blog post here!](https://jamesgould.dev/posts/Azure-Key-Vault-Emulator/)
+You can find [sample applications here](https://github.com/james-gould/azure-keyvault-emulator-samples) or you can [read the full launch blog post here!](https://jamesgould.dev/posts/Azure-Key-Vault-Emulator/)
 
 ## Prerequisites
 
@@ -80,7 +80,7 @@ var options = new SecretClientOptions { DisableChallengeResourceVerification = t
 builder.Services.AddTransient(s => new SecretClient(new Uri(vaultUri), new DefaultAzureCredential(), options));
 ```
 
-[You can use this code from the client library](AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) replacing `EmulatedCredential` with `DefaultAzureCredential`.
+[You can use this code from the client library](src/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) replacing `EmulatedCredential` with `DefaultAzureCredential`.
 
 ### 4. Use your `AzureClients` as normal dependency injected services:
 
@@ -120,18 +120,26 @@ else
     });
 ```
 
-While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](docs/CertificateUtilities/README.md):
+The primary purpose of this project is to provide `.NET Aspire` support it does *not* require it. To use the Emulator in a different environment simply pull down the image and follow the [setup instructions](docs/CertificateUtilities/README.md):
 
 ```
 docker pull jamesgoulddev/azure-keyvault-emulator:windows
 ```
 
 > [!NOTE]
-> There's a breaking change between `latest` and `windows` that will be updated on 11/05/2025 to give people chance to migrate off.
+> There's a breaking change between the `latest` and `windows` tags that will be updated on 11/05/2025 to give users a chance to migrate off.
 
 # Roadmap
 
-Some API functionality may not be supported while the initial development is ongoing, please refer to the roadmap below to double check if you're attempting a supported operation. The full API *will* be supported, but if you run into issues beforehand that's likely the reason why.
+The Azure Key Vault Emulator is now **stable** and ready for public consumption. Maintenance and enhancement work will continue to ensure the longevity of the project. Below you can find previous and upcoming additions to the project, if you'd like to see something added please raise a [feature request.](https://github.com/james-gould/azure-keyvault-emulator/issues/new?template=feature_request.md)
+
+## Pending
+
+- [ ] TestContainers module. (#158)
+- [ ] Optional vault data persistence and importing for dev environment distribution. (#196)
+- [ ] Management UI, similar to the Azure Portal UI. (#195)
+
+## Completed
 
 - [x] Introduction of the [full API](https://learn.microsoft.com/en-us/rest/api/keyvault/) for Azure Key Vault:
     - [x] Secrets
@@ -140,5 +148,3 @@ Some API functionality may not be supported while the initial development is ong
     - [x] Managed HSM
 - [x] Separate NuGet package for introducing an [emulated Key Vault into your .NET Aspire](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Aspire.Hosting) projects.
 - [x] Separate NuGet package for easy usage of the [emulator in client applications](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Client).
-- [ ] TestContainers module.
-- [ ] Complete `docker-compose` options for integrating the emulator into a cluster.

@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: Raise an issue regarding a bug in the Emulator.
-title: "[BUG] "
+title: "[Bug] "
 labels: bug
 assignees: ''
 

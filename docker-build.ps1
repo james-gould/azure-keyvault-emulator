@@ -12,7 +12,9 @@ function ThrowIfFailed($message) {
 }
 
 $tagName = "jamesgoulddev/azure-keyvault-emulator"
-$version = if ($dev) { "dev-unstable" } else { "latest" }
+$version = if ($dev -Or $run) { "dev-unstable" } else { "latest" }
+$localName = "keyvault-emulator"
+$localPath = "C:/users/James/keyvaultemulator/certs"
 
 Write-Host "Executing docker build with tag: $tagName and version: $version"
 
@@ -22,8 +24,12 @@ ThrowIfFailed "Build failed. Exiting."
 Write-Host "Build succeeded."
 
 if ($run) {
-    Write-Host "Running docker container..."
-    docker run -p 80:8080 --name keyvault-emulator "${tagName}:${version}"
+    Write-Host "Killing any existing container with name: $localName"
+    docker kill $localName 2>$null
+    docker rm $localName 2>$null
+
+    Write-Host "Running docker container in detached mode with name: $localName"
+    docker run -d -p 4997:4997 -v "${localPath}:/certs:ro" --name $localName "${tagName}:${version}"
     ThrowIfFailed "Container failed to start. Exiting."
 }
 

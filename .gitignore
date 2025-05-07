@@ -96,6 +96,9 @@ newrelic/
 *.pfx
 *.key
 
+# local development script for being lazy
+docker-build.ps1
+
 # Fake GraphQL directives #
 ###########################
 _not-imported-dev.graphql
