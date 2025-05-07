@@ -109,7 +109,7 @@ The certificates must be installed as a **Trusted Root CA** to achieve SSL:
     - Right click -> Install and follow the wizard.
 - Otherwise install `emulator.crt`.
     - `Linux`: Run `cp emulator.crt /usr/local/share/ca-certificates/emulator.crt && update-ca-certificates`
-    - MacOS: Run `sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <path to your certificates>`
+    - `MacOS`: Run `sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <path to your certificates>`
 
 ## FAQ
 
