@@ -123,8 +123,11 @@ else
 While the primary purpose of this (forked) project is to provide native `.NET Aspire` support it does *not* require it. To use the emulator in a different environment simply pull down the image and follow the [setup instructions](docs/CertificateUtilities/README.md):
 
 ```
-docker pull jamesgoulddev/azure-keyvault-emulator:latest
+docker pull jamesgoulddev/azure-keyvault-emulator:windows
 ```
+
+> [!NOTE]
+> There's a breaking change between `latest` and `windows` that will be updated on 11/05/2025 to give people chance to migrate off.
 
 # Roadmap
 
