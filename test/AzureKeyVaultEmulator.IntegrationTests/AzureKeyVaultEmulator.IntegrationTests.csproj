@@ -35,7 +35,7 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj" />
-    <ProjectReference Include="..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\dev\AzureKeyVaultEmulator.AppHost\AzureKeyVaultEmulator.AppHost.AppHost\AzureKeyVaultEmulator.AppHost.csproj" />
+    <ProjectReference Include="..\..\src\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false"/>
   </ItemGroup>
 </Project>

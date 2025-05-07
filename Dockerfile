@@ -3,14 +3,14 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
 # Copy solution and restore dependencies
-COPY AzureKeyVaultEmulator.sln ./
-COPY AzureKeyVaultEmulator/*.csproj AzureKeyVaultEmulator/
-COPY AzureKeyVaultEmulator.Shared/*.csproj AzureKeyVaultEmulator.Shared/
-RUN dotnet restore AzureKeyVaultEmulator/AzureKeyVaultEmulator.csproj
+COPY AzureKeyVaultEmulator.sln ./ 
+COPY src/AzureKeyVaultEmulator/*.csproj src/AzureKeyVaultEmulator/
+COPY src/AzureKeyVaultEmulator.Shared/*.csproj src/AzureKeyVaultEmulator.Shared/
+RUN dotnet restore src/AzureKeyVaultEmulator/AzureKeyVaultEmulator.csproj
 
 # Copy everything and build
 COPY . ./
-WORKDIR /app/AzureKeyVaultEmulator
+WORKDIR /app/src/AzureKeyVaultEmulator
 RUN dotnet publish -c Release -o /out
 
 # Use runtime image
