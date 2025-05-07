@@ -4,8 +4,8 @@ WORKDIR /app
 
 # Copy solution and restore dependencies
 COPY AzureKeyVaultEmulator.sln ./
-COPY AzureKeyVaultEmulator/*.csproj AzureKeyVaultEmulator/
-COPY AzureKeyVaultEmulator.Shared/*.csproj AzureKeyVaultEmulator.Shared/
+COPY ./src/AzureKeyVaultEmulator/*.csproj AzureKeyVaultEmulator/
+COPY ./src/AzureKeyVaultEmulator.Shared/*.csproj AzureKeyVaultEmulator.Shared/
 RUN dotnet restore AzureKeyVaultEmulator/AzureKeyVaultEmulator.csproj
 
 # Copy everything and build

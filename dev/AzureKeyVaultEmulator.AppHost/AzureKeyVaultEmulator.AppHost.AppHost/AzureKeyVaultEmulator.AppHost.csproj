@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -14,9 +14,9 @@
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.2.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AzureKeyVaultEmulator.Aspire.Hosting\AzureKeyVaultEmulator.Aspire.Hosting.csproj" IsAspireProjectResource="false" />
-    <ProjectReference Include="..\..\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false" />
-    <ProjectReference Include="..\..\AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj" />
-    <ProjectReference Include="..\..\WebApiWithEmulator.DebugHelper\WebApiPWithEmulator\WebApiWithEmulator.DebugHelper.csproj" />
+    <ProjectReference Include="..\..\..\src\AzureKeyVaultEmulator.Aspire.Hosting\AzureKeyVaultEmulator.Aspire.Hosting.csproj" IsAspireProjectResource="false"/>
+    <ProjectReference Include="..\..\..\src\AzureKeyVaultEmulator.Shared\AzureKeyVaultEmulator.Shared.csproj" IsAspireProjectResource="false"/>
+    <ProjectReference Include="..\..\..\src\AzureKeyVaultEmulator\AzureKeyVaultEmulator.csproj" />
+    <ProjectReference Include="..\..\..\dev\WebApiWithEmulator.DebugHelper\WebApiPWithEmulator\WebApiWithEmulator.DebugHelper.csproj" />
   </ItemGroup>
 </Project>
