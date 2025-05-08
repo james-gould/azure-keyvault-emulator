@@ -1,9 +1,14 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 {
     public sealed class SecretBundle : TaggedModel
     {
+        [JsonIgnore]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long PrimaryId { get; set; }
+
         [JsonPropertyName("id")]
         public required string SecretIdentifier { get; set; } = string.Empty;
 
