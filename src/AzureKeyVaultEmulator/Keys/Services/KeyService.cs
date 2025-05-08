@@ -297,7 +297,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var key = _keys.SafeGet(cacheId);
 
-            var signature = encryptionService.SignWithKey(key.Key._rsaKey, digest);
+            var signature = encryptionService.SignWithKey(key.Key.RSAKey, digest);
 
             return new KeyOperationResult
             {
@@ -319,7 +319,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             return new ValueModel<bool>
             {
-                Value = encryptionService.VerifyData(key.Key._rsaKey, digest, signature)
+                Value = encryptionService.VerifyData(key.Key.RSAKey, digest, signature)
             };
         }
 
