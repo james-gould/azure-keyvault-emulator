@@ -100,13 +100,31 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     TargetPort = KeyVaultEmulatorContainerConstants.Port,
                     UriScheme = "https",
                     Name = "https"
-                });
+                })
+                .WithAnnotation(
+                    new EnvironmentCallbackAnnotation(ctx => RegisterEnvironmentVariables(ctx, options))
+                );
 
             builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorContainerConstants.Endpoint);
 
             builder.RegisterOptionalLifecycleHandler(options, hostCertificatePath);
 
             return builder;
+        }
+
+        /// <summary>
+        /// Registers the necessary Environment Variables for the container runtime.
+        /// </summary>
+        /// <param name="context">The environment context for execution.</param>
+        /// <param name="options">The options defined for the emulator.</param>
+        /// <returns>The context with the EnvironmentVariables extended.</returns>
+        private static EnvironmentCallbackContext RegisterEnvironmentVariables(
+            EnvironmentCallbackContext context,
+            KeyVaultEmulatorOptions options)
+        {
+            context.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, options.PersistData.ToString());
+
+            return context;
         }
 
         /// <summary>
