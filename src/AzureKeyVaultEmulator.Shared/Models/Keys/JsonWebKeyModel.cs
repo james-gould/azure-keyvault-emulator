@@ -12,6 +12,10 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
     public class JsonWebKeyModel
     {
+        [JsonIgnore]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long PrimaryId { get; set; }
+
         [JsonPropertyName("crv")]
         public string KeyCurve { get; set; } = string.Empty;
 

@@ -1,12 +1,14 @@
 using System.Xml.Linq;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.Keys.Services
 {
     public class KeyService(
         IHttpContextAccessor httpContextAccessor,
         IEncryptionService encryptionService,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        VaultContext context)
         : IKeyService
     {
         private static readonly ConcurrentDictionary<string, KeyBundle> _keys = new();
@@ -17,6 +19,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
         public KeyBundle GetKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var debug = context.Keys.FirstOrDefault();
 
             return _keys.SafeGet(name);
         }
@@ -52,6 +56,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             _keys.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
             _keys.TryAdd(name.GetCacheId(version), response);
+
+            context.Keys.Add(response);
+            context.SaveChanges();
 
             return response;
         }

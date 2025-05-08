@@ -10,11 +10,12 @@ internal static class PersistenceUtils
     /// <returns>A fully qualified connection string.</returns>
     public static string CreateSQLiteConnectionString(bool isInMemoryDatabase, string mountedDirName = "certs")
     {
-        var @base = "Data Source=emulator";
+        var root = "Data Source=";
+        var dbName = "emulator";
 
         if (isInMemoryDatabase)
-            return $"${@base};Mode=Memory;Cache=Shared";
+            return $"${root};Mode=Memory;Cache=Shared";
 
-        return $"{mountedDirName}/{@base}.db";
+        return $"{root}{mountedDirName}/{dbName}.db";
     }
 }

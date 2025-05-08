@@ -1,10 +1,11 @@
-﻿using Aspire.Hosting.Azure;
+﻿using System.Net.Sockets;
+using Aspire.Hosting.Azure;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Net.Sockets;
+//using System.Net.Sockets;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {

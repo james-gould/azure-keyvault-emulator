@@ -1,6 +1,7 @@
 using AzureKeyVaultEmulator.ApiConfiguration;
 using AzureKeyVaultEmulator.Middleware;
 using AzureKeyVaultEmulator.Shared.Middleware;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddConfiguredSwaggerGen();
 builder.Services.RegisterCustomServices();
+builder.Services.AddDbContext<VaultContext>();
 
 var app = builder.Build();
 
@@ -35,6 +37,10 @@ app.UseHttpsRedirection();
 app.UseForwardedHeaders();
 app.UseMiddleware<KeyVaultErrorMiddleware>();
 app.UseMiddleware<ClientRequestIdMiddleware>();
+
+using var scope = app.Services.CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<VaultContext>();
+await db.Database.EnsureCreatedAsync();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -2,7 +2,7 @@
 
 namespace AzureKeyVaultEmulator.Shared.Models
 {
-    public class AttributeBase
+    public class AttributeBase : InternalPrimaryItem
     {
         public AttributeBase()
         {

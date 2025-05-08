@@ -5,8 +5,9 @@ var builder = DistributedApplication.CreateBuilder();
 
 // Horrendous bodge for integration testing but doing a full RootCommand pattern here for 1 arg feels... overkill;
 var integrationTestRun = args.Where(x => x.Equals("--test")).FirstOrDefault() is not null;
+var overrideTestRun = Convert.ToBoolean(Environment.GetEnvironmentVariable("Override") ?? "false");
 
-if (integrationTestRun)
+if (integrationTestRun || overrideTestRun)
 {
     builder.AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName);
 }
@@ -18,7 +19,6 @@ else
 
     var webApi = builder
         .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
-        .WithReference(keyVault)
         .WaitFor(keyVault);
 }
 
