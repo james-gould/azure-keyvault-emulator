@@ -41,7 +41,7 @@ public sealed class CertificateBundle : CertificateProperties
 
             return CertificateBlob is null || CertificateBlob.Length == 0
                 ? null
-                : CertificateBlobSerializer.Deserialize(CertificateBlob, "emulator");
+                : _certificate = CertificateBlobSerializer.Deserialize(CertificateBlob, "emulator");
         }
         set
         {
