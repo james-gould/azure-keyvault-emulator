@@ -12,23 +12,23 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
     public class KeysController(IKeyService keyService, ITokenService tokenService) : ControllerBase
     {
         [HttpPost("{name}/create")]
-        public IActionResult CreateKey(
+        public async Task<IActionResult> CreateKey(
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromBody] CreateKeyModel requestBody)
         {
-            var createdKey = keyService.CreateKeyAsync(name, requestBody);
+            var createdKey = await keyService.CreateKeyAsync(name, requestBody);
 
             return Ok(createdKey);
         }
 
         [HttpGet("{name}/{version}")]
-        public IActionResult GetKey(
+        public async Task<IActionResult> GetKey(
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion)
         {
-            var keyResult = keyService.GetKey(name, version);
+            var keyResult = await keyService.GetKeyAsync(name, version);
 
             if (keyResult == null)
                 return NotFound();
@@ -37,11 +37,11 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         }
 
         [HttpGet("{name}")]
-        public IActionResult GetKey(
+        public async Task<IActionResult> GetKey(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var keyResult = keyService.GetKey(name);
+            var keyResult = await keyService.GetKeyAsync(name);
 
             if (keyResult == null)
                 return NotFound();
@@ -54,25 +54,25 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         // https://learn.microsoft.com/en-us/rest/api/keyvault/keys/update-key/update-key
 
         [HttpPatch("{name}/{version}")]
-        public IActionResult UpdateKeyWithVersion(
+        public async Task<IActionResult> UpdateKeyWithVersion(
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion,
             [FromBody] UpdateKeyRequest request)
         {
-            var result = keyService.UpdateKey(name, version, request.Attributes, request.Tags);
+            var result = await keyService.UpdateKeyAsync(name, version, request.Attributes, request.Tags);
 
             return Ok(result);
         }
 
         
         [HttpPatch("{name}")]
-        public IActionResult UpdateKeyWithoutVersion(
+        public async Task<IActionResult> UpdateKeyWithoutVersion(
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromBody] UpdateKeyRequest request)
         {
-            var result = keyService.UpdateKey(name, "", request.Attributes, request.Tags);
+            var result = await keyService.UpdateKeyAsync(name, "", request.Attributes, request.Tags);
 
             return Ok(result);
         }

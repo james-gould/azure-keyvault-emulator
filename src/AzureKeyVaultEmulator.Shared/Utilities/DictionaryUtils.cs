@@ -26,10 +26,10 @@ public static class DictionaryUtils
         return value;
     }
 
-    public static TEntity SafeGet<TEntity>(this DbSet<TEntity> set, string name)
+    public static async Task<TEntity> SafeGetAsync<TEntity>(this DbSet<TEntity> set, string name)
         where TEntity : class, INamedItem
     {
-        var item = set.FirstOrDefault(x => x.PersistedName == name);
+        var item = await set.FirstOrDefaultAsync(x => x.PersistedName == name);
 
         return item ?? throw new MissingItemException($"Could not find {name} in vault.");
     }
@@ -44,12 +44,12 @@ public static class DictionaryUtils
     public static void SafeAddOrUpdate<T>(this ConcurrentDictionary<string, T> dict, string name, T value)
         => dict.AddOrUpdate(name, value, (_, _) => value);
 
-    public static void SafeAddOrUpdate<TEntity>(this DbSet<TEntity> set, string name, TEntity value)
+    public static async Task SafeAddOrUpdateAsync<TEntity>(this DbSet<TEntity> set, string name, TEntity value)
         where TEntity : class, INamedItem
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var existing = set.FirstOrDefault(x => x.PersistedName == name);
+        var existing = await set.FirstOrDefaultAsync(x => x.PersistedName == name);
 
         if(existing != null)
         {
@@ -57,8 +57,10 @@ public static class DictionaryUtils
             return;
         }
 
-        value.PersistedName = name;
-        set.Add(value);
+        var clone = value.Clone();
+
+        clone.PersistedName = name;
+        set.Add(clone);
     }
 
     /// <summary>
@@ -70,12 +72,12 @@ public static class DictionaryUtils
     public static void SafeRemove<T>(this ConcurrentDictionary<string, T> dict, string key)
         => dict.TryRemove(key, out _);
 
-    public static void SafeRemove<TEntity>(this DbSet<TEntity> set, string key)
+    public static async Task SafeRemove<TEntity>(this DbSet<TEntity> set, string key)
         where TEntity : class, INamedItem
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
 
-        var entity = set.FirstOrDefault(x => x.PersistedName == key);
+        var entity = await set.FirstOrDefaultAsync(x => x.PersistedName == key);
 
         if (entity != null)
             set.Remove(entity);

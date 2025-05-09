@@ -4,10 +4,10 @@ namespace AzureKeyVaultEmulator.Keys.Services
 {
     public interface IKeyService
     {
-        KeyBundle GetKey(string name);
-        KeyBundle GetKey(string name, string version);
+        Task<KeyBundle> GetKeyAsync(string name);
+        Task<KeyBundle> GetKeyAsync(string name, string version);
         Task<KeyBundle> CreateKeyAsync(string name, CreateKeyModel key);
-        Task<KeyAttributesModel?> UpdateKey(string name, string version, KeyAttributesModel attributes, Dictionary<string, string> tags);
+        Task<KeyAttributesModel?> UpdateKeyAsync(string name, string version, KeyAttributesModel attributes, Dictionary<string, string> tags);
         KeyBundle? RotateKey(string name, string version);
 
         ValueModel<string>? GetRandomBytes(int count);
