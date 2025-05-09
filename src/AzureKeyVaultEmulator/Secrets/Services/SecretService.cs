@@ -1,4 +1,5 @@
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Secrets.Requests;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
@@ -15,7 +16,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return _secrets.SafeGet(name.GetCacheId(version));
         }
 
-        public SecretBundle SetSecret(string name, SetSecretModel secret)
+        public SecretBundle SetSecret(string name, SetSecretRequest secret)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNull(secret);
@@ -51,7 +52,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var deleted = new DeletedSecretBundle
             {
-                PersistedName = name,
                 RecoveryId = secret.SecretIdentifier,
                 Attributes = secret.Attributes,
                 SecretId = secret.SecretIdentifier,

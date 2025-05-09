@@ -5,7 +5,7 @@ using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
-    public class KeyBundle : TaggedModel, IPersistedItem
+    public class KeyBundle : TaggedModel, INamedItem
     {
         [Key]
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
@@ -20,5 +20,8 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
 
         [JsonPropertyName("attributes")]
         public KeyAttributesModel Attributes { get; set; } = new();
+
+        [JsonIgnore]
+        public bool Deleted { get; set; } = false;
     }
 }

@@ -3,6 +3,7 @@ using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Secrets.Requests;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
 
@@ -107,7 +108,7 @@ public sealed class CertificateBackingService(
     private SecretBundle CreateBackingSecret(string certName, string contentType)
     {
         return secretService
-            .SetSecret(certName, new SetSecretModel
+            .SetSecret(certName, new SetSecretRequest
             {
                 Value = Guid.NewGuid().Neat(),
                 SecretAttributes = new() { ContentType = contentType }

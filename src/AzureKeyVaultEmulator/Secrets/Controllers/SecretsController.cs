@@ -1,5 +1,6 @@
 using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Secrets.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         public IActionResult SetSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
-            [FromBody] SetSecretModel requestBody)
+            [FromBody] SetSecretRequest requestBody)
         {
             var secret = secretService.SetSecret(name, requestBody);
 

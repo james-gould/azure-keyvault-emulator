@@ -8,7 +8,7 @@ using AzureKeyVaultEmulator.Shared.Utilities;
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
 // https://learn.microsoft.com/en-us/rest/api/keyvault/certificates/get-certificate-issuer/get-certificate-issuer?view=rest-keyvault-certificates-7.4&tabs=HTTP#examples
-public sealed class IssuerBundle : IPersistedItem
+public sealed class IssuerBundle : INamedItem
 {
     [Key]
     [JsonIgnore]
@@ -17,6 +17,9 @@ public sealed class IssuerBundle : IPersistedItem
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedName { get; set; } = string.Empty;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public bool Deleted { get; set; } = false;
 
     [JsonPropertyName("id")]
     public string Identifier => $"{AuthConstants.EmulatorUri}/certificates/issuers/{IssuerName}";

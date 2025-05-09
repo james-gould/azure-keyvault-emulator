@@ -1,5 +1,6 @@
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using AzureKeyVaultEmulator.Shared.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace AzureKeyVaultEmulator.Keys.Services
 {
@@ -15,6 +16,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         public async Task<KeyBundle> GetKeyAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
             return await context.Keys.SafeGetAsync(name);
         }
 
@@ -22,6 +24,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
             return await context.Keys.SafeGetAsync(name.GetCacheId(version));
         }
 
@@ -98,6 +101,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
 
             await context.Keys.SafeAddOrUpdateAsync(cacheId, newKey);
+
+            await context.SaveChangesAsync();
 
             return newKey;
         }
@@ -283,6 +288,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
             await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(), response);
             await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(version), response);
 
+            await context.SaveChangesAsync();
+
             return response;
         }
 
@@ -359,24 +366,28 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var parentKey = await context.Keys.SafeGetAsync(name.GetCacheId());
+            var parentCacheId = name.GetCacheId();
 
-            var keys = context.Keys.Where(x => x.PersistedName == name);
+            var parentKey = await context.Keys.SafeGetAsync(parentCacheId);
 
-            if (!keys.Any())
-                throw new InvalidOperationException($"Cannot find any keys with name: {name}");
+            var keys = await context.Keys.Where(x => x.PersistedName.Contains(parentCacheId)).ToListAsync();
+
+            if (keys.Count == 0)
+                throw new MissingItemException(name);
 
             foreach (var item in keys)
             {
-                await context.Keys.SafeRemoveAsync(item.PersistedName);
-                await context.DeletedKeys.SafeAddOrUpdateAsync(name.GetCacheId(item.Key.KeyVersion), item);
+                item.Deleted = true;
+                await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(item.Key.KeyVersion), item);
             }
 
-            await context.DeletedKeys.SafeAddOrUpdateAsync(name.GetCacheId(), parentKey);
+            parentKey.Deleted = true;
+            await context.Keys.SafeAddOrUpdateAsync(parentCacheId, parentKey);
+
+            await context.SaveChangesAsync();
 
             return new DeletedKeyBundle
             {
-                PersistedName = name,
                 Kid = parentKey.Key.KeyIdentifier,
                 Attributes = parentKey.Attributes,
                 RecoveryId = $"{AuthConstants.EmulatorUri}/deletedkeys/{name}",
@@ -389,7 +400,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            return await context.DeletedKeys.SafeGetAsync(name);
+            return await context.Keys.SafeGetDeletedAsync(name);
         }
 
         public ListResult<KeyBundle> GetDeletedKeys(int maxResults = 25, int skipCount = 25)
@@ -397,7 +408,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = context.DeletedKeys.ToList();
+            var allItems = context.Keys.Where(x => x.Deleted == true).ToList();
 
             if (allItems.Count == 0)
                 return new();
@@ -418,22 +429,26 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             // ensure it exists, or 404
-            await context.DeletedKeys.SafeGetAsync(name);
+            await context.Keys.SafeGetDeletedAsync(name);
 
-            await context.DeletedKeys.SafeRemoveAsync(name);
+            await context.Keys.SafeRemoveAsync(name);
+
+            await context.SaveChangesAsync();
         }
 
         public async Task<KeyBundle> RecoverDeletedKeyAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var toBeRestored = await context.DeletedKeys.SafeGetAsync(name);
+            var key = await context.Keys.SafeGetDeletedAsync(name);
 
-            await context.DeletedKeys.SafeRemoveAsync(name);
+            key.Deleted = false;
 
-            await context.Keys.SafeAddOrUpdateAsync(name, toBeRestored);
+            await context.Keys.SafeAddOrUpdateAsync(name, key);
 
-            return toBeRestored;
+            await context.SaveChangesAsync();
+
+            return key;
         }
 
         private KeyItemBundle ToKeyItemBundle(KeyBundle bundle)

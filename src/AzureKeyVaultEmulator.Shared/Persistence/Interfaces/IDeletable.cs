@@ -1,6 +1,6 @@
 ﻿namespace AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
-public interface IPersistedItem
+public interface IDeletable
 {
-    long PrimaryId { get; set; }
+    bool Deleted { get; set; }
 }

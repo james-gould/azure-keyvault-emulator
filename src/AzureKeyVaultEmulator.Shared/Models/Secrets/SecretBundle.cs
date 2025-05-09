@@ -5,7 +5,7 @@ using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 {
-    public sealed class SecretBundle : TaggedModel, IPersistedItem
+    public sealed class SecretBundle : TaggedModel, INamedItem
     {
         [Key]
         [JsonIgnore]
@@ -14,6 +14,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string PersistedName { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+        public bool Deleted { get; set; } = false;
 
         [JsonPropertyName("id")]
         public required string SecretIdentifier { get; set; } = string.Empty;

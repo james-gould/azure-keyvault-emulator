@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 using AzureKeyVaultEmulator.Shared.Constants;
+using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 using AzureKeyVaultEmulator.Shared.Persistence.Utils;
 using AzureKeyVaultEmulator.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
-    public class JsonWebKeyModel
+    public class JsonWebKeyModel : IPersistedItem
     {
         [Key]
         [JsonIgnore]
@@ -19,29 +20,28 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         public long PrimaryId { get; set; }
 
         [JsonPropertyName("crv")]
-        public string KeyCurve { get; set; } = string.Empty;
+        public string? KeyCurve { get; set; } = string.Empty;
 
         [JsonPropertyName("d")]
-        [JsonIgnore]
-        public string D { get; set; } = string.Empty;
+        public string? D { get; set; } = string.Empty;
 
         [JsonPropertyName("dp")]
-        public string Dp { get; set; } = string.Empty;
+        public string? Dp { get; set; } = string.Empty;
 
         [JsonPropertyName("dq")]
-        public string Dq { get; set; } = string.Empty;
+        public string? Dq { get; set; } = string.Empty;
 
         [JsonPropertyName("e")]
-        public string E { get; set; } = string.Empty;
+        public string? E { get; set; } = string.Empty;
 
         [JsonPropertyName("k")]
-        public string K { get; set; } = string.Empty;
+        public string? K { get; set; } = string.Empty;
 
         [JsonPropertyName("key_hsm")]
-        public string KeyHsm { get; set; } = string.Empty;
+        public string? KeyHsm { get; set; } = string.Empty;
 
         [JsonPropertyName("key_ops")]
-        public List<string> KeyOperations { get; set; } = [];
+        public List<string>? KeyOperations { get; set; }
 
         [JsonPropertyName("kty")]
         public string KeyType { get; set; } = string.Empty;
@@ -50,28 +50,28 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         public string KeyIdentifier { get; set; } = string.Empty;
 
         [JsonIgnore]
-        public string KeyName { get; set; } = string.Empty;
+        public string? KeyName { get; set; } = string.Empty;
 
         [JsonIgnore]
         public string KeyVersion { get; set; } = string.Empty;
 
         [JsonPropertyName("n")]
-        public string N { get; set; } = string.Empty;
+        public string? N { get; set; } = string.Empty;
 
         [JsonPropertyName("p")]
-        public string P { get; set; } = string.Empty;
+        public string? P { get; set; } = string.Empty;
 
         [JsonPropertyName("q")]
-        public string Q { get; set; } = string.Empty;
+        public string? Q { get; set; } = string.Empty;
 
         [JsonPropertyName("qi")]
-        public string Qi { get; set; } = string.Empty;
+        public string? Qi { get; set; } = string.Empty;
 
         [JsonPropertyName("x")]
-        public string X { get; set; } = string.Empty;
+        public string? X { get; set; } = string.Empty;
 
         [JsonPropertyName("y")]
-        public string Y { get; set; } = string.Empty;
+        public string? Y { get; set; } = string.Empty;
 
         [JsonIgnore]
         public byte[] RSAParametersBlob { get; set; } = [];

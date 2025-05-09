@@ -21,17 +21,28 @@ public static class DictionaryUtils
         var exists = dict.TryGetValue(name, out T? value);
 
         if (!exists || value is null)
-            throw new MissingItemException($"Could not find {name} in vault.");
+            throw new MissingItemException(name);
 
         return value;
     }
 
     public static async Task<TEntity> SafeGetAsync<TEntity>(this DbSet<TEntity> set, string name)
-        where TEntity : class, INamedItem
+        where TEntity : class, INamedItem, IDeletable
     {
-        var item = await set.FirstOrDefaultAsync(x => x.PersistedName == name);
+        ArgumentNullException.ThrowIfNull(set);
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
-        return item ?? throw new MissingItemException($"Could not find {name} in vault.");
+        var item = await set.FirstOrDefaultAsync(x => x.PersistedName == name && x.Deleted == false);
+
+        return item ?? throw new MissingItemException(name);
+    }
+
+    public static async Task<TEntity> SafeGetDeletedAsync<TEntity>(this DbSet<TEntity> set, string name)
+        where TEntity: class, INamedItem, IDeletable
+    {
+        var item = await set.FirstOrDefaultAsync(x => x.PersistedName == name && x.Deleted == true);
+
+        return item ?? throw new MissingItemException(name);
     }
 
     /// <summary>
@@ -45,8 +56,9 @@ public static class DictionaryUtils
         => dict.AddOrUpdate(name, value, (_, _) => value);
 
     public static async Task SafeAddOrUpdateAsync<TEntity>(this DbSet<TEntity> set, string name, TEntity value)
-        where TEntity : class, INamedItem
+    where TEntity : class, INamedItem
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(value);
 
         var existing = await set.FirstOrDefaultAsync(x => x.PersistedName == name);

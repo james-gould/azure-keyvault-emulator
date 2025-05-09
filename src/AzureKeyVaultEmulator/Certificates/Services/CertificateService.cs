@@ -241,7 +241,6 @@ public sealed class CertificateService(
 
         var deletedCert = new DeletedCertificateBundle
         {
-            PersistedName = name,
             CertificateIdentifier = $"{AuthConstants.EmulatorUri}/certificates/{name}",
             RecoveryId = cert.CertificateIdentifier,
             ContentType = cert.CertificatePolicy?.SecretProperies?.ContentType ?? string.Empty,

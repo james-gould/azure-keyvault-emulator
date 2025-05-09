@@ -3,7 +3,7 @@
 /// <summary>
 /// Allows for easier extension method creation when porting from Dictionary to DbSet
 /// </summary>
-public interface INamedItem
+public interface INamedItem : IPersistedItem, IDeletable
 {
     string PersistedName { get; set; }
 }

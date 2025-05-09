@@ -6,7 +6,7 @@ using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
-public sealed class CertificateBundle : CertificateProperties, IPersistedItem
+public sealed class CertificateBundle : CertificateProperties, INamedItem
 {
     [Key]
     [JsonIgnore]
@@ -15,6 +15,9 @@ public sealed class CertificateBundle : CertificateProperties, IPersistedItem
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedName { get; set; } = string.Empty;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public bool Deleted { get; set; } = false;
 
     [JsonPropertyName("policy")]
     public CertificatePolicy? CertificatePolicy { get; set; }
