@@ -1,6 +1,7 @@
 ﻿using AzureKeyVaultEmulator.Certificates.Services;
 using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.ApiConfiguration
 {
@@ -16,6 +17,8 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
 
             services.AddTransient<IEncryptionService, EncryptionService>();
             services.AddTransient<ITokenService, TokenService>();
+
+            services.AddHostedService<SqliteWALCleanupService>();
 
             return services;
         }

@@ -93,7 +93,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     source: hostCertificatePath,
                     target: KeyVaultEmulatorCertConstants.CertMountTarget,
                     type: ContainerMountType.BindMount,
-                    isReadOnly: true))
+                    isReadOnly: false))
                 .WithAnnotation(new ContainerLifetimeAnnotation { Lifetime = options.Lifetime })
                 .WithAnnotation(new EndpointAnnotation(ProtocolType.Tcp)
                 {

@@ -1,6 +1,6 @@
 ﻿using AzureKeyVaultEmulator.Shared.Constants;
 using AzureKeyVaultEmulator.Shared.Models.Keys;
-//using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using AzureKeyVaultEmulator.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +10,7 @@ public sealed class VaultContext : DbContext
 {
     public VaultContext() { }
 
-    //public DbSet<SecretBundle> Secrets { get; set; }
+    public DbSet<SecretBundle> Secrets { get; set; }
     public DbSet<KeyBundle> Keys { get; set; }
     public DbSet<JsonWebKeyModel> JsonWebKeys { get; set; }
 
@@ -32,6 +32,7 @@ public sealed class VaultContext : DbContext
         modelBuilder.Entity<KeyBundle>(e =>
         {
             e.HasKey(x => x.PrimaryId);
+            e.HasOne(x => x.Key).WithOne().HasForeignKey<JsonWebKeyModel>(g => g.PrimaryId);
         });
 
         modelBuilder.Entity<JsonWebKeyModel>(e =>

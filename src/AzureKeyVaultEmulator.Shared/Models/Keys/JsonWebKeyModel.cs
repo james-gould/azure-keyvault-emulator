@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,6 +13,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
     public class JsonWebKeyModel
     {
+        [Key]
         [JsonIgnore]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long PrimaryId { get; set; }
