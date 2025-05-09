@@ -32,7 +32,8 @@ public sealed class VaultContext : DbContext
         modelBuilder.Entity<KeyBundle>(e =>
         {
             e.HasKey(x => x.PrimaryId);
-            e.HasOne(x => x.Key).WithOne().HasForeignKey<JsonWebKeyModel>(g => g.PrimaryId);
+            //e.HasOne(x => x.Key).WithOne().HasForeignKey<JsonWebKeyModel>(g => g.PrimaryId);
+            e.Navigation(e => e.Key).AutoInclude();
         });
 
         modelBuilder.Entity<JsonWebKeyModel>(e =>
