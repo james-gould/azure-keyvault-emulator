@@ -76,7 +76,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         [JsonIgnore]
         public byte[] RSAParametersBlob { get; set; } = [];
 
-        private RSA? _rsaKey;
+        private RSA? _backingRsaKey;
 
         [NotMapped]
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
@@ -84,13 +84,13 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         {
             get
             {
-                if(_rsaKey != null)
-                    return _rsaKey;
+                if(_backingRsaKey != null)
+                    return _backingRsaKey;
 
-                _rsaKey = RSA.Create();
-                _rsaKey.ImportParameters(RsaParametersSerializer.Deserialize(RSAParametersBlob));
+                _backingRsaKey = RSA.Create();
+                _backingRsaKey.ImportParameters(RsaParametersSerializer.Deserialize(RSAParametersBlob));
 
-                return _rsaKey;
+                return _backingRsaKey;
             }
             set => RSAParametersBlob = RsaParametersSerializer.Serialize(value.ExportParameters(true));
         }

@@ -78,11 +78,11 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         }
 
         [HttpDelete("{name}")]
-        public IActionResult DeleteKey(
+        public async Task<IActionResult> DeleteKey(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.DeleteKey(name);
+            var result = await keyService.DeleteKeyAsync(name);
 
             return Ok(result);
         }
@@ -123,35 +123,35 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         }
 
         [HttpPost("{name}/{version}/encrypt")]
-        public IActionResult Encrypt(
+        public async Task<IActionResult> Encrypt(
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion,
             [FromBody] KeyOperationParameters keyOperationParameters)
         {
-            var result = keyService.Encrypt(name, version, keyOperationParameters);
+            var result = await keyService.EncryptAsync(name, version, keyOperationParameters);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/{version}/decrypt")]
-        public IActionResult Decrypt(
+        public async Task<IActionResult> Decrypt(
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion,
             [FromBody] KeyOperationParameters keyOperationParameters)
         {
-            var result = keyService.Decrypt(name, version, keyOperationParameters);
+            var result = await keyService.DecryptAsync(name, version, keyOperationParameters);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/backup")]
-        public IActionResult BackupKey(
+        public async Task<IActionResult> BackupKey(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.BackupKey(name);
+            var result = await keyService.BackupKeyAsync(name);
 
             return result is null ? NotFound() : Ok(result);
         }
@@ -177,103 +177,103 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         }
 
         [HttpPut("{name}/rotationpolicy")]
-        public IActionResult UpdateKeyRotationPolicy(
+        public async Task<IActionResult> UpdateKeyRotationPolicy(
             [FromRoute] string name,
             [FromBody] KeyRotationPolicy policy,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.UpdateKeyRotationPolicy(name, policy.Attributes, policy.LifetimeActions);
+            var result = await keyService.UpdateKeyRotationPolicyAsync(name, policy.Attributes, policy.LifetimeActions);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/{version}/release")]
-        public IActionResult ReleaseKey(
+        public async Task<IActionResult> ReleaseKey(
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion,
             [FromBody] ReleaseKeyRequest vm)
         {
-            var result = keyService.ReleaseKey(name, version);
+            var result = await keyService.ReleaseKeyAsync(name, version);
 
             return Ok(result);
         }
 
         [HttpPut("{name}")]
-        public IActionResult ImportKey(
+        public async Task<IActionResult> ImportKey(
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
             [FromBody] ImportKeyRequest req)
         {
-            var result = keyService.ImportKey(name, req.Key, req.KeyAttributes, req.Tags);
+            var result = await keyService.ImportKeyAsync(name, req.Key, req.KeyAttributes, req.Tags);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/sign")]
-        public IActionResult SignWithKey(
+        public async Task<IActionResult> SignWithKey(
             [FromRoute] string name,
             [FromBody] SignKeyRequest model,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.SignWithKey(name, string.Empty, model.SigningAlgorithm, model.Value);
+            var result = await keyService.SignWithKeyAsync(name, string.Empty, model.SigningAlgorithm, model.Value);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/{version}/sign")]
-        public IActionResult SignWithKey(
+        public async Task<IActionResult> SignWithKey(
             [FromRoute] string name,
             [FromRoute] string version,
             [FromBody] SignKeyRequest model,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.SignWithKey(name, version, model.SigningAlgorithm, model.Value);
+            var result = await keyService.SignWithKeyAsync(name, version, model.SigningAlgorithm, model.Value);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/{version}/verify")]
-        public IActionResult VerifyHash(
+        public async Task<IActionResult> VerifyHash(
             [FromRoute] string name,
             [FromRoute] string version,
             [FromBody] VerifyHashRequest req)
         {
-            var result = keyService.VerifyDigest(name, version, req.Digest, req.Value);
+            var result = await keyService.VerifyDigestAsync(name, version, req.Digest, req.Value);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/verify")]
-        public IActionResult VerifyHash(
+        public async Task<IActionResult> VerifyHash(
             [FromRoute] string name,
             [FromBody] VerifyHashRequest req)
         {
-            var result = keyService.VerifyDigest(name, string.Empty, req.Digest, req.Value);
+            var result = await keyService.VerifyDigestAsync(name, string.Empty, req.Digest, req.Value);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/{version}/wrapkey")]
-        public IActionResult WrapKey(
+        public async Task<IActionResult> WrapKey(
             [FromRoute] string name,
             [FromRoute] string version,
             [FromBody] KeyOperationParameters para,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.WrapKey(name, version, para);
+            var result = await keyService.WrapKeyAsync(name, version, para);
 
             return Ok(result);
         }
 
         [HttpPost("{name}/{version}/unwrapkey")]
-        public IActionResult UnwrapKey(
+        public async Task<IActionResult> UnwrapKey(
             [FromRoute] string name,
             [FromRoute] string version,
             [FromBody] KeyOperationParameters para,
             [ApiVersion] string apiVersion)
         {
-            var result = keyService.UnwrapKey(name, version, para);
+            var result = await keyService.UnwrapKeyAsync(name, version, para);
 
             return Ok(result);
         }

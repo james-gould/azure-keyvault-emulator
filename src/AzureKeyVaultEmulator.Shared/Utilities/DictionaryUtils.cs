@@ -72,7 +72,7 @@ public static class DictionaryUtils
     public static void SafeRemove<T>(this ConcurrentDictionary<string, T> dict, string key)
         => dict.TryRemove(key, out _);
 
-    public static async Task SafeRemove<TEntity>(this DbSet<TEntity> set, string key)
+    public static async Task SafeRemoveAsync<TEntity>(this DbSet<TEntity> set, string key)
         where TEntity : class, INamedItem
     {
         ArgumentException.ThrowIfNullOrEmpty(key);

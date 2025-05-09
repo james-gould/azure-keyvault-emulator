@@ -5,10 +5,10 @@ using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
-    public class KeyBundle : TaggedModel, INamedItem
+    public class KeyBundle : TaggedModel, IPersistedItem
     {
         [Key]
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long PrimaryId { get; set; }
 
