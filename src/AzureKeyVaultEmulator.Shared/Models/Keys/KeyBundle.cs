@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using AzureKeyVaultEmulator.Shared.Persistence;
+using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
@@ -13,7 +13,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         public long PrimaryId { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-        public string Name { get; set; } = string.Empty;
+        public string PersistedName { get; set; } = string.Empty;
 
         [JsonPropertyName("key")]
         public required JsonWebKeyModel Key { get; set; }

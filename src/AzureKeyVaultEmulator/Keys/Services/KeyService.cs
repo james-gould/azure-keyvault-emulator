@@ -20,9 +20,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var debug = context.Keys.FirstOrDefault();
-
-            return _keys.SafeGet(name);
+            return context.Keys.SafeGet(name);
         }
 
         public KeyBundle GetKey(string name, string version)
@@ -30,10 +28,10 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            return _keys.SafeGet(name.GetCacheId(version));
+            return context.Keys.SafeGet(name.GetCacheId(version));
         }
 
-        public KeyBundle CreateKey(string name, CreateKeyModel key)
+        public async Task<KeyBundle> CreateKeyAsync(string name, CreateKeyModel key)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -57,13 +55,15 @@ namespace AzureKeyVaultEmulator.Keys.Services
             _keys.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
             _keys.TryAdd(name.GetCacheId(version), response);
 
-            context.Keys.Add(response);
-            context.SaveChanges();
+            context.Keys.SafeAddOrUpdate(name.GetCacheId(), response);
+            context.Keys.SafeAddOrUpdate(name.GetCacheId(version), response);
+
+            await context.SaveChangesAsync();
 
             return response;
         }
 
-        public KeyAttributesModel? UpdateKey(
+        public async Task<KeyAttributesModel?> UpdateKey(
             string name,
             string version,
             KeyAttributesModel attributes,
@@ -73,7 +73,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var cacheId = name.GetCacheId(version);
 
-            var key = _keys.SafeGet(cacheId);
+            var key = context.Keys.SafeGet(cacheId);
 
             key.Attributes = attributes;
             key.Attributes.RecoverableDays = attributes.RecoverableDays;
@@ -83,7 +83,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             key.Attributes.Update();
 
-            _keys.TryUpdate(cacheId, key, key);
+            context.Keys.SafeAddOrUpdate(cacheId, key);
+
+            await context.SaveChangesAsync();
 
             return key.Attributes;
         }
@@ -387,7 +389,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             
             return new DeletedKeyBundle
             {
-                Name = name,
+                PersistedName = name,
                 Kid = parentKey.Key.KeyIdentifier,
                 Attributes = parentKey.Attributes,
                 RecoveryId = $"{AuthConstants.EmulatorUri}/deletedkeys/{name}",

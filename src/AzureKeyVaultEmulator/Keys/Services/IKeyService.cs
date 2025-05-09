@@ -6,8 +6,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
     {
         KeyBundle GetKey(string name);
         KeyBundle GetKey(string name, string version);
-        KeyBundle CreateKey(string name, CreateKeyModel key);
-        KeyAttributesModel? UpdateKey(string name, string version, KeyAttributesModel attributes, Dictionary<string, string> tags);
+        Task<KeyBundle> CreateKeyAsync(string name, CreateKeyModel key);
+        Task<KeyAttributesModel?> UpdateKey(string name, string version, KeyAttributesModel attributes, Dictionary<string, string> tags);
         KeyBundle? RotateKey(string name, string version);
 
         ValueModel<string>? GetRandomBytes(int count);

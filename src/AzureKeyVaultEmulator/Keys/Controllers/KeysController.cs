@@ -17,7 +17,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [ApiVersion] string apiVersion,
             [FromBody] CreateKeyModel requestBody)
         {
-            var createdKey = keyService.CreateKey(name, requestBody);
+            var createdKey = keyService.CreateKeyAsync(name, requestBody);
 
             return Ok(createdKey);
         }

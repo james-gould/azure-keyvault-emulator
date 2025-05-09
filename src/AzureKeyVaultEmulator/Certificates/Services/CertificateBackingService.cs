@@ -6,7 +6,9 @@ using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
 
-public sealed class CertificateBackingService(IKeyService keyService, ISecretService secretService)
+public sealed class CertificateBackingService(
+    IKeyService keyService,
+    ISecretService secretService)
     : ICertificateBackingService
 {
     // { issuerName, issuerBundle }
@@ -24,12 +26,12 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
         return _issuers.SafeGet(name.GetCacheId());
     }
 
-    public (KeyBundle backingKey, SecretBundle backingSecret) GetBackingComponents(string certName, CertificatePolicy? policy = null)
+    public async Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponents(string certName, CertificatePolicy? policy = null)
     {
         var keySize = policy?.KeyProperties?.KeySize ?? 2048;
         var keyType = !string.IsNullOrEmpty(policy?.KeyProperties?.JsonWebKeyType) ? policy.KeyProperties.JsonWebKeyType : SupportedKeyTypes.RSA;
 
-        var backingKey = CreateBackingKey(certName, keySize, keyType);
+        var backingKey = await CreateBackingKeyAsync(certName, keySize, keyType);
 
         var contentType = policy?.SecretProperies?.ContentType ?? "application/unknown";
         var backingSecret = CreateBackingSecret(certName, contentType);
@@ -94,12 +96,12 @@ public sealed class CertificateBackingService(IKeyService keyService, ISecretSer
 
     public CertificateContacts GetCertificateContacts() => _certContacts;
 
-    private KeyBundle CreateBackingKey(
+    private async Task<KeyBundle> CreateBackingKeyAsync(
         string certName,
         int keySize,
         string keyType)
     {
-        return keyService.CreateKey(certName, new CreateKeyModel { KeySize = keySize, KeyType = keyType });
+        return await keyService.CreateKeyAsync(certName, new CreateKeyModel { KeySize = keySize, KeyType = keyType });
     }
 
     private SecretBundle CreateBackingSecret(string certName, string contentType)

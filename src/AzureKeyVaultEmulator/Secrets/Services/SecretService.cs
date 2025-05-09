@@ -51,7 +51,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var deleted = new DeletedSecretBundle
             {
-                Name = name,
+                PersistedName = name,
                 RecoveryId = secret.SecretIdentifier,
                 Attributes = secret.Attributes,
                 SecretId = secret.SecretIdentifier,

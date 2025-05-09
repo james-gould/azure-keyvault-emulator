@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using AzureKeyVaultEmulator.Shared.Persistence;
+using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 {

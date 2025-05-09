@@ -1,9 +1,9 @@
-﻿namespace AzureKeyVaultEmulator.Shared.Persistence;
+﻿namespace AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 /// <summary>
 /// Allows for easier extension method creation when porting from Dictionary to DbSet
 /// </summary>
 public interface INamedItem
 {
-    string Name { get; set; }
+    string PersistedName { get; set; }
 }

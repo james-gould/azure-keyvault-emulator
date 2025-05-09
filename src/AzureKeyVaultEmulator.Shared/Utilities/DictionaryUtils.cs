@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using AzureKeyVaultEmulator.Shared.Exceptions;
-using AzureKeyVaultEmulator.Shared.Persistence;
+using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace AzureKeyVaultEmulator.Shared.Utilities;
@@ -29,7 +29,7 @@ public static class DictionaryUtils
     public static TEntity SafeGet<TEntity>(this DbSet<TEntity> set, string name)
         where TEntity : class, INamedItem
     {
-        var item = set.FirstOrDefault(x => x.Name == name);
+        var item = set.FirstOrDefault(x => x.PersistedName == name);
 
         return item ?? throw new MissingItemException($"Could not find {name} in vault.");
     }
@@ -49,7 +49,15 @@ public static class DictionaryUtils
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        value.Name = name;
+        var existing = set.FirstOrDefault(x => x.PersistedName == name);
+
+        if(existing != null)
+        {
+            set.Update(value);
+            return;
+        }
+
+        value.PersistedName = name;
         set.Add(value);
     }
 
@@ -67,7 +75,7 @@ public static class DictionaryUtils
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
 
-        var entity = set.FirstOrDefault(x => x.Name == key);
+        var entity = set.FirstOrDefault(x => x.PersistedName == key);
 
         if (entity != null)
             set.Remove(entity);
