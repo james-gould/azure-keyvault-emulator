@@ -1,9 +1,11 @@
 ﻿using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 {
-    public class DeletedSecretBundle : DeletedBundle<SecretAttributesModel>
+    public class DeletedSecretBundle : DeletedBundle<SecretAttributesModel>, INamedItem
     {
+
         [JsonPropertyName("id")]
         public string SecretId { get; set; } = string.Empty;
 

@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
-    public class KeyBundle : TaggedModel
+    public class KeyBundle : TaggedModel, INamedItem
     {
         [Key]
         [JsonIgnore]

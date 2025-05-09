@@ -1,8 +1,10 @@
 ﻿using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.Shared.Models;
 
-public class DeletedBundle<TAttributes> : TaggedModel where TAttributes : AttributeBase
+public class DeletedBundle<TAttributes> : TaggedModel, INamedItem
+    where TAttributes : AttributeBase
 {
     [JsonPropertyName("name")]
     public required string Name { get; set; } = string.Empty;

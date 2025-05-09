@@ -1,12 +1,16 @@
 ﻿using System.Text.Json.Serialization;
 using AzureKeyVaultEmulator.Shared.Constants;
+using AzureKeyVaultEmulator.Shared.Persistence;
 using AzureKeyVaultEmulator.Shared.Utilities;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
 // https://learn.microsoft.com/en-us/rest/api/keyvault/certificates/get-certificate-issuer/get-certificate-issuer?view=rest-keyvault-certificates-7.4&tabs=HTTP#examples
-public sealed class IssuerBundle
+public sealed class IssuerBundle : INamedItem
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public required string Name { get; set; }
+
     [JsonPropertyName("id")]
     public string Identifier => $"{AuthConstants.EmulatorUri}/certificates/issuers/{IssuerName}";
 

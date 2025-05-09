@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
-public sealed class CertificateBundle : CertificateProperties
+public sealed class CertificateBundle : CertificateProperties, INamedItem
 {
+    public required string Name { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long PrimaryId { get; set; }
