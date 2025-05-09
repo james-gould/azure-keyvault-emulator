@@ -6,7 +6,7 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public interface ICertificateService
 {
-    CertificateOperation CreateCertificate(string name, CertificateAttributesModel attributes, CertificatePolicy? policy);
+    Task<CertificateOperation> CreateCertificateAsync(string name, CertificateAttributesModel attributes, CertificatePolicy? policy);
     CertificateBundle GetCertificate(string name, string version = "");
     ListResult<CertificateVersionItem> GetCertificates(int maxResults = 25, int skipToken = 25);
     ListResult<CertificateVersionItem> GetCertificateVersions(string name, int maxResults = 25, int skipCount = 25);
@@ -19,7 +19,7 @@ public interface ICertificateService
 
     ValueModel<string> BackupCertificate(string name);
     CertificateBundle RestoreCertificate(ValueModel<string> backup);
-    CertificateBundle ImportCertificate(string name, ImportCertificateRequest request);
+    Task<CertificateBundle> ImportCertificateAsync(string name, ImportCertificateRequest request);
     CertificateBundle MergeCertificates(string name, MergeCertificatesRequest request);
 
     CertificateOperation GetDeletedCertificate(string name);

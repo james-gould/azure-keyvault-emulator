@@ -16,14 +16,14 @@ public class CertificatesController(
     ITokenService tokenService) : Controller
 {
     [HttpPost("{name}/create")]
-    public IActionResult CreateCertificate(
+    public async Task<IActionResult> CreateCertificate(
         [FromRoute] string name,
         [FromBody] CreateCertificateRequest request,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.CreateCertificate(name, request.Attributes, request.CertificatePolicy);
+        var result = await certService.CreateCertificateAsync(name, request.Attributes, request.CertificatePolicy);
 
         return Accepted(result);
     }
@@ -162,7 +162,7 @@ public class CertificatesController(
     }
 
     [HttpPost("{name}/import")]
-    public IActionResult ImportCertificate(
+    public async Task<IActionResult> ImportCertificate(
         [FromRoute] string name,
         [FromBody] ImportCertificateRequest? request,
         [ApiVersion] string apiVersion)
@@ -170,7 +170,7 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(request);
 
-        var result = certService.ImportCertificate(name, request);
+        var result = await certService.ImportCertificateAsync(name, request);
 
         return Ok(result);
     }

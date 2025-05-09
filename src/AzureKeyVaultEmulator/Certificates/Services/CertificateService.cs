@@ -15,7 +15,7 @@ public sealed class CertificateService(
     private static readonly ConcurrentDictionary<string, CertificateBundle> _certs = [];
     private static readonly ConcurrentDictionary<string, DeletedCertificateBundle> _deletedCerts = [];
 
-    public CertificateOperation CreateCertificate(
+    public async Task<CertificateOperation> CreateCertificateAsync(
         string name,
         CertificateAttributesModel attributes,
         CertificatePolicy? policy)
@@ -25,7 +25,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.BuildX509Certificate(name, policy);
 
-        var (backingKey, backingSecret) = backingService.GetBackingComponents(name, policy);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponents(name, policy);
 
         var version = Guid.NewGuid().Neat();
 
@@ -169,7 +169,7 @@ public sealed class CertificateService(
         };
     }
 
-    public CertificateBundle ImportCertificate(string name, ImportCertificateRequest request)
+    public async Task<CertificateBundle> ImportCertificateAsync(string name, ImportCertificateRequest request)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
@@ -177,7 +177,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.ImportFromBase64(request.Value);
 
-        var (backingKey, backingSecret) = backingService.GetBackingComponents(name);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponents(name);
 
         var attributes = new CertificateAttributesModel
         {
