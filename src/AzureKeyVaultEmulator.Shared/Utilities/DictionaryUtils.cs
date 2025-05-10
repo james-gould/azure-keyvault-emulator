@@ -30,7 +30,7 @@ public static class DictionaryUtils
     public static async Task<TEntity> SafeGetAsync<TEntity>(
         this DbSet<TEntity> set,
         string name,
-        string version,
+        string version = "",
         bool deleted = false)
     where TEntity : class, INamedItem, IDeletable
     {
