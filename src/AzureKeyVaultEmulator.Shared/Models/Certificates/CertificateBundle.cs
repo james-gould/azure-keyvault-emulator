@@ -37,6 +37,7 @@ public sealed class CertificateBundle : CertificateProperties, INamedItem
     public byte[] CertificateBlob { get; set; } = [];
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    [NotMapped]
     private X509Certificate2? _certificate;
 
     /// <summary>
@@ -44,6 +45,7 @@ public sealed class CertificateBundle : CertificateProperties, INamedItem
     /// <para>Cer is only the public key information, only other option is we hardcode an export or have files on disk.</para>
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    [NotMapped]
     public X509Certificate2? FullCertificate
     {
         get

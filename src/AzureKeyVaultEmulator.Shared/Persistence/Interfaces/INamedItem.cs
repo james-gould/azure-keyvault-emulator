@@ -1,7 +1,7 @@
 ﻿namespace AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 /// <summary>
-/// Allows for easier extension method creation when porting from Dictionary to DbSet
+/// Represents a persisted item that must also be named, allowing for querying through the API.
 /// </summary>
 public interface INamedItem : IPersistedItem, IDeletable
 {

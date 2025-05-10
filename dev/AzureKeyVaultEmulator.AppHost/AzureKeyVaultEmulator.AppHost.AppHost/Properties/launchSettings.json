@@ -11,7 +11,8 @@
         "DOTNET_ENVIRONMENT": "Development",
         "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21131",
         "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22102",
-        "Override": "true"
+        "Override": "true",
+        "Persist": "true"
       }
     }
   }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using AzureKeyVaultEmulator.Shared.Constants;
 using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
@@ -45,8 +46,13 @@ public sealed class IssuerBundle : INamedItem
 
 public sealed class IssuerAttributes : AttributeBase;
 
-public sealed class IssuerCredentials
+public sealed class IssuerCredentials : IPersistedItem
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public long PrimaryId { get; set; }
+
     [JsonPropertyName("account_id")]
     public string AccountId { get; set; } = string.Empty;
 
@@ -54,17 +60,35 @@ public sealed class IssuerCredentials
     public string Password { get; set; } = string.Empty;
 }
 
-public sealed class OrganisationDetails
+public sealed class OrganisationDetails : IPersistedItem
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public long PrimaryId { get; set; }
+
     [JsonPropertyName("id")]
     public string Identifier { get; set; } = Guid.NewGuid().Neat();
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public string BackedAdminDetails = "[]";
+
     [JsonPropertyName("admin_details")]
-    public IEnumerable<AdministratorDetails> AdministratorDetails { get; set; } = [];
+    [NotMapped]
+    public IEnumerable<AdministratorDetails> AdministratorDetails
+    {
+        get => JsonSerializer.Deserialize<IEnumerable<AdministratorDetails>>(BackedAdminDetails) ?? [];
+        set => BackedAdminDetails = JsonSerializer.Serialize(value);
+    }
 }
 
-public sealed class AdministratorDetails
+public sealed class AdministratorDetails : IPersistedItem
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public long PrimaryId { get; set; }
+
     [JsonPropertyName("email")]
     public string Email { get; set; } = string.Empty;
 
