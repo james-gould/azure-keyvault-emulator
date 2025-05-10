@@ -49,7 +49,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = key.Tags ?? []
             };
 
-            await context.Keys.SafeAddAsync(name, "", response, context);
             await context.Keys.SafeAddAsync(name, version, response, context);
 
             await context.SaveChangesAsync();
@@ -74,8 +73,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 key.Tags.TryAdd(tag.Key, tag.Value);
 
             key.Attributes.Update();
-
-            await context.Keys.SafeAddAsync(name, version, key, context);
 
             await context.SaveChangesAsync();
 
@@ -108,7 +105,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var foundKey = await context.Keys.SafeGetAsync(name.GetCacheId());
+            var foundKey = await context.Keys.SafeGetAsync(name, version);
 
             var encrypted = EncodingUtils.Base64UrlEncode(foundKey.Key.Encrypt(keyOperationParameters));
 
@@ -124,7 +121,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var foundKey = await context.Keys.SafeGetAsync(name.GetCacheId());
+            var foundKey = await context.Keys.SafeGetAsync(name, version);
 
             var decrypted = foundKey.Key.Decrypt(keyOperationParameters);
 
@@ -139,7 +136,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var foundKey = await context.Keys.SafeGetAsync(name.GetCacheId());
+            var foundKey = await context.Keys.SafeGetAsync(name);
 
             return new ValueModel<string>
             {
@@ -183,7 +180,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var key = await context.Keys.SafeGetAsync(name.GetCacheId());
+            var key = await context.Keys.SafeGetAsync(name);
 
             var policyExists = _keyRotations.TryGetValue(name, out var keyRotationPolicy);
 
@@ -248,9 +245,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = await context.Keys.SafeGetAsync(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             var aasJwt = tokenService.CreateTokenWithHeaderClaim([], "keys", JsonSerializer.Serialize(key));
 
@@ -295,9 +290,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(algo);
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = await context.Keys.SafeGetAsync(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             var signature = encryptionService.SignWithKey(key.Key.RSAKey, digest);
 
@@ -314,7 +307,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
             ArgumentException.ThrowIfNullOrWhiteSpace(signature);
 
-            var key = await context.Keys.SafeGetAsync(name.GetCacheId(version));
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             return new ValueModel<bool>
             {
@@ -327,9 +320,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = await context.Keys.SafeGetAsync(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             var encrypted = key.Key.Encrypt(para);
 
@@ -345,9 +336,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = await context.Keys.SafeGetAsync(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             var decrypted = key.Key.Decrypt(para);
 
@@ -366,19 +355,15 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var parentKey = await context.Keys.SafeGetAsync(parentCacheId);
 
-            var keys = await context.Keys.Where(x => x.PersistedName.Contains(parentCacheId)).ToListAsync();
+            var keys = await context.Keys.Where(x => x.PersistedName == name).ToListAsync();
 
             if (keys.Count == 0)
                 throw new MissingItemException(name);
 
             foreach (var item in keys)
-            {
                 item.Deleted = true;
-                await context.Keys.SafeAddAsync(name, item.PersistedVersion, item, context);
-            }
 
             parentKey.Deleted = true;
-            await context.Keys.SafeAddAsync(parentCacheId, "", parentKey, context);
 
             await context.SaveChangesAsync();
 
