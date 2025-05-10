@@ -127,7 +127,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
             if(!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
                 matchingKeys.Add(key.Name);
 
-        Assert.Equal(executionCount + 1, matchingKeys.Count);
+        Assert.Equal(executionCount, matchingKeys.Count);
     }
 
     [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
@@ -146,7 +146,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
             if (!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
                 matchingKeys.Add(key.Name);
 
-        Assert.Equal(executionCount + 1, matchingKeys.Count);
+        Assert.Equal(executionCount, matchingKeys.Count);
     }
 
     [Fact]

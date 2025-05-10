@@ -28,11 +28,14 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var createdSecret = await fixture.CreateSecretAsync(fixture.FreshlyGeneratedGuid, fixture.FreshlyGeneratedGuid);
+            var name = fixture.FreshlyGeneratedGuid;
+            var value = fixture.FreshlyGeneratedGuid;
+
+            var createdSecret = await fixture.CreateSecretAsync(name, value);
 
             Assert.NotNull(createdSecret.Value);
 
-            var secretFromKv = await client.GetSecretAsync(fixture.FreshlyGeneratedGuid, createdSecret.Properties.Version);
+            var secretFromKv = await client.GetSecretAsync(name, createdSecret.Properties.Version);
 
             Assert.Equal(createdSecret.Value, secretFromKv.Value.Value);
             Assert.Equal(createdSecret.Properties.Version, secretFromKv.Value.Properties.Version);
@@ -93,8 +96,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
                 versions.Add(version.Version);
             }
 
-            // Creating secret adds base secret + versioned one
-            Assert.Equal(executionCount + 1, versions.Count);
+            Assert.Equal(executionCount, versions.Count);
         }
 
         [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
@@ -115,7 +117,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
                 if (secret.Name.Equals(secretName, StringComparison.CurrentCultureIgnoreCase))
                     testSecrets.Add(secret);
 
-            Assert.Equal(executionCount + 1, testSecrets.Count);
+            Assert.Equal(executionCount, testSecrets.Count);
         }
 
         [Fact]
@@ -143,7 +145,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var secret = await fixture.CreateSecretAsync();
+            var secret = await fixture.CreateSecretAsync(fixture.FreshlyGeneratedGuid, fixture.FreshlyGeneratedGuid);
 
             Assert.True(string.IsNullOrEmpty(secret.Properties.ContentType));
 
@@ -161,7 +163,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var secret = await fixture.CreateSecretAsync();
+            var secret = await fixture.CreateSecretAsync(fixture.FreshlyGeneratedGuid, fixture.FreshlyGeneratedGuid);
 
             var deletedOperation = await client.StartDeleteSecretAsync(secret.Name);
 

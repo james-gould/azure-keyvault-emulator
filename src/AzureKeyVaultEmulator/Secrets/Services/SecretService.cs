@@ -10,11 +10,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         IEncryptionService encryption,
         VaultContext context) : ISecretService
     {
-        private static readonly ConcurrentDictionary<string, SecretBundle> _deletedSecrets = new();
-
         public async Task<SecretBundle> GetSecretAsync(string name, string version = "")
         {
-            return await context.Secrets.SafeGetAsync(name.GetCacheId(version));
+            return await context.Secrets.SafeGetAsync(name, version);
         }
 
         public async Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest secret)
@@ -34,8 +32,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Tags = secret.Tags
             };
 
-            await context.Secrets.SafeAddOrUpdateAsync(name, "", response, context);
-            await context.Secrets.SafeAddOrUpdateAsync(name, version, response.Clone(), context);
+            await context.Secrets.SafeAddAsync(name, version, response.Clone(), context);
 
             await context.SaveChangesAsync();
 
@@ -53,8 +50,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 secret.Attributes.ContentType = attributes.ContentType;
 
             secret.Attributes.Update();
-
-            await context.Secrets.SafeAddOrUpdateAsync(name, version, secret, context);
 
             await context.SaveChangesAsync();
 
@@ -78,8 +73,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             secret.Deleted = true;
 
-            await context.Secrets.SafeAddOrUpdateAsync(name, version, secret, context);
-
             await context.SaveChangesAsync();
 
             return deleted;
@@ -97,13 +90,11 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             };
         }
 
-        public SecretBundle? GetDeletedSecret(string name)
+        public async Task<SecretBundle> GetDeletedSecretAsync(string name)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
-
-            var cacheId = name.GetCacheId();
             
-            var secret = _deletedSecrets.SafeGet(cacheId);
+            var secret = await context.Secrets.SafeGetAsync(name, deleted: true);
 
             return secret;
         }
@@ -113,7 +104,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var items = _deletedSecrets.Skip(skipCount).Take(maxResults);
+            var items = context.Secrets.Where(x => x.Deleted == true).Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();
@@ -123,7 +114,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return new ListResult<SecretBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items.Select(kvp => kvp.Value)
+                Values = items
             };
         }
 
@@ -169,26 +160,24 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             };
         }
 
-        public void PurgeDeletedSecret(string name)
+        public async Task PurgeDeletedSecretAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var secret = _deletedSecrets.SafeGet(name);
-            
-            _deletedSecrets.SafeRemove(name);
+            await context.Secrets.SafeRemoveAsync(name);
+
+            await context.SaveChangesAsync();
         }
 
         public async Task<SecretBundle> RecoverDeletedSecretAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             
-            var secret = _deletedSecrets.SafeGet(name);
+            var secret = await context.Secrets.SafeGetAsync(name, deleted: true);
 
-            await context.Secrets.SafeAddOrUpdateAsync(name, "", secret, context);
+            secret.Deleted = false;
 
             await context.SaveChangesAsync();
-
-            _deletedSecrets.SafeRemove(name);
 
             return secret;
         }
@@ -201,7 +190,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var version = Guid.NewGuid().Neat();
 
-            await context.Secrets.SafeAddOrUpdateAsync(secret.PersistedName, version, secret, context);
+            await context.Secrets.SafeAddAsync(secret.PersistedName, version, secret, context);
             await context.SaveChangesAsync();
 
             return secret;

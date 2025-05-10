@@ -273,7 +273,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         await foreach (var cer in client.GetPropertiesOfCertificateVersionsAsync(certName))
             certs.Add(cer);
 
-        Assert.Equal(executionCount + 1, certs.Count);
+        Assert.Equal(executionCount, certs.Count);
     }
 
     [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]

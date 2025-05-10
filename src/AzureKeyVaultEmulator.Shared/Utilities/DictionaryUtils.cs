@@ -37,11 +37,12 @@ public static class DictionaryUtils
         ArgumentNullException.ThrowIfNull(set);
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var item = await set.FirstOrDefaultAsync(x =>
-            x.PersistedName == name &&
-            x.PersistedVersion == version &&
-            x.Deleted == deleted
-        );
+        var query = set.Where(x => x.PersistedName == name && x.Deleted == deleted);
+
+        if (!string.IsNullOrEmpty(version))
+            query = query.Where(x => x.PersistedVersion == version);
+
+        var item = await query.FirstOrDefaultAsync();
 
         return item ?? throw new MissingItemException(name);
     }
@@ -56,7 +57,7 @@ public static class DictionaryUtils
     public static void SafeAddOrUpdate<T>(this ConcurrentDictionary<string, T> dict, string name, T value)
         => dict.AddOrUpdate(name, value, (_, _) => value);
 
-    public static async Task SafeAddOrUpdateAsync<TEntity>(
+    public static async Task SafeAddAsync<TEntity>(
         this DbSet<TEntity> set,
         string name,
         string version,
@@ -70,12 +71,8 @@ public static class DictionaryUtils
         var existing = await set.FirstOrDefaultAsync(x => x.PersistedName == name && x.PersistedVersion == version);
 
         if(existing != null)
-        {
-            context.Entry(existing).CurrentValues.SetValues(value);
             return;
-        }
 
-        value.PrimaryId = default;
         value.PersistedName = name;
         value.PersistedVersion = version;
 
@@ -96,9 +93,9 @@ public static class DictionaryUtils
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
 
-        var entity = await set.FirstOrDefaultAsync(x => x.PersistedName == key);
+        var range = await set.Where(x => x.PersistedName == key).ToListAsync();
 
-        if (entity != null)
-            set.Remove(entity);
+        if (range != null)
+            set.RemoveRange(range);
     }
 }
