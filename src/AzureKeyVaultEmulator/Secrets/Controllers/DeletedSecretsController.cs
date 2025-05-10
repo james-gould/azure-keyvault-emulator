@@ -59,11 +59,11 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [ProducesResponseType<ListResult<SecretBundle>>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult RecoverDeletedSecret(
+        public async Task<IActionResult> RecoverDeletedSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var secret = secretService.RecoverDeletedSecret(name);
+            var secret = await secretService.RecoverDeletedSecretAsync(name);
 
             return Ok(secret);
         }

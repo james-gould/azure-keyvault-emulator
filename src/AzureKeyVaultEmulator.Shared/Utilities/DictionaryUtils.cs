@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using AzureKeyVaultEmulator.Shared.Exceptions;
+using AzureKeyVaultEmulator.Shared.Persistence;
 using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,21 +27,21 @@ public static class DictionaryUtils
         return value;
     }
 
-    public static async Task<TEntity> SafeGetAsync<TEntity>(this DbSet<TEntity> set, string name)
-        where TEntity : class, INamedItem, IDeletable
+    public static async Task<TEntity> SafeGetAsync<TEntity>(
+        this DbSet<TEntity> set,
+        string name,
+        string version,
+        bool deleted = false)
+    where TEntity : class, INamedItem, IDeletable
     {
         ArgumentNullException.ThrowIfNull(set);
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var item = await set.FirstOrDefaultAsync(x => x.PersistedName == name && x.Deleted == false);
-
-        return item ?? throw new MissingItemException(name);
-    }
-
-    public static async Task<TEntity> SafeGetDeletedAsync<TEntity>(this DbSet<TEntity> set, string name)
-        where TEntity: class, INamedItem, IDeletable
-    {
-        var item = await set.FirstOrDefaultAsync(x => x.PersistedName == name && x.Deleted == true);
+        var item = await set.FirstOrDefaultAsync(x =>
+            x.PersistedName == name &&
+            x.PersistedVersion == version &&
+            x.Deleted == deleted
+        );
 
         return item ?? throw new MissingItemException(name);
     }
@@ -55,24 +56,30 @@ public static class DictionaryUtils
     public static void SafeAddOrUpdate<T>(this ConcurrentDictionary<string, T> dict, string name, T value)
         => dict.AddOrUpdate(name, value, (_, _) => value);
 
-    public static async Task SafeAddOrUpdateAsync<TEntity>(this DbSet<TEntity> set, string name, TEntity value)
+    public static async Task SafeAddOrUpdateAsync<TEntity>(
+        this DbSet<TEntity> set,
+        string name,
+        string version,
+        TEntity value,
+        VaultContext context)
     where TEntity : class, INamedItem
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(value);
 
-        var existing = await set.FirstOrDefaultAsync(x => x.PersistedName == name);
+        var existing = await set.FirstOrDefaultAsync(x => x.PersistedName == name && x.PersistedVersion == version);
 
         if(existing != null)
         {
-            set.Update(value);
+            context.Entry(existing).CurrentValues.SetValues(value);
             return;
         }
 
-        var clone = value.Clone();
+        value.PrimaryId = default;
+        value.PersistedName = name;
+        value.PersistedVersion = version;
 
-        clone.PersistedName = name;
-        set.Add(clone);
+        set.Add(value);
     }
 
     /// <summary>

@@ -15,6 +15,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string PersistedName { get; set; } = string.Empty;
 
+        [JsonIgnore]
+        public string PersistedVersion { get; set; } = string.Empty;
+
         [JsonPropertyName("key")]
         public required JsonWebKeyModel Key { get; set; }
 

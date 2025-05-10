@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Utilities;
 
@@ -8,17 +9,14 @@ public static class PersistenceUtils
     /// Constructs the ConnectionString for an SQLite database.
     /// </summary>
     /// <param name="shouldPersist">Flag for using in memory or persisted on disk.</param>
-    /// <param name="mountedDirName">The directory name mapped onto the host machine.</param>
     /// <returns>A fully qualified connection string.</returns>
-    public static string CreateSQLiteConnectionString(bool shouldPersist, string mountedDirName = "certs")
+    public static string CreateSQLiteConnectionString(bool shouldPersist)
     {
         var root = "Data Source=";
-        var dbName = "emulator";
+        var dbName = shouldPersist ? "emulator" : Guid.NewGuid().Neat();
+        var dbDir = shouldPersist ? "certs/" : Path.GetTempPath();
 
-        if (!shouldPersist)
-            return $"{root}{dbName};Mode=Memory;Cache=Shared";
-
-        return $"{root}{mountedDirName}/{dbName}.db";
+        return $"{root}{dbDir}{dbName}.db";
     }
 
     /// <summary>
@@ -28,7 +26,7 @@ public static class PersistenceUtils
     /// <param name="obj"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static T Clone<T>(this T obj) where T : notnull
+    public static T Clone<T>(this T obj) where T : notnull, INamedItem
     {
         var json = JsonSerializer.Serialize(obj);
 

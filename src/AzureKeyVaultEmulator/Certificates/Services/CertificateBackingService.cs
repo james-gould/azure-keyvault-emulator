@@ -35,7 +35,7 @@ public sealed class CertificateBackingService(
         var backingKey = await CreateBackingKeyAsync(certName, keySize, keyType);
 
         var contentType = policy?.SecretProperies?.ContentType ?? "application/unknown";
-        var backingSecret = CreateBackingSecret(certName, contentType);
+        var backingSecret = await CreateBackingSecretAsync(certName, contentType);
 
         return (backingKey, backingSecret);
     }
@@ -105,10 +105,10 @@ public sealed class CertificateBackingService(
         return await keyService.CreateKeyAsync(certName, new CreateKeyModel { KeySize = keySize, KeyType = keyType });
     }
 
-    private SecretBundle CreateBackingSecret(string certName, string contentType)
+    private async Task<SecretBundle> CreateBackingSecretAsync(string certName, string contentType)
     {
-        return secretService
-            .SetSecret(certName, new SetSecretRequest
+        return await secretService
+            .SetSecretAsync(certName, new SetSecretRequest
             {
                 Value = Guid.NewGuid().Neat(),
                 SecretAttributes = new() { ContentType = contentType }

@@ -49,8 +49,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = key.Tags ?? []
             };
 
-            await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(), response);
-            await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(version), response);
+            await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(), response, context);
+            await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(version), response, context);
 
             await context.SaveChangesAsync();
 
@@ -77,7 +77,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             key.Attributes.Update();
 
-            await context.Keys.SafeAddOrUpdateAsync(cacheId, key);
+            await context.Keys.SafeAddOrUpdateAsync(cacheId, key, context);
 
             await context.SaveChangesAsync();
 
@@ -100,7 +100,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = key.Tags
             };
 
-            await context.Keys.SafeAddOrUpdateAsync(cacheId, newKey);
+            await context.Keys.SafeAddOrUpdateAsync(cacheId, newKey, context);
 
             await context.SaveChangesAsync();
 
@@ -285,8 +285,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = tags
             };
 
-            await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(), response);
-            await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(version), response);
+            await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(), response, context);
+            await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(version), response, context);
 
             await context.SaveChangesAsync();
 
@@ -378,11 +378,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             foreach (var item in keys)
             {
                 item.Deleted = true;
-                await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(item.Key.KeyVersion), item);
+                await context.Keys.SafeAddOrUpdateAsync(name.GetCacheId(item.Key.KeyVersion), item, context);
             }
 
             parentKey.Deleted = true;
-            await context.Keys.SafeAddOrUpdateAsync(parentCacheId, parentKey);
+            await context.Keys.SafeAddOrUpdateAsync(parentCacheId, parentKey, context);
 
             await context.SaveChangesAsync();
 
@@ -444,7 +444,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             key.Deleted = false;
 
-            await context.Keys.SafeAddOrUpdateAsync(name, key);
+            await context.Keys.SafeAddOrUpdateAsync(name, key, context);
 
             await context.SaveChangesAsync();
 

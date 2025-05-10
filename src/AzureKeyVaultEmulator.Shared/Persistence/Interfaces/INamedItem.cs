@@ -6,4 +6,6 @@
 public interface INamedItem : IPersistedItem, IDeletable
 {
     string PersistedName { get; set; }
+
+    string PersistedVersion { get; set; }
 }

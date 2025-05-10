@@ -16,6 +16,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets
         public string PersistedName { get; set; } = string.Empty;
 
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+        public string PersistedVersion { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public bool Deleted { get; set; } = false;
 
         [JsonPropertyName("id")]
