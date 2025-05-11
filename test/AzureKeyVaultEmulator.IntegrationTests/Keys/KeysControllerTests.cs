@@ -13,9 +13,11 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetClientAsync();
 
-        var createdKey = await fixture.CreateKeyAsync();
+        var name = fixture.FreshlyGeneratedGuid;
 
-        var keyFromStore = (await client.GetKeyAsync(KeysTestingFixture.DefaultKeyName)).Value;
+        var createdKey = await fixture.CreateKeyAsync(name);
+
+        var keyFromStore = (await client.GetKeyAsync(name)).Value;
 
         Assert.KeysAreEqual(createdKey, keyFromStore);
     }
@@ -63,7 +65,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     {
         var client = await fixture.GetClientAsync();
 
-        var keyName = "updatedKey";
+        var keyName = fixture.FreshlyGeneratedGuid;
         var tagKey = fixture.FreshlyGeneratedGuid;
         var tagValue = fixture.FreshlyGeneratedGuid;
 

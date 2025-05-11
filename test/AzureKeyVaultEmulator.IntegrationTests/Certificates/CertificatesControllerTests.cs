@@ -185,8 +185,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     {
         var client = await fixture.GetClientAsync();
 
-        //var issuerName = fixture.FreshlyGeneratedGuid;
-        var issuerName = "testingNonGuid";
+        var issuerName = fixture.FreshlyGeneratedGuid;
 
         await Assert.RequestFailsAsync(() => client.GetIssuerAsync(issuerName));
 

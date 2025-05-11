@@ -8,13 +8,13 @@ var builder = DistributedApplication.CreateBuilder();
 var integrationTestRun = args.Where(x => x.Equals("--test")).FirstOrDefault() is not null;
 
 var overrideTestRun = EnvUtils.GetFlag("Override");
-var persist = EnvUtils.GetFlag("Persist");
+var persist = EnvUtils.GetFlag(EnvironmentConstants.UsePersistedDataStore);
 
 if (integrationTestRun || overrideTestRun)
 {
     builder
         .AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName)
-        .WithEnvironment("Persist", "true");
+        .WithEnvironment(EnvironmentConstants.UsePersistedDataStore, "true");
 }
 else
 {

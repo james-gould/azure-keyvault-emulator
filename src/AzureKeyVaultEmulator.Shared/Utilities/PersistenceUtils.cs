@@ -13,6 +13,11 @@ public static class PersistenceUtils
         var dbName = shouldPersist ? "emulator" : Guid.NewGuid().Neat();
         var dbDir = shouldPersist ? "certs/" : Path.GetTempPath();
 
+#if DEBUG
+        if (shouldPersist)
+            dbDir = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/keyvaultemulator/certs/";
+#endif
+
         return $"{root}{dbDir}{dbName}.db";
     }
 }

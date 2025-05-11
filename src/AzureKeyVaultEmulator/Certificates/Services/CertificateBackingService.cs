@@ -105,6 +105,15 @@ public sealed class CertificateBackingService(
         var name = Guid.NewGuid().Neat();
         var version = Guid.NewGuid().Neat();
 
+        var existing = await context.CertificateContacts.Where(x => x.Deleted == false).FirstOrDefaultAsync();
+
+        // handles start up scripts, persisted data test runs etc.
+        if(existing != null)
+        {
+            if (existing.Contacts == request.Contacts)
+                return existing;
+        }
+
         var contacts = new CertificateContacts
         {
             PersistedName = name,
@@ -121,9 +130,9 @@ public sealed class CertificateBackingService(
 
     public async Task<CertificateContacts> DeleteCertificateContactsAsync()
     {
-        var contacts = await context.CertificateContacts.SingleAsync();
+        var contacts = await context.CertificateContacts.Where(x => x.Deleted == false).SingleAsync();
 
-        context.Remove(contacts);
+        contacts.Deleted = true;
 
         await context.SaveChangesAsync();
 
