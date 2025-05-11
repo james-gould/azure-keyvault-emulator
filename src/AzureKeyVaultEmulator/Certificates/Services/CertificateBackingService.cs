@@ -141,7 +141,7 @@ public sealed class CertificateBackingService(
 
     public async Task<CertificateContacts> GetCertificateContactsAsync()
     {
-        return await context.CertificateContacts.SingleAsync();
+        return await context.CertificateContacts.Where(x => x.Deleted == false).SingleAsync();
     }
 
     private async Task<KeyBundle> CreateBackingKeyAsync(
