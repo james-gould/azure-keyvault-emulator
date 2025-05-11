@@ -17,13 +17,10 @@ public sealed class IssuerBundle : INamedItem
     public long PersistedId { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long? PolicyId { get; set; }
+    public string PersistedName { get; set; } = Guid.NewGuid().Neat();
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public string PersistedName { get; set; } = string.Empty;
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public string PersistedVersion { get; set; } = string.Empty;
+    public string PersistedVersion { get; set; } = Guid.NewGuid().Neat();
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public bool Deleted { get; set; } = false;
@@ -45,6 +42,8 @@ public sealed class IssuerBundle : INamedItem
 
     [JsonPropertyName("org_details")]
     public OrganisationDetails? OrganisationDetails { get; set; } = new();
+
+    public IList<CertificatePolicy> Policies { get; set; } = [];
 }
 
 public sealed class IssuerAttributes : AttributeBase;

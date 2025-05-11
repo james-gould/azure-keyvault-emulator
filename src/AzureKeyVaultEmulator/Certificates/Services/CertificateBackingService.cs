@@ -46,7 +46,7 @@ public sealed class CertificateBackingService(
         return bundle;
     }
 
-    public async Task<IssuerBundle> PersistIssuerConfigAsync(string issuerName, IssuerBundle bundle)
+    public async Task<IssuerBundle> CreateIssuerAsync(string issuerName, IssuerBundle bundle)
     {
         ArgumentException.ThrowIfNullOrEmpty(issuerName);
         ArgumentNullException.ThrowIfNull(bundle);
@@ -70,11 +70,15 @@ public sealed class CertificateBackingService(
         ArgumentNullException.ThrowIfNull(bundle);
 
         var cert = await context.Certificates.SafeGetAsync(certName);
+        var issuer = await context.Issuers.SafeGetAsync(bundle.IssuerName);
 
         if (cert.CertificatePolicy == null)
             throw new MissingItemException($"Certificate {certName} does not have an associated policy to update");
 
-        cert.CertificatePolicy.Issuer = bundle;
+        if (issuer == null)
+            throw new InvalidOperationException($"Existing issuer for name {bundle.IssuerName} does not exist.");
+
+        cert.CertificatePolicy.IssuerId = issuer.PersistedId;
 
         await context.SaveChangesAsync();
 

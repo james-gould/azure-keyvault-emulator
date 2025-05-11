@@ -213,7 +213,7 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(bundle);
 
-        var result = await backingService.PersistIssuerConfigAsync(name, bundle);
+        var result = await backingService.CreateIssuerAsync(name, bundle);
 
         return Ok(result);
     }

@@ -9,7 +9,7 @@ public interface ICertificateBackingService
     Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, CertificatePolicy? policy = null);
 
     Task<IssuerBundle> GetIssuerAsync(string name);
-    Task<IssuerBundle> PersistIssuerConfigAsync(string name, IssuerBundle bundle);
+    Task<IssuerBundle> CreateIssuerAsync(string name, IssuerBundle bundle);
     Task<IssuerBundle> AllocateIssuerToCertificateAsync(string certName, IssuerBundle bundle);
 
     Task<IssuerBundle> UpdateCertificateIssuerAsync(string issuerName, IssuerBundle bundle);

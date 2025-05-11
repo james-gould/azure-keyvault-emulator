@@ -36,6 +36,9 @@ public sealed class CertificateService(
         var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, version, "certificates");
 
         var concretePolicy = UpdateNullablePolicy(policy, certIdentifier, attributes);
+        var issuer = policy?.Issuer ?? new();
+
+        concretePolicy.Issuer = issuer;
 
         var bundle = new CertificateBundle
         {
@@ -53,8 +56,9 @@ public sealed class CertificateService(
             FullCertificate = certificate
         };
 
+        //await context.Issuers.SafeAddAsync(name, version, concretePolicy.Issuer);
+        //await context.CertificatePolicies.SafeAddAsync(name, version, concretePolicy);
         await context.Certificates.SafeAddAsync(name, version, bundle);
-        await context.CertificatePolicies.SafeAddAsync(name, version, concretePolicy);
 
         await context.SaveChangesAsync();
 

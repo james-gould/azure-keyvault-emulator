@@ -40,7 +40,12 @@ public sealed class VaultContext(DbContextOptions<VaultContext> opt) : DbContext
 
             e.OwnsNavigation(x => x.Attributes);
 
-            e.HasForeignKeyNavigation(x => x.CertificatePolicy);
+            e.HasOne(x => x.CertificatePolicy)
+                .WithOne(x => x.CertificateBundle)
+                .HasForeignKey<CertificatePolicy>(x => x.ParentCertificateId)
+                .IsRequired();
+
+            e.Navigation(x => x.CertificatePolicy).AutoInclude();
         });
 
         modelBuilder.Entity<CertificatePolicy>(e =>
@@ -48,9 +53,9 @@ public sealed class VaultContext(DbContextOptions<VaultContext> opt) : DbContext
             e.HasKey(x => x.PersistedId);
 
             e.HasOne<IssuerBundle>()
-                .WithOne()
-                .HasForeignKey<IssuerBundle>(x => x.PolicyId)
-                .IsRequired(false);
+                .WithMany(x => x.Policies)
+                .HasForeignKey(x => x.IssuerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             e.Navigation(x => x.Issuer).AutoInclude();
 

@@ -115,6 +115,7 @@ public class CertificateIssuersTests(CertificatesTestingFixture fixture) : IClas
 
         Assert.NotNull(issuerFromStore.Value);
         Assert.Equal(issuerName, issuerFromStore.Value.Name);
+        Assert.NotEqual(issuerName, certificateResponse.Policy.IssuerName);
 
         var certificatePolicy = new CertificatePolicy(issuerName, AuthConstants.EmulatorIss)
         {
@@ -140,5 +141,6 @@ public class CertificateIssuersTests(CertificatesTestingFixture fixture) : IClas
         var policy = updatedCertificate.Value.Policy;
 
         Assert.Equivalent(policy, updatedPolicy);
+        Assert.Equal(issuerName, updatedCertificate.Value.Policy.IssuerName);
     }
 }

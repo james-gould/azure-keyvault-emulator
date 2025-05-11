@@ -20,6 +20,12 @@ public sealed class CertificatePolicy : INamedItem
     public string PersistedVersion { get; set; } = string.Empty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public long ParentCertificateId { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public long IssuerId { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public bool Deleted { get; set; } = false;
 
     [JsonPropertyName("id")]
@@ -29,7 +35,7 @@ public sealed class CertificatePolicy : INamedItem
     public string Subject { get; set; } = string.Empty;
 
     [JsonPropertyName("issuer")]
-    public IssuerBundle? Issuer { get; set; }
+    public IssuerBundle Issuer { get; set; } = new();
 
     [JsonPropertyName("attributes")]
     public CertificateAttributesModel CertificateAttributes { get; set; } = new();
@@ -51,4 +57,6 @@ public sealed class CertificatePolicy : INamedItem
 
     [JsonPropertyName("secret_props")]
     public SecretProperties? SecretProperies { get; set; } = new();
+
+    public CertificateBundle? CertificateBundle { get; set; } = null;
 }
