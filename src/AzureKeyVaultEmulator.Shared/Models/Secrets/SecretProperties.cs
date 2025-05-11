@@ -8,9 +8,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets;
 public sealed class SecretProperties : IPersistedItem
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PersistedId { get; set; }
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
 
     [JsonPropertyName("contentType")]
     public string ContentType { get; set; } = string.Empty;

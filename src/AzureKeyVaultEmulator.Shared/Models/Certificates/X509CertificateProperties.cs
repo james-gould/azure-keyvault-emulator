@@ -10,9 +10,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 public sealed class X509CertificateProperties : IPersistedItem
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PersistedId { get; set; }
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
 
     public string BackingEnhancedUsage { get; set; } = "[]";
 
@@ -48,9 +48,9 @@ public sealed class X509CertificateProperties : IPersistedItem
 public sealed class SubjectAlternativeNames : IPersistedItem
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PersistedId { get; set; }
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
 
     public string BackingDns { get; set; } = "[]";
 

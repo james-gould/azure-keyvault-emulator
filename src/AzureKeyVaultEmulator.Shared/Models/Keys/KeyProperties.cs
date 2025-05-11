@@ -8,9 +8,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 public sealed class KeyProperties : IPersistedItem
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PersistedId { get; set; }
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
 
     [JsonPropertyName("crv")]
     public string JsonWebKeyCurveName { get; set; } = string.Empty;

@@ -36,29 +36,28 @@ public sealed class CertificateService(
         var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, version, "certificates");
 
         var concretePolicy = UpdateNullablePolicy(policy, certIdentifier, attributes);
-        var issuer = policy?.Issuer ?? new();
-
-        concretePolicy.Issuer = issuer;
 
         var bundle = new CertificateBundle
         {
+            PersistedName = name,
+            PersistedVersion = version,
             CertificateIdentifier = certIdentifier,
             RecoveryId = certIdentifier,
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            CertificatePolicy = concretePolicy,
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
+            CertificatePolicy = concretePolicy,
             SecretId = backingSecret.SecretIdentifier,
             KeyId = backingKey.Key.KeyIdentifier,
 
             FullCertificate = certificate
         };
 
-        //await context.Issuers.SafeAddAsync(name, version, concretePolicy.Issuer);
-        //await context.CertificatePolicies.SafeAddAsync(name, version, concretePolicy);
-        await context.Certificates.SafeAddAsync(name, version, bundle);
+        context.Add(bundle);
+
+        //await context.Certificates.SafeAddAsync(name, version, bundle);
 
         await context.SaveChangesAsync();
 
@@ -88,12 +87,12 @@ public sealed class CertificateService(
 
         var cert = await context.Certificates.SafeGetAsync(name);
 
+        ArgumentNullException.ThrowIfNull(cert.CertificatePolicy);
+
+        policy.IssuerId = cert.CertificatePolicy.IssuerId;
         cert.CertificatePolicy = policy;
 
         await context.SaveChangesAsync();
-
-        if(policy.Issuer != null)
-            await backingService.AllocateIssuerToCertificateAsync(name, policy.Issuer);
 
         return policy;
     }
@@ -133,11 +132,11 @@ public sealed class CertificateService(
         var bundle = encryptionService.DecryptFromKeyVaultJwe<CertificateBundle>(backup.Value);
         var policy = bundle?.CertificatePolicy ?? throw new InvalidOperationException($"Failed to find {nameof(CertificatePolicy)} in backup.");
 
+        policy.IssuerId = bundle.CertificatePolicy.Issuer.PersistedId;
+
         var newVersion = Guid.NewGuid().Neat();
 
         await context.Certificates.SafeAddAsync(bundle.PersistedName, newVersion, bundle);
-        await context.CertificatePolicies.SafeAddAsync(policy.PersistedName, newVersion, policy);
-
         await context.SaveChangesAsync();
 
         return bundle;
@@ -367,10 +366,14 @@ public sealed class CertificateService(
         string identifier,
         CertificateAttributesModel attributes)
     {
+        var issuer = policy?.Issuer ?? new();
         policy ??= new();
 
         policy.Identifier = identifier;
         policy.CertificateAttributes ??= attributes;
+
+        policy.Issuer = issuer;
+        policy.IssuerId = issuer.PersistedId;
 
         return policy;
     }

@@ -10,9 +10,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 public sealed class CertificateContacts : INamedItem
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PersistedId { get; set; }
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedVersion { get; set; } = string.Empty;

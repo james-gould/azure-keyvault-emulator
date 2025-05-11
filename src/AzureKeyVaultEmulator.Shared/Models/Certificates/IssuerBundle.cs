@@ -13,8 +13,8 @@ public sealed class IssuerBundle : INamedItem
 {
     [Key]
     [JsonIgnore]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public long PersistedId { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedName { get; set; } = Guid.NewGuid().Neat();
@@ -43,6 +43,7 @@ public sealed class IssuerBundle : INamedItem
     [JsonPropertyName("org_details")]
     public OrganisationDetails? OrganisationDetails { get; set; } = new();
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public IList<CertificatePolicy> Policies { get; set; } = [];
 }
 
@@ -51,9 +52,9 @@ public sealed class IssuerAttributes : AttributeBase;
 public sealed class IssuerCredentials : IPersistedItem
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PersistedId { get; set; }
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
 
     [JsonPropertyName("account_id")]
     public string AccountId { get; set; } = string.Empty;
@@ -65,9 +66,9 @@ public sealed class IssuerCredentials : IPersistedItem
 public sealed class OrganisationDetails : IPersistedItem
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PersistedId { get; set; }
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
 
     [JsonPropertyName("id")]
     public string Identifier { get; set; } = Guid.NewGuid().Neat();
