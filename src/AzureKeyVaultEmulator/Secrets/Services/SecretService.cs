@@ -164,7 +164,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            await context.Secrets.SafeRemoveAsync(name);
+            await context.Secrets.SafeRemoveAsync(name, deleted: true);
 
             await context.SaveChangesAsync();
         }

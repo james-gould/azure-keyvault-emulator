@@ -408,10 +408,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            // ensure it exists, or 404
-            await context.Keys.SafeGetAsync(name, deleted: true);
-
-            await context.Keys.SafeRemoveAsync(name);
+            await context.Keys.SafeRemoveAsync(name, deleted: true);
 
             await context.SaveChangesAsync();
         }

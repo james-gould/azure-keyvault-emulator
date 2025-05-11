@@ -15,8 +15,6 @@ public sealed class CertificateService(
     VaultContext context)
     : ICertificateService
 {
-    private static readonly ConcurrentDictionary<string, DeletedCertificateBundle> _deletedCerts = [];
-
     public async Task<CertificateOperation> CreateCertificateAsync(
         string name,
         CertificateAttributesModel attributes,
@@ -42,6 +40,7 @@ public sealed class CertificateService(
         var bundle = new CertificateBundle
         {
             CertificateIdentifier = certIdentifier,
+            RecoveryId = certIdentifier,
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
@@ -205,6 +204,7 @@ public sealed class CertificateService(
         var bundle = new CertificateBundle
         {
             CertificateIdentifier = certIdentifier,
+            RecoveryId = certIdentifier,
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
@@ -245,7 +245,7 @@ public sealed class CertificateService(
         return copied;
     }
 
-    public async Task<CertificateOperation> DeleteCertificateAsync(string name) //TODO
+    public async Task<CertificateOperation> DeleteCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
@@ -253,86 +253,70 @@ public sealed class CertificateService(
 
         var matches = await context.Certificates.Where(x => x.PersistedName == name).ToListAsync();
 
-        //foreach (var deleted in matches)
-        //    _certs.SafeRemove(deleted.Key);
+        foreach (var match in matches)
+            match.Deleted = true;
 
-        var deletedCert = new DeletedCertificateBundle
-        {
-            CertificateIdentifier = $"{AuthConstants.EmulatorUri}/certificates/{name}",
-            RecoveryId = cert.CertificateIdentifier,
-            ContentType = cert.CertificatePolicy?.SecretProperies?.ContentType ?? string.Empty,
-            Attributes = cert.Attributes,
-            Tags = cert.Tags,
-            Kid = cert.KeyId,
-            SecretId = cert.SecretId,
-            Policy = cert.CertificatePolicy ?? new(),
-            CertificateThumbprint = cert.X509Thumbprint,
-            CertBase64 = cert.CertificateContents,
+        cert.Deleted = true;
 
-            FullCertificate = cert
-        };
-
-        _deletedCerts.SafeAddOrUpdate(name.GetCacheId(), deletedCert);
-
-        return new(deletedCert.RecoveryId, name.GetCacheId());
-    }
-
-    public CertificateOperation GetPendingDeletedCertificate(string name)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-
-        var cert = _deletedCerts.SafeGet(name.GetCacheId());
+        await context.SaveChangesAsync();
 
         return new(cert.RecoveryId, name.GetCacheId());
     }
 
-    public ListResult<DeletedCertificateBundle> GetDeletedCertificates(int maxResults = 25, int skipCount = 25)
+    public async Task<CertificateOperation> GetPendingDeletedCertificateAsync(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var cert = await context.Certificates.SafeGetAsync(name, deleted: true);
+
+        return new(cert.CertificateIdentifier, name.GetCacheId());
+    }
+
+    public async Task<ListResult<CertificateBundle>> GetDeletedCertificatesAsync(int maxResults = 25, int skipCount = 25)
     {
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
-        var allItems = _deletedCerts.ToList();
+        var allItems = await context.Certificates.Where(x => x.Deleted == true).ToListAsync();
 
-        if (allItems.Count == 0)
+        if (allItems == null || allItems.Count == 0)
             return new();
 
         var maxedItems = allItems.Skip(skipCount).Take(maxResults);
 
         var requiresPaging = maxedItems.Count() >= maxResults;
 
-        return new ListResult<DeletedCertificateBundle>
+        return new ListResult<CertificateBundle>
         {
             NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-            Values = maxedItems.Select(x => x.Value)
+            Values = maxedItems
         };
     }
 
-    public CertificateOperation GetDeletedCertificate(string name)
+    public async Task<CertificateOperation> GetDeletedCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = _deletedCerts.SafeGet(name.GetCacheId());
+        var cert = await context.Certificates.SafeGetAsync(name, deleted: true);
 
-        return new CertificateOperation(cert.RecoveryId, name.GetCacheId());
+        return new CertificateOperation(cert.RecoveryId, name);
     }
 
     public async Task<CertificateOperation> RecoverCerticateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var deletedCert = _deletedCerts.SafeGet(name);
+        var bundle = await context.Certificates.SafeGetAsync(name, deleted: true);
 
-        var cert = deletedCert.FullCertificate;
+        var fullCertificate = bundle.FullCertificate;
 
-        ArgumentNullException.ThrowIfNull(cert);
+        ArgumentNullException.ThrowIfNull(fullCertificate);
 
-        await context.Certificates.SafeAddAsync(name, "", cert);
+        bundle.Deleted = false;
 
         await context.SaveChangesAsync();
 
-        _deletedCerts.SafeRemove(name);
-
-        return new(cert.CertificateIdentifier, name);
+        return new(bundle.CertificateIdentifier, name);
     }
 
     public async Task<CertificateOperation> GetPendingRecoveryOperationAsync(string name)
@@ -344,11 +328,13 @@ public sealed class CertificateService(
         return new(cert.CertificateIdentifier, name);
     }
 
-    public void PurgeDeletedCertificate(string name)
+    public async Task PurgeDeletedCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        _deletedCerts.SafeRemove(name);
+        await context.Certificates.SafeRemoveAsync(name, deleted: true);
+
+        await context.SaveChangesAsync();
     }
 
     private string GenerateNextLink(int maxResults)

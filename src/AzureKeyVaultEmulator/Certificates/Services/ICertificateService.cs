@@ -21,13 +21,13 @@ public interface ICertificateService
     Task<CertificateBundle> ImportCertificateAsync(string name, ImportCertificateRequest request);
     Task<CertificateBundle> MergeCertificatesAsync(string name, MergeCertificatesRequest request);
 
-    CertificateOperation GetDeletedCertificate(string name);
-    CertificateOperation GetPendingDeletedCertificate(string name);
+    Task<CertificateOperation> GetDeletedCertificateAsync(string name);
+    Task<CertificateOperation> GetPendingDeletedCertificateAsync(string name);
 
     Task<CertificateOperation> DeleteCertificateAsync(string name);
-    ListResult<DeletedCertificateBundle> GetDeletedCertificates(int maxResults = 25, int skipCount = 25);
+    Task<ListResult<CertificateBundle>> GetDeletedCertificatesAsync(int maxResults = 25, int skipCount = 25);
 
     Task<CertificateOperation> GetPendingRecoveryOperationAsync(string name);
     Task<CertificateOperation> RecoverCerticateAsync(string name);
-    void PurgeDeletedCertificate(string name);
+    Task PurgeDeletedCertificateAsync(string name);
 }

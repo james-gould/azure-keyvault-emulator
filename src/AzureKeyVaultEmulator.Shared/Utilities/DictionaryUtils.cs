@@ -86,14 +86,16 @@ public static class DictionaryUtils
     public static void SafeRemove<T>(this ConcurrentDictionary<string, T> dict, string key)
         => dict.TryRemove(key, out _);
 
-    public static async Task SafeRemoveAsync<TEntity>(this DbSet<TEntity> set, string key)
+    public static async Task SafeRemoveAsync<TEntity>(this DbSet<TEntity> set, string name, bool deleted = false)
         where TEntity : class, INamedItem
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var range = await set.Where(x => x.PersistedName == key).ToListAsync();
+        var range = await set.Where(x => x.PersistedName == name && x.Deleted == deleted).ToListAsync();
 
-        if (range != null)
-            set.RemoveRange(range);
+        if (range == null || range.Count == 0)
+            throw new MissingItemException($"Cannot find objects with the name {name} in the vault.");
+
+        set.RemoveRange(range);
     }
 }

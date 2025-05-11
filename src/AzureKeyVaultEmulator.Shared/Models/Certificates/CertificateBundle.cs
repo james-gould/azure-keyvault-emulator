@@ -71,6 +71,7 @@ public static class CertificateBundleCloning
         return new()
         {
             CertificateIdentifier = bundle.CertificateIdentifier,
+            RecoveryId = bundle.RecoveryId,
             CertificatePolicy = bundle.CertificatePolicy,
             CertificateContents = Convert.ToBase64String(newCertificate.RawData),
             KeyId = bundle.KeyId,
