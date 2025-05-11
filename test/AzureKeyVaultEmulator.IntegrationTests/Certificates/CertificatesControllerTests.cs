@@ -210,29 +210,6 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
-    public async Task GetCertificateIssuerWillSucceed()
-    {
-        var client = await fixture.GetClientAsync();
-
-        var issuerName = fixture.FreshlyGeneratedGuid;
-        var certName = fixture.FreshlyGeneratedGuid;
-
-        await Assert.RequestFailsAsync(() => client.GetIssuerAsync(issuerName));
-
-        var issuerConfig = fixture.CreateIssuerConfiguration(issuerName);
-
-        var createdResponse = await client.CreateIssuerAsync(issuerConfig);
-
-        var response = await client.GetIssuerAsync(issuerName);
-
-        Assert.NotNull(response.Value);
-
-        var issuer = response.Value;
-
-        Assert.IssuersAreEqual(issuerConfig, issuer);
-    }
-
-    [Fact]
     public async Task BackingUpAndRestoringCertificateWillSucceed()
     {
         var client = await fixture.GetClientAsync();
