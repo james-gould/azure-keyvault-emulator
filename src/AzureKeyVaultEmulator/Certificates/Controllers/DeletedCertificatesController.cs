@@ -59,7 +59,7 @@ public class DeletedCertificatesController(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.RecoverCerticate(name);
+        var result = certService.RecoverCerticateAsync(name);
 
         return Ok(result);
     }

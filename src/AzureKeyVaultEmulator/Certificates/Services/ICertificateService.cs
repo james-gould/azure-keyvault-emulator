@@ -7,28 +7,27 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 public interface ICertificateService
 {
     Task<CertificateOperation> CreateCertificateAsync(string name, CertificateAttributesModel attributes, CertificatePolicy? policy);
-    CertificateBundle GetCertificate(string name, string version = "");
-    ListResult<CertificateVersionItem> GetCertificates(int maxResults = 25, int skipToken = 25);
-    ListResult<CertificateVersionItem> GetCertificateVersions(string name, int maxResults = 25, int skipCount = 25);
-    
+    Task<CertificateBundle> GetCertificateAsync(string name, string version = "");
+    Task<ListResult<CertificateVersionItem>> GetCertificatesAsync(int maxResults = 25, int skipToken = 25);
+    Task<ListResult<CertificateVersionItem>> GetCertificateVersionsAsync(string name, int maxResults = 25, int skipCount = 25);
 
-    CertificateOperation GetPendingCertificate(string name);
-    CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy certificatePolicy);
-    CertificatePolicy GetCertificatePolicy(string name);
+    Task<CertificateOperation> GetPendingCertificateAsync(string name);
+    Task<CertificatePolicy> UpdateCertificatePolicyAsync(string name, CertificatePolicy certificatePolicy);
+    Task<CertificatePolicy> GetCertificatePolicyAsync(string name);
     IssuerBundle GetCertificateIssuer(string name);
 
-    ValueModel<string> BackupCertificate(string name);
-    CertificateBundle RestoreCertificate(ValueModel<string> backup);
+    Task<ValueModel<string>> BackupCertificateAsync(string name);
+    Task<CertificateBundle> RestoreCertificateAsync(ValueModel<string> backup);
     Task<CertificateBundle> ImportCertificateAsync(string name, ImportCertificateRequest request);
-    CertificateBundle MergeCertificates(string name, MergeCertificatesRequest request);
+    Task<CertificateBundle> MergeCertificatesAsync(string name, MergeCertificatesRequest request);
 
     CertificateOperation GetDeletedCertificate(string name);
     CertificateOperation GetPendingDeletedCertificate(string name);
 
-    CertificateOperation DeleteCertificate(string name);
+    Task<CertificateOperation> DeleteCertificateAsync(string name);
     ListResult<DeletedCertificateBundle> GetDeletedCertificates(int maxResults = 25, int skipCount = 25);
 
-    CertificateOperation GetPendingRecoveryOperation(string name);
-    CertificateOperation RecoverCerticate(string name);
+    Task<CertificateOperation> GetPendingRecoveryOperationAsync(string name);
+    Task<CertificateOperation> RecoverCerticateAsync(string name);
     void PurgeDeletedCertificate(string name);
 }
