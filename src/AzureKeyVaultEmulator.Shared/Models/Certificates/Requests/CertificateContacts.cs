@@ -9,5 +9,5 @@ public sealed class CertificateContacts
     public string Id { get; } = $"{AuthConstants.EmulatorUri}/certificates/contacts";
 
     [JsonPropertyName("contacts")]
-    public IEnumerable<KeyVaultContact> Contacts { get; set; } = [];
+    public List<KeyVaultContact> Contacts { get; set; } = [];
 }

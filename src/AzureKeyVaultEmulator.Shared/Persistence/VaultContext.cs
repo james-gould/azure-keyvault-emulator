@@ -12,7 +12,7 @@ public sealed class VaultContext(DbContextOptions<VaultContext> opt) : DbContext
     public DbSet<SecretBundle> Secrets { get; set; }
     public DbSet<KeyBundle> Keys { get; set; }
     public DbSet<CertificateBundle> Certificates { get; set; }
-    public DbSet<CertificatePolicy> certificatePolicies { get; set; }
+    public DbSet<CertificatePolicy> CertificatePolicies { get; set; }
     public DbSet<IssuerBundle> Issuers { get; set; }
     public DbSet<X509CertificateProperties> X509Properties { get; set; }
 

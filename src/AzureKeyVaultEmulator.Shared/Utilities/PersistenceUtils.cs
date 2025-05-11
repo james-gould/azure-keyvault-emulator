@@ -18,18 +18,4 @@ public static class PersistenceUtils
 
         return $"{root}{dbDir}{dbName}.db";
     }
-
-    /// <summary>
-    /// Creates a new instance of <typeparamref name="T"/>, allowing the same entity to be inserted twice. Hack at best.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="obj"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static T Clone<T>(this T obj) where T : notnull, INamedItem
-    {
-        var json = JsonSerializer.Serialize(obj);
-
-        return JsonSerializer.Deserialize<T>(json) ?? throw new InvalidOperationException($"Failed to clone item for persistence layer.");
-    }
 }

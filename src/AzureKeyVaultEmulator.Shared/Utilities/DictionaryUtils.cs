@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using AzureKeyVaultEmulator.Shared.Exceptions;
-using AzureKeyVaultEmulator.Shared.Persistence;
 using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,11 +57,10 @@ public static class DictionaryUtils
         => dict.AddOrUpdate(name, value, (_, _) => value);
 
     public static async Task SafeAddAsync<TEntity>(
-        this DbSet<TEntity> set,
-        string name,
-        string version,
-        TEntity value,
-        VaultContext context)
+       this DbSet<TEntity> set,
+       string name,
+       string version,
+       TEntity value)
     where TEntity : class, INamedItem
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -70,7 +68,7 @@ public static class DictionaryUtils
 
         var existing = await set.FirstOrDefaultAsync(x => x.PersistedName == name && x.PersistedVersion == version);
 
-        if(existing != null)
+        if (existing != null)
             return;
 
         value.PersistedName = name;

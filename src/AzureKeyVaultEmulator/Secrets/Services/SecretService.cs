@@ -32,7 +32,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Tags = secret.Tags
             };
 
-            await context.Secrets.SafeAddAsync(name, version, response.Clone(), context);
+            await context.Secrets.SafeAddAsync(name, version, response);
 
             await context.SaveChangesAsync();
 
@@ -190,7 +190,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var version = Guid.NewGuid().Neat();
 
-            await context.Secrets.SafeAddAsync(secret.PersistedName, version, secret, context);
+            await context.Secrets.SafeAddAsync(secret.PersistedName, version, secret);
             await context.SaveChangesAsync();
 
             return secret;

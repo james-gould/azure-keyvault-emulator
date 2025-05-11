@@ -2,6 +2,7 @@
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
 
@@ -9,7 +10,8 @@ public sealed class CertificateService(
     IHttpContextAccessor httpContextAccessor,
     ICertificateBackingService backingService,
     IEncryptionService encryptionService,
-    ITokenService tokenService)
+    ITokenService tokenService,
+    VaultContext context)
     : ICertificateService
 {
     private static readonly ConcurrentDictionary<string, CertificateBundle> _certs = [];
@@ -49,6 +51,8 @@ public sealed class CertificateService(
 
             FullCertificate = certificate
         };
+
+        await context.Certificates.SafeAddAsync(name, version, bundle);
 
         _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
         _certs.SafeAddOrUpdate(name.GetCacheId(version), bundle);

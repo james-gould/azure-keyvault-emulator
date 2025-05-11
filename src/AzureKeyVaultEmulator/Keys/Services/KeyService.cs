@@ -49,7 +49,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = key.Tags ?? []
             };
 
-            await context.Keys.SafeAddAsync(name, version, response, context);
+            await context.Keys.SafeAddAsync(name, version, response);
 
             await context.SaveChangesAsync();
 
@@ -93,7 +93,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = key.Tags
             };
 
-            await context.Keys.SafeAddAsync(name, version, newKey, context);
+            await context.Keys.SafeAddAsync(name, version, newKey);
 
             await context.SaveChangesAsync();
 
@@ -276,8 +276,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = tags
             };
 
-            await context.Keys.SafeAddAsync(name, "", response, context);
-            await context.Keys.SafeAddAsync(name, version, response.Clone(), context);
+            await context.Keys.SafeAddAsync(name, version, response);
 
             await context.SaveChangesAsync();
 
@@ -425,7 +424,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             key.Deleted = false;
 
-            await context.Keys.SafeAddAsync(name, key.PersistedVersion, key, context);
+            await context.Keys.SafeAddAsync(name, key.PersistedVersion, key);
 
             await context.SaveChangesAsync();
 
