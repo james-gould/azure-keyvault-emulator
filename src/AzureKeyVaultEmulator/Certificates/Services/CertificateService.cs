@@ -25,7 +25,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.BuildX509Certificate(name, policy);
 
-        var (backingKey, backingSecret) = await backingService.GetBackingComponents(name, policy);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, policy);
 
         var version = Guid.NewGuid().Neat();
 
@@ -88,7 +88,8 @@ public sealed class CertificateService(
 
         await context.SaveChangesAsync();
 
-        backingService.AllocateIssuerToCertificate(name, policy.Issuer);
+        if(policy.Issuer != null)
+            await backingService.AllocateIssuerToCertificateAsync(name, policy.Issuer);
 
         return policy;
     }
@@ -102,11 +103,11 @@ public sealed class CertificateService(
         return new CertificateOperation(cert.CertificateIdentifier, name);
     }
 
-    public IssuerBundle GetCertificateIssuer(string name)
+    public async Task<IssuerBundle> GetCertificateIssuerAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        return backingService.GetIssuer(name);
+        return await backingService.GetIssuerAsync(name);
     }
 
     public async Task<ValueModel<string>> BackupCertificateAsync(string name)
@@ -190,7 +191,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.ImportFromBase64(request.Value);
 
-        var (backingKey, backingSecret) = await backingService.GetBackingComponents(name);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name);
 
         var attributes = new CertificateAttributesModel
         {

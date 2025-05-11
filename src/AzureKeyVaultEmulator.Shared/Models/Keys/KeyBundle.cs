@@ -10,7 +10,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         [Key]
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long PrimaryId { get; set; }
+        public long PersistedId { get; set; }
 
         public string PersistedName { get; set; } = string.Empty;
 

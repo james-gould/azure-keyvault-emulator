@@ -195,17 +195,17 @@ public class CertificatesController(
     #region issuers
 
     [HttpGet("issuers/{name}")]
-    public IActionResult GetCertificateIssuer(
+    public async Task<IActionResult> GetCertificateIssuer(
     [FromRoute] string name,
     [ApiVersion] string apiVersion)
     {
-        var result = certService.GetCertificateIssuer(name);
+        var result = await certService.GetCertificateIssuerAsync(name);
 
         return Ok(result);
     }
 
     [HttpPut("issuers/{name}")]
-    public IActionResult CreateCertificateIssuer(
+    public async Task<IActionResult> CreateCertificateIssuer(
         [FromRoute] string name,
         [FromBody] IssuerBundle bundle,
         [ApiVersion] string apiVersion)
@@ -213,25 +213,25 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(bundle);
 
-        var result = backingService.PersistIssuerConfig(name, bundle);
+        var result = await backingService.PersistIssuerConfigAsync(name, bundle);
 
         return Ok(result);
     }
 
     [HttpDelete("issuers/{name}")]
-    public IActionResult DeleteIssuers(
+    public async Task<IActionResult> DeleteIssuers(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = backingService.DeleteIssuer(name);
+        var result = await backingService.DeleteIssuerAsync(name);
 
         return Ok(result);
     }
 
     [HttpPatch("issuers/{name}")]
-    public IActionResult UpdateCertificateIssuer(
+    public async Task<IActionResult> UpdateCertificateIssuer(
         [FromRoute] string name,
         [FromBody] IssuerBundle bundle,
         [ApiVersion] string apiVersion)
@@ -239,7 +239,7 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(bundle);
 
-        var result = backingService.UpdateCertificateIssuer(name, bundle);
+        var result = await backingService.UpdateCertificateIssuerAsync(name, bundle);
 
         return Ok(result);
     }
@@ -249,31 +249,31 @@ public class CertificatesController(
     #region contacts
 
     [HttpPut("contacts")]
-    public IActionResult SetContacts(
+    public async Task<IActionResult> SetContacts(
         [FromBody] SetContactsRequest request,
         [ApiVersion] string apiVersion)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var result = backingService.SetContactInformation(request);
+        var result = await backingService.SetContactInformationAsync(request);
 
         return Ok(result);
     }
 
     [HttpDelete("contacts")]
-    public IActionResult DeleteContacts(
+    public async Task<IActionResult> DeleteContacts(
         [ApiVersion] string apiVersion)
     {
-        var result = backingService.DeleteCertificateContacts();
+        var result = await backingService.DeleteCertificateContactsAsync();
 
         return Ok(result);
     }
 
     [HttpGet("contacts")]
-    public IActionResult GetCertificateContacts(
+    public async Task<IActionResult> GetCertificateContacts(
         [ApiVersion] string apiVersion)
     {
-        var result = backingService.GetCertificateContacts();
+        var result = await backingService.GetCertificateContactsAsync();
 
         return Ok(result);
     }

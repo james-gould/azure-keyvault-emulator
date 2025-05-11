@@ -10,7 +10,7 @@ public sealed class KeyProperties : IPersistedItem
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
 
     [JsonPropertyName("crv")]
     public string JsonWebKeyCurveName { get; set; } = string.Empty;

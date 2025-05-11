@@ -12,7 +12,7 @@ public sealed class X509CertificateProperties : IPersistedItem
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
 
     public string BackingEnhancedUsage { get; set; } = "[]";
 
@@ -50,7 +50,7 @@ public sealed class SubjectAlternativeNames : IPersistedItem
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
 
     public string BackingDns { get; set; } = "[]";
 

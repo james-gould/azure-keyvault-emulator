@@ -13,7 +13,7 @@ public sealed class CertificatePolicy : INamedItem
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
 
     public string PersistedName { get; set; } = string.Empty;
 
@@ -29,7 +29,7 @@ public sealed class CertificatePolicy : INamedItem
     public string Subject { get; set; } = string.Empty;
 
     [JsonPropertyName("issuer")]
-    public IssuerBundle Issuer { get; set; } = new();
+    public IssuerBundle? Issuer { get; set; }
 
     [JsonPropertyName("attributes")]
     public CertificateAttributesModel CertificateAttributes { get; set; } = new();

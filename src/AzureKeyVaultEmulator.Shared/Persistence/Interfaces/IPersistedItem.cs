@@ -5,5 +5,5 @@
 /// </summary>
 public interface IPersistedItem
 {
-    long PrimaryId { get; set; }
+    long PersistedId { get; set; }
 }

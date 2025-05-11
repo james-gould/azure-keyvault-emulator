@@ -17,7 +17,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         [Key]
         [JsonIgnore]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long PrimaryId { get; set; }
+        public long PersistedId { get; set; }
 
         [JsonPropertyName("crv")]
         public string? KeyCurve { get; set; } = string.Empty;

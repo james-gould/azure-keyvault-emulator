@@ -24,19 +24,15 @@ public class CertificateContactTests(CertificatesTestingFixture fixture) : IClas
 
         var contacts = await SetContactsAsync();
 
+        var fromStore = await client.GetContactsAsync();
+
+        Assert.Equivalent(fromStore?.Value, contacts);
+
         var deleteResponse = await client.DeleteContactsAsync();
 
         Assert.NotNull(deleteResponse.Value);
 
-        var getResponse = await client.GetContactsAsync();
-
-        Assert.NotNull(getResponse.Value);
-
-        var removedContacts = getResponse.Value;
-
-        Assert.NotEqual(contacts, removedContacts);
-
-        Assert.Empty(removedContacts);
+        await Assert.RequestFailsAsync(() => client.GetContactsAsync(), HttpStatusCode.BadRequest);
     }
 
     private async Task<IEnumerable<CertificateContact>> SetContactsAsync()

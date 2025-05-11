@@ -11,7 +11,7 @@ public sealed class CertificateBundle : CertificateProperties, INamedItem
     [Key]
     [JsonIgnore]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
 
     public string PersistedName { get; set; } = string.Empty;
 

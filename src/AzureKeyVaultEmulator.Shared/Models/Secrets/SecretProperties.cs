@@ -10,7 +10,7 @@ public sealed class SecretProperties : IPersistedItem
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
 
     [JsonPropertyName("contentType")]
     public string ContentType { get; set; } = string.Empty;

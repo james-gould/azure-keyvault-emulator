@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
+using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Keys;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
@@ -15,12 +16,13 @@ public sealed class VaultContext(DbContextOptions<VaultContext> opt) : DbContext
     public DbSet<CertificateBundle> Certificates { get; set; }
     public DbSet<CertificatePolicy> CertificatePolicies { get; set; }
     public DbSet<IssuerBundle> Issuers { get; set; }
+    public DbSet<CertificateContacts> CertificateContacts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<KeyBundle>(e =>
         {
-            e.HasKey(x => x.PrimaryId);
+            e.HasKey(x => x.PersistedId);
 
             e.OwnsNavigation(x => x.Attributes);
             e.OwnsNavigation(x => x.Key);
@@ -28,24 +30,29 @@ public sealed class VaultContext(DbContextOptions<VaultContext> opt) : DbContext
 
         modelBuilder.Entity<SecretBundle>(e =>
         {
-            e.HasKey(x => x.PrimaryId);
+            e.HasKey(x => x.PersistedId);
             e.OwnsNavigation(x => x.Attributes);
         });
 
         modelBuilder.Entity<CertificateBundle>(e =>
         {
-            e.HasKey(x => x.PrimaryId);
+            e.HasKey(x => x.PersistedId);
 
             e.OwnsNavigation(x => x.Attributes);
 
-            e.HasChildNavigation(x => x.CertificatePolicy);
+            e.HasForeignKeyNavigation(x => x.CertificatePolicy);
         });
 
         modelBuilder.Entity<CertificatePolicy>(e =>
         {
-            e.HasKey(x => x.PrimaryId);
+            e.HasKey(x => x.PersistedId);
 
-            e.HasChildNavigation(x => x.Issuer);
+            e.HasOne<IssuerBundle>()
+                .WithOne()
+                .HasForeignKey<IssuerBundle>(x => x.PolicyId)
+                .IsRequired(false);
+
+            e.Navigation(x => x.Issuer).AutoInclude();
 
             e.OwnsNavigation(x => x.CertificateAttributes);
             e.OwnsNavigation(x => x.KeyProperties);
@@ -56,16 +63,17 @@ public sealed class VaultContext(DbContextOptions<VaultContext> opt) : DbContext
                 props.OwnsOne(x => x.SubjectAlternativeNames);
                 props.Navigation(x => x.SubjectAlternativeNames).AutoInclude();
             });
+
             e.Navigation(x => x.CertificateProperties).AutoInclude();
         });
 
         modelBuilder.Entity<IssuerBundle>(e =>
         {
-            e.HasKey(x => x.PrimaryId);
+            e.HasKey(x => x.PersistedId);
 
             e.OwnsNavigation(x => x.Attributes);
-            e.OwnsNavigation(x => x.Credentials);
             e.OwnsNavigation(x => x.OrganisationDetails);
+            e.OwnsNavigation(x => x.Credentials);
         });
 
         base.OnModelCreating(modelBuilder);
@@ -81,13 +89,13 @@ public static class ModelBuilderExtensions
     /// <typeparam name="TDependent"></typeparam>
     /// <param name="builder"></param>
     /// <param name="navigation"></param>
-    public static void HasChildNavigation<TEntity, TDependent>(
+    public static void HasForeignKeyNavigation<TEntity, TDependent>(
         this EntityTypeBuilder<TEntity> builder,
         Expression<Func<TEntity, TDependent?>> navigation)
         where TEntity : class
         where TDependent : class, IPersistedItem
     {
-        builder.HasOne(navigation).WithOne().HasForeignKey<TDependent>(x => x.PrimaryId);
+        builder.HasOne(navigation).WithOne().HasForeignKey<TDependent>(x => x.PersistedId);
         builder.Navigation(navigation).AutoInclude();
     }
 

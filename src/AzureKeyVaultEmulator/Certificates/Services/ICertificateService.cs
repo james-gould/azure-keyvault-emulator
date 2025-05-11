@@ -14,7 +14,7 @@ public interface ICertificateService
     Task<CertificateOperation> GetPendingCertificateAsync(string name);
     Task<CertificatePolicy> UpdateCertificatePolicyAsync(string name, CertificatePolicy certificatePolicy);
     Task<CertificatePolicy> GetCertificatePolicyAsync(string name);
-    IssuerBundle GetCertificateIssuer(string name);
+    Task<IssuerBundle> GetCertificateIssuerAsync(string name);
 
     Task<ValueModel<string>> BackupCertificateAsync(string name);
     Task<CertificateBundle> RestoreCertificateAsync(ValueModel<string> backup);

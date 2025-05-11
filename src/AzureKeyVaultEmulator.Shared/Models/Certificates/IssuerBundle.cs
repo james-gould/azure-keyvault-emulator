@@ -14,7 +14,10 @@ public sealed class IssuerBundle : INamedItem
     [Key]
     [JsonIgnore]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public long? PolicyId { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedName { get; set; } = string.Empty;
@@ -41,7 +44,7 @@ public sealed class IssuerBundle : INamedItem
     public IssuerAttributes Attributes { get; set; } = new();
 
     [JsonPropertyName("org_details")]
-    public OrganisationDetails OrganisationDetails { get; set; } = new();
+    public OrganisationDetails? OrganisationDetails { get; set; } = new();
 }
 
 public sealed class IssuerAttributes : AttributeBase;
@@ -51,7 +54,7 @@ public sealed class IssuerCredentials : IPersistedItem
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
 
     [JsonPropertyName("account_id")]
     public string AccountId { get; set; } = string.Empty;
@@ -65,29 +68,24 @@ public sealed class OrganisationDetails : IPersistedItem
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PrimaryId { get; set; }
+    public long PersistedId { get; set; }
 
     [JsonPropertyName("id")]
     public string Identifier { get; set; } = Guid.NewGuid().Neat();
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public string BackedAdminDetails { get; set; } = "[]";
+    public string BackingAdminDetails { get; set; } = "[]";
 
     [JsonPropertyName("admin_details")]
     [NotMapped]
     public IEnumerable<AdministratorDetails> AdministratorDetails
     {
-        get => JsonSerializer.Deserialize<IEnumerable<AdministratorDetails>>(BackedAdminDetails) ?? [];
-        set => BackedAdminDetails = JsonSerializer.Serialize(value);
+        get => JsonSerializer.Deserialize<IEnumerable<AdministratorDetails>>(BackingAdminDetails) ?? [];
+        set => BackingAdminDetails = JsonSerializer.Serialize(value);
     }
 }
 
-public sealed class AdministratorDetails : IPersistedItem
+public sealed class AdministratorDetails
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public long PrimaryId { get; set; }
 
     [JsonPropertyName("email")]
     public string Email { get; set; } = string.Empty;
