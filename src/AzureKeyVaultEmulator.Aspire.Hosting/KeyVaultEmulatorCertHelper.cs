@@ -47,7 +47,7 @@ internal static class KeyVaultEmulatorCertHelper
         ArgumentNullException.ThrowIfNull(options);
 
         if (!string.IsNullOrEmpty(options.LocalCertificatePath) && !Directory.Exists(options.LocalCertificatePath))
-            throw new KeyVaultEmulatorException($"The local path specified for your SSL certificates does not exist.");
+            Directory.CreateDirectory(options.LocalCertificatePath);
 
         var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
 

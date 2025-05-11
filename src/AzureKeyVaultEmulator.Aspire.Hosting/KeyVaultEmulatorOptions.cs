@@ -13,9 +13,9 @@ public sealed class KeyVaultEmulatorOptions
     public ContainerLifetime Lifetime { get; set; } = ContainerLifetime.Session;
 
     /// <summary>
-    /// Persists the Vault Data alongside the certificates, allowing for multi-session use.
+    /// Allows the Emulator to persist data beyond temporary storage for multi-session use.
     /// </summary>
-    public bool PersistData { get; set; } = false;
+    public bool Persist { get; set; } = false;
 
     /// <summary>
     /// <para>Specify the directory to be used as a mount for the Azure Key Vault Emulator.</para>

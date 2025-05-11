@@ -11,7 +11,7 @@ public static class PersistenceUtils
     {
         var root = "Data Source=";
         var dbName = shouldPersist ? "emulator" : Guid.NewGuid().Neat();
-        var dbDir = shouldPersist ? "certs/" : Path.GetTempPath();
+        var dbDir = shouldPersist ? "/certs/" : Path.GetTempPath();
 
 #if DEBUG
         if (shouldPersist)

@@ -123,7 +123,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             EnvironmentCallbackContext context,
             KeyVaultEmulatorOptions options)
         {
-            context.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, options.PersistData.ToString());
+            context.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, options.Persist.ToString());
 
             return context;
         }
