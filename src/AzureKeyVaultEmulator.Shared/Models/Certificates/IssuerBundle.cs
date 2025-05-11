@@ -71,7 +71,7 @@ public sealed class OrganisationDetails : IPersistedItem
     public string Identifier { get; set; } = Guid.NewGuid().Neat();
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public string BackedAdminDetails = "[]";
+    public string BackedAdminDetails { get; set; } = "[]";
 
     [JsonPropertyName("admin_details")]
     [NotMapped]

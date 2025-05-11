@@ -37,7 +37,7 @@ public sealed class CertificatePolicy : INamedItem
     [JsonPropertyName("x509_props")]
     public X509CertificateProperties? CertificateProperties { get; set; } = new();
 
-    public string BackingLifetimeActions = "[]";
+    public string BackingLifetimeActions { get; set; } = "[]";
 
     [JsonPropertyName("lifetime_actions")]
     [NotMapped]
