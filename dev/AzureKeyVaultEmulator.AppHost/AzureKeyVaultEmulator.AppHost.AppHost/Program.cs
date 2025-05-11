@@ -14,7 +14,7 @@ if (integrationTestRun || overrideTestRun)
 {
     builder
         .AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName)
-        .WithEnvironment(EnvironmentConstants.UsePersistedDataStore, "true");
+        .WithEnvironment(EnvironmentConstants.UsePersistedDataStore, persist.ToString());
 }
 else
 {
