@@ -204,6 +204,8 @@ public sealed class CertificateService(
 
         var bundle = new CertificateBundle
         {
+            PersistedName = name,
+            PersistedVersion = version,
             CertificateIdentifier = certIdentifier,
             RecoveryId = certIdentifier,
             Attributes = attributes,
