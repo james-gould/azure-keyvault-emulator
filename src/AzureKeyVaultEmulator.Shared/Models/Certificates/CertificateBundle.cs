@@ -13,10 +13,8 @@ public sealed class CertificateBundle : CertificateProperties, INamedItem
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long PrimaryId { get; set; }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedName { get; set; } = string.Empty;
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedVersion { get; set; } = string.Empty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]

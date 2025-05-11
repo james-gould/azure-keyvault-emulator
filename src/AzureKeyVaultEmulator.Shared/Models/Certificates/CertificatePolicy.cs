@@ -15,10 +15,8 @@ public sealed class CertificatePolicy : INamedItem
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public long PrimaryId { get; set; }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedName { get; set; } = string.Empty;
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string PersistedVersion { get; set; } = string.Empty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
@@ -39,7 +37,6 @@ public sealed class CertificatePolicy : INamedItem
     [JsonPropertyName("x509_props")]
     public X509CertificateProperties? CertificateProperties { get; set; } = new();
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string BackingLifetimeActions = "[]";
 
     [JsonPropertyName("lifetime_actions")]

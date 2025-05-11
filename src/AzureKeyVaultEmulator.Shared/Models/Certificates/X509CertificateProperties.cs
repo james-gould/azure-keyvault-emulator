@@ -14,12 +14,9 @@ public sealed class X509CertificateProperties : IPersistedItem
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public long PrimaryId { get; set; }
 
-    [JsonPropertyName("ekus")]
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)] 
     public string BackingEnhancedUsage = "[]";
 
-    [JsonPropertyName("enhanced_key_usage")]
+    [JsonPropertyName("ekus")]
     [NotMapped]
     public IEnumerable<string> EnhancedKeyUsage
     {
@@ -27,7 +24,6 @@ public sealed class X509CertificateProperties : IPersistedItem
         set => BackingEnhancedUsage = JsonSerializer.Serialize(value);
     }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)] 
     public string BackingKeyUsage = "[]";
 
     [JsonPropertyName("key_usage")]
@@ -55,7 +51,6 @@ public sealed class SubjectAlternativeNames : IPersistedItem
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public long PrimaryId { get; set; }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string BackingDns = "[]";
 
     [JsonPropertyName("dns_names")]
@@ -66,7 +61,6 @@ public sealed class SubjectAlternativeNames : IPersistedItem
         set => BackingDns = JsonSerializer.Serialize(value);
     }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string BackingEmails = "[]";
 
     [JsonPropertyName("emails")]
@@ -77,7 +71,6 @@ public sealed class SubjectAlternativeNames : IPersistedItem
         set => BackingEmails = JsonSerializer.Serialize(value);
     }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string BackingUpns = "[]";
 
     [JsonPropertyName("upns")]

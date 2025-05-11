@@ -37,13 +37,15 @@ public sealed class CertificateService(
 
         var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, version, "certificates");
 
+        var concretePolicy = UpdateNullablePolicy(policy, certIdentifier, attributes);
+
         var bundle = new CertificateBundle
         {
             CertificateIdentifier = certIdentifier,
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            CertificatePolicy = UpdateNullablePolicy(policy, certIdentifier, attributes),
+            CertificatePolicy = concretePolicy,
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.SecretIdentifier,
@@ -53,6 +55,9 @@ public sealed class CertificateService(
         };
 
         await context.Certificates.SafeAddAsync(name, version, bundle);
+        await context.CertificatePolicies.SafeAddAsync(name, version, concretePolicy);
+
+        await context.SaveChangesAsync();
 
         return new CertificateOperation(certIdentifier, name);
     }
@@ -122,10 +127,12 @@ public sealed class CertificateService(
         ArgumentNullException.ThrowIfNull(backup);
 
         var bundle = encryptionService.DecryptFromKeyVaultJwe<CertificateBundle>(backup.Value);
+        var policy = bundle?.CertificatePolicy ?? throw new InvalidOperationException($"Failed to find {nameof(CertificatePolicy)} in backup.");
 
         var newVersion = Guid.NewGuid().Neat();
 
         await context.Certificates.SafeAddAsync(bundle.PersistedName, newVersion, bundle);
+        await context.CertificatePolicies.SafeAddAsync(policy.PersistedName, newVersion, policy);
 
         await context.SaveChangesAsync();
 
@@ -320,6 +327,8 @@ public sealed class CertificateService(
         ArgumentNullException.ThrowIfNull(cert);
 
         await context.Certificates.SafeAddAsync(name, "", cert);
+
+        await context.SaveChangesAsync();
 
         _deletedCerts.SafeRemove(name);
 
