@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
-
-namespace AzureKeyVaultEmulator.Shared.Utilities;
+﻿namespace AzureKeyVaultEmulator.Shared.Utilities;
 
 public static class PersistenceUtils
 {
