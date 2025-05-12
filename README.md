@@ -139,7 +139,7 @@ docker pull jamesgoulddev/azure-keyvault-emulator:latest
 ```
 
 > [!NOTE]
-> There's a breaking change between the `latest` and `windows` tags that will be updated on 11/05/2025 to give users a chance to migrate off.
+> `latest` is now stable and the transitional tag `windows` will be retired soon. If you have a dependency relying on `windows` be sure to migrate off before 19/05/2025.
 
 # Roadmap
 
