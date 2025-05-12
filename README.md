@@ -55,7 +55,7 @@ var keyVault = builder
     .RunAsEmulator(new KeyVaultEmulatorOptions { Persist = true }); // Add this option
 ```
 
-This allows a single database to be created and shared as a part of your application's development cycle. [Read more about configuration here](docs/CONFIG.md#aspire-config)
+[Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
 ### 3. Permit requests to the Emulator using the Azure SDK:
 
