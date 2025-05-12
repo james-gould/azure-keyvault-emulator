@@ -1,6 +1,6 @@
 ﻿namespace AzureKeyVaultEmulator.Shared.Utilities;
 
-public static class DataExtensions
+public static class TypeExtensions
 {
     /// <summary>
     /// Converts a <see cref="DateTime"/> to a <see cref="DateTimeOffset"/> and returns the epoch time.

@@ -14,11 +14,11 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult GetDeletedSecret(
+        public async Task<IActionResult> GetDeletedSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var bundle = secretService.GetDeletedSecret(name);
+            var bundle = await secretService.GetDeletedSecretAsync(name);
 
             return Ok(bundle);
         }
@@ -46,11 +46,11 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult PurgeDeletedSecret(
+        public async Task<IActionResult> PurgeDeletedSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            secretService.PurgeDeletedSecret(name);
+            await secretService.PurgeDeletedSecretAsync(name);
 
             return NoContent();
         }
@@ -59,11 +59,11 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [ProducesResponseType<ListResult<SecretBundle>>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult RecoverDeletedSecret(
+        public async Task<IActionResult> RecoverDeletedSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var secret = secretService.RecoverDeletedSecret(name);
+            var secret = await secretService.RecoverDeletedSecretAsync(name);
 
             return Ok(secret);
         }

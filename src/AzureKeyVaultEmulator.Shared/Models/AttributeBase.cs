@@ -1,8 +1,11 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models
 {
-    public class AttributeBase
+    public class AttributeBase : IPersistedItem
     {
         public AttributeBase()
         {
@@ -13,6 +16,11 @@ namespace AzureKeyVaultEmulator.Shared.Models
             NotBefore = now.ToUnixTimeSeconds();
             Expiration = now.AddDays(365).ToUnixTimeSeconds();
         }
+
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)] 
+        public Guid PersistedId { get; set; } = Guid.NewGuid();
 
         [JsonPropertyName("enabled")]
         public bool Enabled { get; set; } = true;

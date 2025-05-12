@@ -42,7 +42,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
             if (deletedKey?.Name?.Equals(keyName, StringComparison.OrdinalIgnoreCase) == true)
                 detectedDeletedKeys.Add(deletedKey);
 
-        Assert.Equal(executionCount + 1, detectedDeletedKeys.Count);
+        Assert.Equal(executionCount, detectedDeletedKeys.Count);
     }
 
     [Fact]

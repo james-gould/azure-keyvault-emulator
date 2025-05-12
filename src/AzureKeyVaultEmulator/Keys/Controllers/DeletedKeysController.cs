@@ -9,11 +9,11 @@ namespace AzureKeyVaultEmulator.Keys.Controllers;
 public class DeletedKeysController(IKeyService keyService, ITokenService tokenService) : Controller
 {
     [HttpGet("deletedkeys/{name}")]
-    public IActionResult GetDeletedKey(
+    public async Task<IActionResult> GetDeletedKey(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
-        var result = keyService.GetDeletedKey(name);
+        var result = await keyService.GetDeletedKeyAsync(name);
 
         return Ok(result);
     }
@@ -35,21 +35,21 @@ public class DeletedKeysController(IKeyService keyService, ITokenService tokenSe
     }
 
     [HttpDelete("deletedkeys/{name}")]
-    public IActionResult PurgeDeletedKey(
+    public async Task<IActionResult> PurgeDeletedKey(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
-        keyService.PurgeDeletedKey(name);
+        await keyService.PurgeDeletedKey(name);
 
         return NoContent();
     }
 
     [HttpPost("deletedkeys/{name}/recover")]
-    public IActionResult RecoverDeletedKey(
+    public async Task<IActionResult> RecoverDeletedKey(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
-        var result = keyService.RecoverDeletedKey(name);
+        var result = await keyService.RecoverDeletedKeyAsync(name);
 
         return Ok(result);
     }

@@ -1,5 +1,6 @@
 using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Secrets.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +15,12 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [HttpPut("{name}")]
         [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult SetSecret(
+        public async Task<IActionResult> SetSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
-            [FromBody] SetSecretModel requestBody)
+            [FromBody] SetSecretRequest requestBody)
         {
-            var secret = secretService.SetSecret(name, requestBody);
+            var secret = await secretService.SetSecretAsync(name, requestBody);
 
             return Ok(secret);
         }
@@ -28,7 +29,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult GetSecret(
+        public async Task<IActionResult> GetSecret(
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion)
@@ -36,7 +37,7 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             ArgumentException.ThrowIfNullOrEmpty(name);
             ArgumentException.ThrowIfNullOrEmpty(version);
 
-            var secretResult = secretService.GetSecret(name, version);
+            var secretResult = await secretService.GetSecretAsync(name, version);
 
             return Ok(secretResult);
         }
@@ -45,26 +46,38 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult GetSecret(
+        public async Task<IActionResult> GetSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
-            var secretResult = secretService.GetSecret(name);
+            var secretResult = await secretService.GetSecretAsync(name);
 
             return Ok(secretResult);
+        }
+
+        [HttpPatch("{name}/{version}")]
+        public async Task<IActionResult> UpdateSecret(
+            [FromRoute] string name,
+            [FromRoute] string version,
+            [ApiVersion] string apiVersion,
+            [FromBody] SecretAttributesModel attributes)
+        {
+            var updated = await secretService.UpdateSecretAsync(name, version, attributes);
+
+            return Ok(updated);
         }
 
         [HttpDelete("{name}")]
         [Produces("application/json")]
         [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult DeleteSecret(
+        public async Task<IActionResult> DeleteSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var deletedBundle = secretService.DeleteSecret(name);
+            var deletedBundle = await secretService.DeleteSecretAsync(name);
 
             return Ok(deletedBundle);
         }
@@ -73,11 +86,11 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult BackupSecret(
+        public async Task<IActionResult> BackupSecret(
             [FromRoute] string name,
             [ApiVersion] string apiVersion)
         {
-            var backupResult = secretService.BackupSecret(name);
+            var backupResult = await secretService.BackupSecretAsync(name);
 
             return Ok(backupResult);
         }
@@ -125,32 +138,15 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
         [Produces("application/json")]
         [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
         [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult RestoreSecret(
+        public async Task<IActionResult> RestoreSecret(
             [ApiVersion] string apiVersion,
             [FromBody] ValueModel<string>? backup)
         {
             ArgumentNullException.ThrowIfNull(backup);
 
-            var secret = secretService.RestoreSecret(backup.Value);
+            var secret = await secretService.RestoreSecretAsync(backup.Value);
 
             return Ok(secret);
-        }
-
-        [HttpPatch("{name}/{version}")]
-        [Produces("application/json")]
-        [ProducesResponseType<SecretBundle>(StatusCodes.Status200OK)]
-        [ProducesResponseType<KeyVaultError>(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateSecret(
-            [FromRoute] string name,
-            [FromRoute] string version,
-            [ApiVersion] string apiVersion,
-            [FromBody] SecretAttributesModel attributes)
-        {
-            ArgumentNullException.ThrowIfNull(attributes);
-
-            var updatedAttributes = secretService.UpdateSecret(name, version, attributes);
-
-            return Ok(updatedAttributes);
         }
     }
 }

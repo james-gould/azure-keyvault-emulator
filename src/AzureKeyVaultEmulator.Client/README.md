@@ -1,6 +1,6 @@
 # Overview
 
-This library simplifies the inclusion of the Azure Key Vault Emulator into your local development environment.
+This library simplifies the inclusion of the [Azure Key Vault Emulator](https://github.com/james-gould/azure-keyvault-emulator) into your local development environment.
 
 You do not *need* to use it but it makes life easier. Due to the constraints of Azure Key Vault and the associated client libraries, any requests that don't come from `https://*.vault.azure.net` are rejected.
 
@@ -37,14 +37,7 @@ If you're using `.NET Aspire` this will appear in your `appsettings.json`:
 > [!NOTE]
 > You don't need to add this into your `appsettings.json` beforehand, Aspire will do this for you.
 
-
-If you're simply running the container locally and directly referencing it, you can find the port for `https://localhost:{port}` with the following:
-
-```
-docker ps
-```
-
-You'll then need to create a configuration item in your application which allows the dotnet runtime to get the `https://localhost:{port}`.
+If you're using the Emulator image directly through `Docker` your vault URI will be `https://localhost:4997`.
 
 # Usage
 

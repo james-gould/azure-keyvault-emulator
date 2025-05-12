@@ -36,6 +36,7 @@ If you don't want to configure the container there's nothing left to read, enjoy
 
 The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hosting` library behaves:
 
+- `Persist (bool)`: Persist the key vault data in an `emulator.db` between sessions.
 - `LocalCertificatePath (string)`: Instructs the local path of the SSL certificates. Defaults to `""`.
     - If unset/null your local user directory will be used, ie on Windows `C:/Users/Name/keyvaultemulator/certs`.
 - `ShouldGenerateCertificates (bool)`: Attempt to create the SSL certificates. Defaults to `true`.
@@ -53,6 +54,7 @@ With `User Secrets` you can create a configuration section with the following op
 ```json
 {
   "KeyVaultEmulator": {
+    "Persist": true,
     "LocalCertificatePath": "C:/Users/MyName/keyvaultemulator/certs",
     "LoadCertificatesIntoTrustStore": false,
     "ShouldGenerateCertificates": false,
@@ -101,6 +103,13 @@ You do not need to use `.NET Aspire` to run the emulator, but you will have to g
 - Mount that directory as a `volume` to `certs/` when you start the container so the certificates can be installed into the API.
     - For Docker this would be using the `-v C:/Users/Name/keyvaultemulator/certs:certs/:ro`.
 
+> [!NOTE]
+> You can persist your data with a direct Docker connection using `-e Persist=true`. 
+>
+> This will create an `emulator.db` in the mount next to your certificates; shareable, re-usable, updated in real-time and loaded in at runtime.
+>
+> This is **opt-in** behaviour, without persistence the Emulator data will be stored internally at `/tmp/{guid}.db` and destroyed on shutdown.
+
 ### Installing Certificates
 
 The certificates must be installed as a **Trusted Root CA** to achieve SSL:
@@ -121,14 +130,14 @@ Yes. It's no different than the `SSL` constraints of developing `ASP.NET Core` a
 
 Please exit your IDE/terminal running your application, run `sudo update-ca-certificates` and restart the container; subsequent uses of the Emulator will now be trusted.
 
-> Do I need to do this every time I want to use the Emulator?
+> Do I need perform the configuration every time I want to use the Emulator?
 
 No. You only need to do this once, unless you uninstall and delete the certificates. If you remove them from your local machine you will need to repeat this process **once**, and then never again. Unless you remove them from your local machine... you get the idea.
 
-> Is this required? Can we just use `HTTP`?
+> Is this required? Why can't we just use `HTTP`?
 
 Yes, it's required, and unfortunately we can't use HTTP. The Azure Client SDK enforces `HTTPS` (and thus SSL certificates) when checking the `vaultUri`. Without the certificates installed as trusted the connections from the SDK into the Emulator will timeout and throw an exception due to `UntrustedRoot`.
 
 > I followed the documentation and still can't get a trusted connection to work. What next?
 
-If you're validating the requests using your browser please restart it. You will need to fully close *all* instances, not just the tab/window you're looking at. If that still doesn't help please [raise an issue](https://github.com/james-gould/azure-keyvault-emulator/issues) and I'll support with high priority.
+If you're validating the requests using your browser please restart it. You will need to fully close *all* instances, not just the tab/window you're looking at. If that still doesn't help please [raise an issue](https://github.com/james-gould/azure-keyvault-emulator/issues).

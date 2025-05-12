@@ -4,6 +4,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 {
     public class DeletedSecretBundle : DeletedBundle<SecretAttributesModel>
     {
+
         [JsonPropertyName("id")]
         public string SecretId { get; set; } = string.Empty;
 

@@ -2,7 +2,7 @@
 
 Provides the ability to emulate the `AzureKeyVault` Aspire resource using the open source [emulator](https://github.com/james-gould/azure-keyvault-emulator).
 
-Recommended, but not required, is the [client library](https://google.com) to make using the emulator in your applications incredibly simple.
+Recommended, but not required, is the [client library](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) to make using the emulator in your applications incredibly simple.
 
 # Usage
 

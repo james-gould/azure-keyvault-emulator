@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AzureKeyVaultEmulator.Shared.Models.Secrets
+namespace AzureKeyVaultEmulator.Shared.Models.Secrets.Requests
 {
     public class UpdateSecretRequest
     {
