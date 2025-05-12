@@ -20,7 +20,7 @@ else
 {
     var keyVault = builder
         .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
-        .RunAsEmulator(configSectionName: "KeyVaultEmulator");
+        .RunAsEmulator();
 
     var webApi = builder
         .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
