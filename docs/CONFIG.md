@@ -104,7 +104,7 @@ You do not need to use `.NET Aspire` to run the emulator, but you will have to g
     - For Docker this would be using the `-v C:/Users/Name/keyvaultemulator/certs:certs/:ro`.
 
 > [!NOTE]
-> You can persist your data with direct Docker connection using `-e Persist=true`. 
+> You can persist your data with a direct Docker connection using `-e Persist=true`. 
 > This will create an `emulator.db` in the mount next to your `emulator.pfx` and `emulator.crt`, shareable, re-usable, updated in real-time and loaded in at runtime.
 
 ### Installing Certificates
