@@ -36,16 +36,18 @@ If you don't want to configure the container there's nothing left to read, enjoy
 
 The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hosting` library behaves:
 
-- `Persist (bool)`: Persist the key vault data in an `emulator.db` between sessions.
-- `LocalCertificatePath (string)`: Instructs the local path of the SSL certificates. Defaults to `""`.
-    - If unset/null your local user directory will be used, ie on Windows `C:/Users/Name/keyvaultemulator/certs`.
-- `ShouldGenerateCertificates (bool)`: Attempt to create the SSL certificates. Defaults to `true`.
-- `LoadCertificatesIntoTrustStore (bool)`: Attempt installation of the certificates, requires admin rights. Defaults to `true`.
-- `ForceCleanupOnShutdown (bool)`: Attempt to delete SSL certificates at `LocalCertificatePath` on shutdown. This is unstable and shouldn't be relied upon. Defaults to `false`.
-- `Lifetime (ContainerLifetime)`: Sets the `ContainerLifetime` of the Emulator. There are 2 available values:
-    - `Session`: The default option. On shutdown `destroy` the container.
-    - `Persistent`: On shutdown turn off the Emulator container, but do not `destroy` it.
-    - These options do not interfere with the SSL certificates.
+### Configuration Options
+
+| Key                           | Type                 | Default     | Description |
+|------------------------------|----------------------|-------------|-------------|
+| `Persist`                    | `bool`               | `false`     | Persist the key vault data in an `emulator.db` file between sessions. |
+| `LocalCertificatePath`       | `string`             | `""`        | Path to SSL certificates. If unset, defaults to user's local directory (e.g., `C:/Users/Name/keyvaultemulator/certs` on Windows). |
+| `ShouldGenerateCertificates` | `bool`               | `true`      | Whether to auto-generate SSL certificates. |
+| `LoadCertificatesIntoTrustStore` | `bool`          | `true`      | Attempts to install generated certs into the OS trust store. Requires admin rights. |
+| `ForceCleanupOnShutdown`     | `bool`               | `false`     | Tries to delete certificates at `LocalCertificatePath` on shutdown. Unstable and not reliable. |
+| `Lifetime`                   | `ContainerLifetime`  | `Session`   | Controls container behavior on shutdown:<br>• `Session`: Destroys container<br>• `Persistent`: Stops container without destroying it.<br><br>This will not remove the certificates from your host machine. |
+
+
 
 There are two ways to utilise this configuration, all of them are **optional** and will default to allow automatic SSL on your machine.
 
@@ -131,7 +133,11 @@ Yes. It's no different than the `SSL` constraints of developing `ASP.NET Core` a
 
 Please exit your IDE/terminal running your application, run `sudo update-ca-certificates` and restart the container; subsequent uses of the Emulator will now be trusted.
 
-> Do I need perform the configuration every time I want to use the Emulator?
+> I'm using Persist but my `emulator.db` is split into 3 files. Why?
+
+SQLite will combine the files when the container/host shuts down gracefully, but won't if the process unexpectedly terminates. To combine them into a single browsable file you need [SQLite Tools](https://www.sqlite.org/download.html) installed and to run the command: `sqlite3 <databasename>.db "VACUUM;"`
+
+> Do I need perform all of this configuration every time I want to use the Emulator?
 
 No. You only need to do this once, unless you uninstall and delete the certificates. If you remove them from your local machine you will need to repeat this process **once**, and then never again. Unless you remove them from your local machine... you get the idea.
 
