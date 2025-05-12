@@ -44,6 +44,19 @@ var webApi = builder
     .WithReference(keyVault); // reference as normal
 ```
 
+You can also toggle on persisted data, which creates a shareable `emulator.db` loaded at runtime and updated in real-time. 
+
+```csharp
+var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
+
+// With existing resource, requires Azure configuration in your AppHost
+var keyVault = builder
+    .AddAzureKeyVault(keyVaultServiceName)
+    .RunAsEmulator(new KeyVaultEmulatorOptions { Persist = true }); // Add this option
+```
+
+This allows a single database to be created and shared as a part of your application's development cycle. [Read more about configuration here](docs/CONFIG.md#aspire-config)
+
 ### 3. Permit requests to the Emulator using the Azure SDK:
 
 This can be done easily by installing the [AzureKeyVaultEmulator.Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package:

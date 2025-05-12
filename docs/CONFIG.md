@@ -36,6 +36,7 @@ If you don't want to configure the container there's nothing left to read, enjoy
 
 The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hosting` library behaves:
 
+- `Persist (bool)`: Persist the key vault data in an `emulator.db` between sessions.
 - `LocalCertificatePath (string)`: Instructs the local path of the SSL certificates. Defaults to `""`.
     - If unset/null your local user directory will be used, ie on Windows `C:/Users/Name/keyvaultemulator/certs`.
 - `ShouldGenerateCertificates (bool)`: Attempt to create the SSL certificates. Defaults to `true`.
@@ -53,6 +54,7 @@ With `User Secrets` you can create a configuration section with the following op
 ```json
 {
   "KeyVaultEmulator": {
+    "Persist": true,
     "LocalCertificatePath": "C:/Users/MyName/keyvaultemulator/certs",
     "LoadCertificatesIntoTrustStore": false,
     "ShouldGenerateCertificates": false,
@@ -100,6 +102,10 @@ You do not need to use `.NET Aspire` to run the emulator, but you will have to g
     - Your local user directory is recommended, on Windows this would be `C:/Users/Name/keyvaultemulator/certs`.
 - Mount that directory as a `volume` to `certs/` when you start the container so the certificates can be installed into the API.
     - For Docker this would be using the `-v C:/Users/Name/keyvaultemulator/certs:certs/:ro`.
+
+> [!NOTE]
+> You can persist your data with direct Docker connection using `-e Persist=true`. 
+> This will create an `emulator.db` in the mount next to your `emulator.pfx` and `emulator.crt`, shareable, re-usable, updated in real-time and loaded in at runtime.
 
 ### Installing Certificates
 
