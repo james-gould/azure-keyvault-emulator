@@ -58,8 +58,8 @@ With `User Secrets` you can create a configuration section with the following op
     "LocalCertificatePath": "C:/Users/MyName/keyvaultemulator/certs",
     "LoadCertificatesIntoTrustStore": false,
     "ShouldGenerateCertificates": false,
+    "Lifetime": "Persistent",
     "ForceCleanupOnShutdown": false,
-    "Lifetime": "Persistent"
   }
 }
 ```
@@ -82,11 +82,12 @@ Or you can pass in the same values directly as an `object`:
     .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
     .RunAsEmulator(new KeyVaultEmulatorOptions
     {
-        ForceCleanupOnShutdown = false,
+        Persist = true,
+        LocalCertificatePath = "C:/Users/MyName/keyvaultemulator/certs",
+        LoadCertificatesIntoTrustStore = false,
+        ShouldGenerateCertificates = false,
         Lifetime = ContainerLifetime.Persistent,
-        LoadCertificatesIntoTrustStore = true,
-        LocalCertificatePath = "C:/temp/kve/certs",
-        ShouldGenerateCertificates = true
+        ForceCleanupOnShutdown = false
     });
 ```
 
