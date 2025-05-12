@@ -44,7 +44,7 @@ var webApi = builder
     .WithReference(keyVault); // reference as normal
 ```
 
-You can also toggle on persisted data, which creates a `emulator.db` loaded at runtime and updated in real-time. 
+You can also toggle on persisted data, which creates an `emulator.db` loaded at runtime and updated in real-time. 
 
 ```csharp
 var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
