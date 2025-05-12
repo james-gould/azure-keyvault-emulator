@@ -127,14 +127,14 @@ Yes. It's no different than the `SSL` constraints of developing `ASP.NET Core` a
 
 Please exit your IDE/terminal running your application, run `sudo update-ca-certificates` and restart the container; subsequent uses of the Emulator will now be trusted.
 
-> Do I need to do this every time I want to use the Emulator?
+> Do I need perform the configuration every time I want to use the Emulator?
 
 No. You only need to do this once, unless you uninstall and delete the certificates. If you remove them from your local machine you will need to repeat this process **once**, and then never again. Unless you remove them from your local machine... you get the idea.
 
-> Is this required? Can we just use `HTTP`?
+> Is this required? Why can't we just use `HTTP`?
 
 Yes, it's required, and unfortunately we can't use HTTP. The Azure Client SDK enforces `HTTPS` (and thus SSL certificates) when checking the `vaultUri`. Without the certificates installed as trusted the connections from the SDK into the Emulator will timeout and throw an exception due to `UntrustedRoot`.
 
 > I followed the documentation and still can't get a trusted connection to work. What next?
 
-If you're validating the requests using your browser please restart it. You will need to fully close *all* instances, not just the tab/window you're looking at. If that still doesn't help please [raise an issue](https://github.com/james-gould/azure-keyvault-emulator/issues) and I'll support with high priority.
+If you're validating the requests using your browser please restart it. You will need to fully close *all* instances, not just the tab/window you're looking at. If that still doesn't help please [raise an issue](https://github.com/james-gould/azure-keyvault-emulator/issues).
