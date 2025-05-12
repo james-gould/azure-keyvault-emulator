@@ -47,9 +47,8 @@ var webApi = builder
 You can also toggle on persisted data, which creates an `emulator.db` loaded at runtime and updated in real-time. 
 
 ```csharp
-var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
+var keyVaultServiceName = "keyvault";
 
-// With existing resource, requires Azure configuration in your AppHost
 var keyVault = builder
     .AddAzureKeyVault(keyVaultServiceName)
     .RunAsEmulator(new KeyVaultEmulatorOptions { Persist = true }); // Add this option
