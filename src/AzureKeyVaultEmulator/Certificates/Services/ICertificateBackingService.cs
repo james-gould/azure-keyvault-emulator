@@ -6,16 +6,16 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public interface ICertificateBackingService
 {
-    (KeyBundle backingKey, SecretBundle backingSecret) GetBackingComponents(string certName, CertificatePolicy? policy = null);
+    Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, CertificatePolicy? policy = null);
 
-    IssuerBundle GetIssuer(string name);
-    IssuerBundle PersistIssuerConfig(string name, IssuerBundle bundle);
-    IssuerBundle AllocateIssuerToCertificate(string certName, IssuerBundle bundle);
+    Task<IssuerBundle> GetIssuerAsync(string name);
+    Task<IssuerBundle> CreateIssuerAsync(string name, IssuerBundle bundle);
+    Task<IssuerBundle> AllocateIssuerToCertificateAsync(string certName, IssuerBundle bundle);
 
-    IssuerBundle UpdateCertificateIssuer(string issuerName, IssuerBundle bundle);
-    IssuerBundle DeleteIssuer(string issuerName);
+    Task<IssuerBundle> UpdateCertificateIssuerAsync(string issuerName, IssuerBundle bundle);
+    Task<IssuerBundle> DeleteIssuerAsync(string issuerName);
 
-    CertificateContacts SetContactInformation(SetContactsRequest request);
-    CertificateContacts DeleteCertificateContacts();
-    CertificateContacts GetCertificateContacts();
+    Task<CertificateContacts> SetContactInformationAsync(SetContactsRequest request);
+    Task<CertificateContacts> DeleteCertificateContactsAsync();
+    Task<CertificateContacts> GetCertificateContactsAsync();
 }

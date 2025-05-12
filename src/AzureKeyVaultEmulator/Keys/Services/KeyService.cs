@@ -1,35 +1,34 @@
-using System.Xml.Linq;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace AzureKeyVaultEmulator.Keys.Services
 {
     public class KeyService(
         IHttpContextAccessor httpContextAccessor,
         IEncryptionService encryptionService,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        VaultContext context)
         : IKeyService
     {
-        private static readonly ConcurrentDictionary<string, KeyBundle> _keys = new();
         private static readonly ConcurrentDictionary<string, KeyRotationPolicy> _keyRotations = new();
 
-        private static readonly ConcurrentDictionary<string, KeyBundle> _deletedKeys = new();
-
-        public KeyBundle GetKey(string name)
+        public async Task<KeyBundle> GetKeyAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            return _keys.SafeGet(name);
+            return await context.Keys.SafeGetAsync(name);
         }
 
-        public KeyBundle GetKey(string name, string version)
+        public async Task<KeyBundle> GetKeyAsync(string name, string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            return _keys.SafeGet(name.GetCacheId(version));
+            return await context.Keys.SafeGetAsync(name, version);
         }
 
-        public KeyBundle CreateKey(string name, CreateKeyModel key)
+        public async Task<KeyBundle> CreateKeyAsync(string name, CreateKeyModel key)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -50,13 +49,14 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = key.Tags ?? []
             };
 
-            _keys.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
-            _keys.TryAdd(name.GetCacheId(version), response);
+            await context.Keys.SafeAddAsync(name, version, response);
+
+            await context.SaveChangesAsync();
 
             return response;
         }
 
-        public KeyAttributesModel? UpdateKey(
+        public async Task<KeyAttributesModel?> UpdateKeyAsync(
             string name,
             string version,
             KeyAttributesModel attributes,
@@ -64,31 +64,27 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = _keys.SafeGet(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             key.Attributes = attributes;
             key.Attributes.RecoverableDays = attributes.RecoverableDays;
 
-            foreach(var tag in tags)
+            foreach (var tag in tags)
                 key.Tags.TryAdd(tag.Key, tag.Value);
 
             key.Attributes.Update();
 
-            _keys.TryUpdate(cacheId, key, key);
+            await context.SaveChangesAsync();
 
             return key.Attributes;
         }
 
-        public KeyBundle? RotateKey(string name, string version)
+        public async Task<KeyBundle?> RotateKey(string name, string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = _keys.SafeGet(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             var newKey = new KeyBundle
             {
@@ -97,17 +93,19 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = key.Tags
             };
 
-            _keys.TryUpdate(cacheId, newKey, key);
+            await context.Keys.SafeAddAsync(name, version, newKey);
+
+            await context.SaveChangesAsync();
 
             return newKey;
         }
 
-        public KeyOperationResult? Encrypt(string name, string version, KeyOperationParameters keyOperationParameters)
+        public async Task<KeyOperationResult?> EncryptAsync(string name, string version, KeyOperationParameters keyOperationParameters)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var foundKey = _keys.SafeGet(name.GetCacheId());
+            var foundKey = await context.Keys.SafeGetAsync(name, version);
 
             var encrypted = EncodingUtils.Base64UrlEncode(foundKey.Key.Encrypt(keyOperationParameters));
 
@@ -118,12 +116,12 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public KeyOperationResult? Decrypt(string name, string version, KeyOperationParameters keyOperationParameters)
+        public async Task<KeyOperationResult?> DecryptAsync(string name, string version, KeyOperationParameters keyOperationParameters)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var foundKey = _keys.SafeGet(name.GetCacheId());
+            var foundKey = await context.Keys.SafeGetAsync(name, version);
 
             var decrypted = foundKey.Key.Decrypt(keyOperationParameters);
 
@@ -134,11 +132,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public ValueModel<string>? BackupKey(string name)
+        public async Task<ValueModel<string>?> BackupKeyAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var foundKey = _keys.SafeGet(name.GetCacheId());
+            var foundKey = await context.Keys.SafeGetAsync(name);
 
             return new ValueModel<string>
             {
@@ -146,7 +144,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public KeyBundle? RestoreKey(string jweBody)
+        public KeyBundle RestoreKey(string jweBody)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(jweBody);
 
@@ -175,16 +173,15 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return _keyRotations.SafeGet(name.GetCacheId());
         }
 
-        public KeyRotationPolicy UpdateKeyRotationPolicy(
+        public async Task<KeyRotationPolicy> UpdateKeyRotationPolicyAsync(
             string name,
             KeyRotationAttributes attributes,
             IEnumerable<LifetimeActions> lifetimeActions)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var key = _keys.SafeGet(name.GetCacheId());
+            var key = await context.Keys.SafeGetAsync(name);
 
-            // Policy exists against overall key, not the current (cached) version
             var policyExists = _keyRotations.TryGetValue(name, out var keyRotationPolicy);
 
             if (!policyExists || keyRotationPolicy is null)
@@ -204,19 +201,19 @@ namespace AzureKeyVaultEmulator.Keys.Services
         public ListResult<KeyItemBundle> GetKeys(int maxResults = 25, int skipCount = 25)
         {
             if (maxResults is default(int) && skipCount is default(int))
-                return new();
+                return new ListResult<KeyItemBundle>();
 
-            var items = _keys.Skip(skipCount).Take(maxResults);
+            var items = context.Keys.Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
-                return new();
+                return new ListResult<KeyItemBundle>();
 
             var requiresPaging = items.Count() >= maxResults;
 
             return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items.Select(x => ToKeyItemBundle(x.Value))
+                Values = items.Select(ToKeyItemBundle)
             };
         }
 
@@ -227,7 +224,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = _keys.Where(x => x.Key.Contains(name));
+            var allItems = context.Keys.Where(x => x.PersistedName == name);
 
             if (!allItems.Any())
                 return new();
@@ -239,18 +236,16 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems.Select(x => ToKeyItemBundle(x.Value))
+                Values = maxedItems.Select(ToKeyItemBundle)
             };
         }
 
-        public ValueModel<string> ReleaseKey(string name,string version)
+        public async Task<ValueModel<string>> ReleaseKeyAsync(string name, string version)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = _keys.SafeGet(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             var aasJwt = tokenService.CreateTokenWithHeaderClaim([], "keys", JsonSerializer.Serialize(key));
 
@@ -262,7 +257,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public KeyBundle ImportKey(
+        public async Task<KeyBundle> ImportKeyAsync(
             string name,
             JsonWebKey key,
             KeyAttributesModel attributes,
@@ -281,23 +276,22 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Tags = tags
             };
 
-            _keys.AddOrUpdate(name.GetCacheId(), response, (_, _) => response);
-            _keys.TryAdd(name.GetCacheId(version), response);
+            await context.Keys.SafeAddAsync(name, version, response);
+
+            await context.SaveChangesAsync();
 
             return response;
         }
 
-        public KeyOperationResult SignWithKey(string name, string version, string algo, string digest)
+        public async Task<KeyOperationResult> SignWithKeyAsync(string name, string version, string algo, string digest)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(algo);
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
 
-            var cacheId = name.GetCacheId(version);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
-            var key = _keys.SafeGet(cacheId);
-
-            var signature = encryptionService.SignWithKey(key.Key._rsaKey, digest);
+            var signature = encryptionService.SignWithKey(key.Key.RSAKey, digest);
 
             return new KeyOperationResult
             {
@@ -306,31 +300,26 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public ValueModel<bool> VerifyDigest(string name, string version, string digest, string signature)
+        public async Task<ValueModel<bool>> VerifyDigestAsync(string name, string version, string digest, string signature)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
             ArgumentException.ThrowIfNullOrWhiteSpace(signature);
 
-            // Key unused here because we are signing with global RSA.
-            // Might be worth breaking this out in the future to allow for direct key signing
-            // Would be better behaviour, but maybe too much for a mocking tool :)
-            var key = _keys.SafeGet(name.GetCacheId(version));
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             return new ValueModel<bool>
             {
-                Value = encryptionService.VerifyData(key.Key._rsaKey, digest, signature)
+                Value = encryptionService.VerifyData(key.Key.RSAKey, digest, signature)
             };
         }
 
-        public KeyOperationResult WrapKey(string name, string version, KeyOperationParameters para)
+        public async Task<KeyOperationResult> WrapKeyAsync(string name, string version, KeyOperationParameters para)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = _keys.SafeGet(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             var encrypted = key.Key.Encrypt(para);
 
@@ -341,14 +330,12 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public KeyOperationResult UnwrapKey(string name, string version, KeyOperationParameters para)
+        public async Task<KeyOperationResult> UnwrapKeyAsync(string name, string version, KeyOperationParameters para)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var cacheId = name.GetCacheId(version);
-
-            var key = _keys.SafeGet(cacheId);
+            var key = await context.Keys.SafeGetAsync(name, version);
 
             var decrypted = key.Key.Decrypt(para);
 
@@ -359,28 +346,28 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public DeletedKeyBundle DeleteKey(string name)
+        public async Task<DeletedKeyBundle> DeleteKeyAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var parentKey = _keys.SafeGet(name.GetCacheId());
+            var parentCacheId = name.GetCacheId();
 
-            var keys = _keys.Where(x => x.Key.Contains(name));
+            var parentKey = await context.Keys.SafeGetAsync(parentCacheId);
 
-            if (!keys.Any())
-                throw new InvalidOperationException($"Cannot find any keys with name: {name}");
+            var keys = await context.Keys.Where(x => x.PersistedName == name).ToListAsync();
+
+            if (keys.Count == 0)
+                throw new MissingItemException(name);
 
             foreach (var item in keys)
-            {
-                _keys.Remove(item.Key, out _);
-                _deletedKeys.TryAdd(name.GetCacheId(item.Value.Key.KeyVersion), item.Value);
-            }
+                item.Deleted = true;
 
-            _deletedKeys.TryAdd(name.GetCacheId(), parentKey);
-            
+            parentKey.Deleted = true;
+
+            await context.SaveChangesAsync();
+
             return new DeletedKeyBundle
             {
-                Name = name,
                 Kid = parentKey.Key.KeyIdentifier,
                 Attributes = parentKey.Attributes,
                 RecoveryId = $"{AuthConstants.EmulatorUri}/deletedkeys/{name}",
@@ -389,11 +376,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public KeyBundle GetDeletedKey(string name)
+        public async Task<KeyBundle> GetDeletedKeyAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            return _deletedKeys.SafeGet(name);
+            return await context.Keys.SafeGetAsync(name, deleted: true);
         }
 
         public ListResult<KeyBundle> GetDeletedKeys(int maxResults = 25, int skipCount = 25)
@@ -401,7 +388,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = _deletedKeys.ToList();
+            var allItems = context.Keys.Where(x => x.Deleted == true).ToList();
 
             if (allItems.Count == 0)
                 return new();
@@ -413,31 +400,32 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return new ListResult<KeyBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems.Select(x => x.Value)
+                Values = maxedItems
             };
         }
 
-        public void PurgeDeletedKey(string name)
+        public async Task PurgeDeletedKey(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            // to ensure it exists in our deleted keys first
-            _deletedKeys.SafeGet(name);
+            await context.Keys.SafeRemoveAsync(name, deleted: true);
 
-            _deletedKeys.Remove(name, out _);
+            await context.SaveChangesAsync();
         }
 
-        public KeyBundle RecoverDeletedKey(string name)
+        public async Task<KeyBundle> RecoverDeletedKeyAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var toBeRestored = _deletedKeys.SafeGet(name);
+            var key = await context.Keys.SafeGetAsync(name, deleted: true);
 
-            _deletedKeys.Remove(name, out _);
+            key.Deleted = false;
 
-            _keys.TryAdd(name, toBeRestored);
+            await context.Keys.SafeAddAsync(name, key.PersistedVersion, key);
 
-            return toBeRestored;
+            await context.SaveChangesAsync();
+
+            return key;
         }
 
         private KeyItemBundle ToKeyItemBundle(KeyBundle bundle)
@@ -453,18 +441,12 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
         {
-            switch (keyType.ToUpper())
+            return keyType.ToUpper() switch
             {
-                case SupportedKeyTypes.RSA:
-                    var rsaKey = RsaKeyFactory.CreateRsaKey(keySize);
-                    return new JsonWebKeyModel(rsaKey);
-
-                case SupportedKeyTypes.EC:
-                    throw new NotImplementedException("Elliptic Curve keys are not currently supported.");
-
-                default:
-                    throw new NotImplementedException($"Key type {keyType} is not supported");
-            }
+                SupportedKeyTypes.RSA => new JsonWebKeyModel(RsaKeyFactory.CreateRsaKey(keySize)),
+                SupportedKeyTypes.EC => throw new NotImplementedException("Elliptic Curve keys are not currently supported."),
+                _ => throw new NotImplementedException($"Key type {keyType} is not supported")
+            };
         }
 
         private string GenerateNextLink(int maxResults)

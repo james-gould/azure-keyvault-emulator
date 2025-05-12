@@ -16,32 +16,32 @@ public class CertificatesController(
     ITokenService tokenService) : Controller
 {
     [HttpPost("{name}/create")]
-    public IActionResult CreateCertificate(
+    public async Task<IActionResult> CreateCertificate(
         [FromRoute] string name,
         [FromBody] CreateCertificateRequest request,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.CreateCertificate(name, request.Attributes, request.CertificatePolicy);
+        var result = await certService.CreateCertificateAsync(name, request.Attributes, request.CertificatePolicy);
 
         return Accepted(result);
     }
 
     [HttpGet("{name}")]
-    public IActionResult GetCertificate(
+    public async Task<IActionResult> GetCertificate(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.GetCertificate(name);
+        var result = await certService.GetCertificateAsync(name);
 
         return Ok(result);
     }
 
     [HttpGet]
-    public IActionResult GetCertificates(
+    public async Task<IActionResult> GetCertificates(
         [ApiVersion] string apiVersion,
         [FromQuery] int maxResults = 25,
         [SkipToken] string skipToken = "")
@@ -51,19 +51,19 @@ public class CertificatesController(
         if (!string.IsNullOrEmpty(skipToken))
             skipCount = tokenService.DecodeSkipToken(skipToken);
 
-        var result = certService.GetCertificates(maxResults, skipCount);
+        var result = await certService.GetCertificatesAsync(maxResults, skipCount);
 
         return Ok(result);
     }
 
     [HttpGet("{name}/pending")]
-    public IActionResult GetPendingCertificate(
+    public async Task<IActionResult> GetPendingCertificate(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.GetPendingCertificate(name);
+        var result = await certService.GetPendingCertificateAsync(name);
 
         return Ok(result);
     }
@@ -72,44 +72,44 @@ public class CertificatesController(
     /// Might not be needed, can't remember the exact flow. 
     /// </summary>
     [HttpGet("{name}/completed")]
-    public IActionResult GetCompletedCertificate(
+    public async Task<IActionResult> GetCompletedCertificate(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.GetPendingCertificate(name);
+        var result = await certService.GetPendingCertificateAsync(name);
 
         return Ok(result);
     }
 
     [HttpPost("{name}/pending/merge")]
-    public IActionResult MergeCertificates(
+    public async Task<IActionResult> MergeCertificates(
         [FromRoute] string name,
         [FromBody] MergeCertificatesRequest request,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.MergeCertificates(name, request);
+        var result = await certService.MergeCertificatesAsync(name, request);
 
         return Accepted(result);
     }
 
     [HttpGet("{name}/policy")]
-    public IActionResult GetCertificatePolicy(
+    public async Task<IActionResult> GetCertificatePolicy(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.GetCertificatePolicy(name);
+        var result = await certService.GetCertificatePolicyAsync(name);
 
         return Ok(result);
     }
 
     [HttpPatch("{name}/policy")]
-    public IActionResult UpdateCertificatePolicy(
+    public async Task<IActionResult> UpdateCertificatePolicy(
         [FromRoute] string name,
         [FromBody] CertificatePolicy policy,
         [ApiVersion] string apiVersion)
@@ -117,35 +117,35 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(policy);
 
-        var result = certService.UpdateCertificatePolicy(name, policy);
+        var result = await certService.UpdateCertificatePolicyAsync(name, policy);
 
         return Ok(result);
     }
 
     [HttpPost("{name}/backup")]
-    public IActionResult BackupCertificate(
+    public async Task<IActionResult> BackupCertificate(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
-        var result = certService.BackupCertificate(name);
+        var result = await certService.BackupCertificateAsync(name);
 
         return Ok(result);
     }
 
     [HttpPost("restore")]
-    public IActionResult RestoreCertificate(
+    public async Task<IActionResult> RestoreCertificate(
         [ApiVersion] string apiVersion,
         [FromBody] ValueModel<string> certBackup)
     {
         ArgumentNullException.ThrowIfNull(certBackup);
 
-        var result = certService.RestoreCertificate(certBackup);
+        var result = await certService.RestoreCertificateAsync(certBackup);
 
         return Ok(result);
     }
 
     [HttpGet("{name}/versions")]
-    public IActionResult GetCertificateVersions(
+    public async Task<IActionResult> GetCertificateVersions(
         [FromRoute] string name,
         [ApiVersion] string apiVersion,
         [FromQuery] int maxResults = 25,
@@ -156,13 +156,13 @@ public class CertificatesController(
         if(!string.IsNullOrEmpty(skipToken))
             skipCount = tokenService.DecodeSkipToken(skipToken);
 
-        var result = certService.GetCertificateVersions(name, maxResults, skipCount);
+        var result = await certService.GetCertificateVersionsAsync(name, maxResults, skipCount);
 
         return Ok(result);
     }
 
     [HttpPost("{name}/import")]
-    public IActionResult ImportCertificate(
+    public async Task<IActionResult> ImportCertificate(
         [FromRoute] string name,
         [FromBody] ImportCertificateRequest? request,
         [ApiVersion] string apiVersion)
@@ -170,19 +170,19 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(request);
 
-        var result = certService.ImportCertificate(name, request);
+        var result = await certService.ImportCertificateAsync(name, request);
 
         return Ok(result);
     }
 
     [HttpDelete("{name}")]
-    public IActionResult DeleteCertificate(
+    public async Task<IActionResult> DeleteCertificate(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = certService.DeleteCertificate(name);
+        var result = await certService.DeleteCertificateAsync(name);
 
         return Ok(result);
     }
@@ -195,17 +195,17 @@ public class CertificatesController(
     #region issuers
 
     [HttpGet("issuers/{name}")]
-    public IActionResult GetCertificateIssuer(
+    public async Task<IActionResult> GetCertificateIssuer(
     [FromRoute] string name,
     [ApiVersion] string apiVersion)
     {
-        var result = certService.GetCertificateIssuer(name);
+        var result = await certService.GetCertificateIssuerAsync(name);
 
         return Ok(result);
     }
 
     [HttpPut("issuers/{name}")]
-    public IActionResult CreateCertificateIssuer(
+    public async Task<IActionResult> CreateCertificateIssuer(
         [FromRoute] string name,
         [FromBody] IssuerBundle bundle,
         [ApiVersion] string apiVersion)
@@ -213,25 +213,25 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(bundle);
 
-        var result = backingService.PersistIssuerConfig(name, bundle);
+        var result = await backingService.CreateIssuerAsync(name, bundle);
 
         return Ok(result);
     }
 
     [HttpDelete("issuers/{name}")]
-    public IActionResult DeleteIssuers(
+    public async Task<IActionResult> DeleteIssuers(
         [FromRoute] string name,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = backingService.DeleteIssuer(name);
+        var result = await backingService.DeleteIssuerAsync(name);
 
         return Ok(result);
     }
 
     [HttpPatch("issuers/{name}")]
-    public IActionResult UpdateCertificateIssuer(
+    public async Task<IActionResult> UpdateCertificateIssuer(
         [FromRoute] string name,
         [FromBody] IssuerBundle bundle,
         [ApiVersion] string apiVersion)
@@ -239,7 +239,7 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(bundle);
 
-        var result = backingService.UpdateCertificateIssuer(name, bundle);
+        var result = await backingService.UpdateCertificateIssuerAsync(name, bundle);
 
         return Ok(result);
     }
@@ -249,31 +249,31 @@ public class CertificatesController(
     #region contacts
 
     [HttpPut("contacts")]
-    public IActionResult SetContacts(
+    public async Task<IActionResult> SetContacts(
         [FromBody] SetContactsRequest request,
         [ApiVersion] string apiVersion)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var result = backingService.SetContactInformation(request);
+        var result = await backingService.SetContactInformationAsync(request);
 
         return Ok(result);
     }
 
     [HttpDelete("contacts")]
-    public IActionResult DeleteContacts(
+    public async Task<IActionResult> DeleteContacts(
         [ApiVersion] string apiVersion)
     {
-        var result = backingService.DeleteCertificateContacts();
+        var result = await backingService.DeleteCertificateContactsAsync();
 
         return Ok(result);
     }
 
     [HttpGet("contacts")]
-    public IActionResult GetCertificateContacts(
+    public async Task<IActionResult> GetCertificateContacts(
         [ApiVersion] string apiVersion)
     {
-        var result = backingService.GetCertificateContacts();
+        var result = await backingService.GetCertificateContactsAsync();
 
         return Ok(result);
     }
@@ -286,7 +286,7 @@ public class CertificatesController(
     // unless we have a regex negating it below the actual {name}/policy action
     // Put this at the bottom of the controller so it stops picking up other requests.
     [HttpGet("{name}/{version}")]
-    public IActionResult GetCertificateByVersion(
+    public async Task<IActionResult> GetCertificateByVersion(
         [FromRoute] string name,
         [FromRoute] string version,
         [ApiVersion] string apiVersion)
@@ -294,7 +294,7 @@ public class CertificatesController(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentException.ThrowIfNullOrEmpty(version);
 
-        var result = certService.GetCertificate(name, version);
+        var result = await certService.GetCertificateAsync(name, version);
 
         return Ok(result);
     }

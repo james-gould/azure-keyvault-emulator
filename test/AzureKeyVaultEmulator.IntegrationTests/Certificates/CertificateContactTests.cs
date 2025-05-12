@@ -8,6 +8,8 @@ public class CertificateContactTests(CertificatesTestingFixture fixture) : IClas
     [Fact]
     public async Task SetCertificateContactsWillPersistInStore()
     {
+        await TryDeleteExistingContacts();
+
         var client = await fixture.GetClientAsync();
 
         var contacts = await SetContactsAsync();
@@ -20,23 +22,31 @@ public class CertificateContactTests(CertificatesTestingFixture fixture) : IClas
     [Fact]
     public async Task DeleteCertificateContactsWillRemoveFromstore()
     {
+        await TryDeleteExistingContacts();
+
         var client = await fixture.GetClientAsync();
 
         var contacts = await SetContactsAsync();
+
+        var fromStore = await client.GetContactsAsync();
+
+        Assert.Equivalent(fromStore?.Value, contacts);
 
         var deleteResponse = await client.DeleteContactsAsync();
 
         Assert.NotNull(deleteResponse.Value);
 
-        var getResponse = await client.GetContactsAsync();
+        await Assert.RequestFailsAsync(() => client.GetContactsAsync(), HttpStatusCode.BadRequest);
+    }
 
-        Assert.NotNull(getResponse.Value);
-
-        var removedContacts = getResponse.Value;
-
-        Assert.NotEqual(contacts, removedContacts);
-
-        Assert.Empty(removedContacts);
+    private async Task TryDeleteExistingContacts()
+    {
+        try
+        {
+            var client = await fixture.GetClientAsync();
+            await client.DeleteContactsAsync();
+        }
+        catch { }
     }
 
     private async Task<IEnumerable<CertificateContact>> SetContactsAsync()

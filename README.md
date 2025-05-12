@@ -44,6 +44,18 @@ var webApi = builder
     .WithReference(keyVault); // reference as normal
 ```
 
+You can also toggle on persisted data, which creates an `emulator.db` loaded at runtime and updated in real-time. 
+
+```csharp
+var keyVaultServiceName = "keyvault";
+
+var keyVault = builder
+    .AddAzureKeyVault(keyVaultServiceName)
+    .RunAsEmulator(new KeyVaultEmulatorOptions { Persist = true }); // Add this option
+```
+
+[Read more about configuration here.](docs/CONFIG.md#aspire-config)
+
 ### 3. Permit requests to the Emulator using the Azure SDK:
 
 This can be done easily by installing the [AzureKeyVaultEmulator.Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package:
@@ -123,7 +135,7 @@ else
 The primary purpose of this project is to provide `.NET Aspire` support it does *not* require it. To use the Emulator in a different environment simply pull down the image and follow the [setup instructions](docs/CertificateUtilities/README.md):
 
 ```
-docker pull jamesgoulddev/azure-keyvault-emulator:windows
+docker pull jamesgoulddev/azure-keyvault-emulator:latest
 ```
 
 > [!NOTE]

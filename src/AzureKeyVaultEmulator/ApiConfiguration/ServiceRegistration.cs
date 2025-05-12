@@ -1,6 +1,7 @@
 ﻿using AzureKeyVaultEmulator.Certificates.Services;
 using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.ApiConfiguration
 {
@@ -8,14 +9,16 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
     {
         public static IServiceCollection RegisterCustomServices(this IServiceCollection services)
         {
-            services.AddSingleton<IKeyService, KeyService>();
-            services.AddSingleton<ISecretService, SecretService>();
+            services.AddTransient<IKeyService, KeyService>();
+            services.AddTransient<ISecretService, SecretService>();
 
-            services.AddSingleton<ICertificateBackingService, CertificateBackingService>();
-            services.AddSingleton<ICertificateService, CertificateService>();
+            services.AddTransient<ICertificateBackingService, CertificateBackingService>();
+            services.AddTransient<ICertificateService, CertificateService>();
 
-            services.AddSingleton<IEncryptionService, EncryptionService>();
+            services.AddTransient<IEncryptionService, EncryptionService>();
             services.AddTransient<ITokenService, TokenService>();
+
+            services.AddHostedService<SqliteWALCleanupService>();
 
             return services;
         }

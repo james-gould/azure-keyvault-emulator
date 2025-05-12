@@ -5,5 +5,5 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 public sealed class SetContactsRequest
 {
     [JsonPropertyName("contacts")]
-    public IEnumerable<KeyVaultContact> Contacts { get; set; } = [];
+    public List<KeyVaultContact> Contacts { get; set; } = [];
 }

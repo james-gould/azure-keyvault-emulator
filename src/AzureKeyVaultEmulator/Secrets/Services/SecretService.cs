@@ -1,26 +1,26 @@
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Secrets.Requests;
+using AzureKeyVaultEmulator.Shared.Persistence;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
     public class SecretService(
         IHttpContextAccessor httpContextAccessor,
         ITokenService token,
-        IEncryptionService encryption) : ISecretService
+        IEncryptionService encryption,
+        VaultContext context) : ISecretService
     {
-        private static readonly ConcurrentDictionary<string, SecretBundle> _secrets = new();
-        private static readonly ConcurrentDictionary<string, SecretBundle> _deletedSecrets = new();
-
-        public SecretBundle GetSecret(string name, string version = "")
+        public async Task<SecretBundle> GetSecretAsync(string name, string version = "")
         {
-            return _secrets.SafeGet(name.GetCacheId(version));
+            return await context.Secrets.SafeGetAsync(name, version);
         }
 
-        public SecretBundle SetSecret(string name, SetSecretModel secret)
+        public async Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest secret)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNull(secret);
 
-            var version = Guid.NewGuid().ToString();
+            var version = Guid.NewGuid().Neat();
 
             var secretUri = httpContextAccessor.BuildIdentifierUri(name, version, "secrets");
 
@@ -32,26 +32,38 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Tags = secret.Tags
             };
 
-            _secrets.SafeAddOrUpdate(name.GetCacheId(), response);
-            _secrets.SafeAddOrUpdate(name.GetCacheId(version), response);
+            await context.Secrets.SafeAddAsync(name, version, response);
+
+            await context.SaveChangesAsync();
 
             return response;
         }
 
-        public DeletedSecretBundle DeleteSecret(string name, string version = "")
+        public async Task<SecretAttributesModel> UpdateSecretAsync(string name, string version, SecretAttributesModel attributes)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
+            var secret = await context.Secrets.SafeGetAsync(name, version);
+
+            if (!string.IsNullOrEmpty(attributes.ContentType))
+                secret.Attributes.ContentType = attributes.ContentType;
+
+            secret.Attributes.Update();
+
+            await context.SaveChangesAsync();
+
+            return secret.Attributes;
+        }
+
+        public async Task<DeletedSecretBundle> DeleteSecretAsync(string name, string version = "")
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var cacheId = name.GetCacheId(version);
-
-            var removed = _secrets.TryRemove(cacheId, out var secret);
-
-            if (!removed || secret is null)
-                throw new SecretException($"Failed to remove secret with name: {name}");
+            var secret = await context.Secrets.SafeGetAsync(name, version);
 
             var deleted = new DeletedSecretBundle
             {
-                Name = name,
                 RecoveryId = secret.SecretIdentifier,
                 Attributes = secret.Attributes,
                 SecretId = secret.SecretIdentifier,
@@ -59,16 +71,18 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Value = secret.Value
             };
 
-            _deletedSecrets.SafeAddOrUpdate(cacheId, secret);
+            secret.Deleted = true;
+
+            await context.SaveChangesAsync();
 
             return deleted;
         }
 
-        public ValueModel<string> BackupSecret(string name)
+        public async Task<ValueModel<string>> BackupSecretAsync(string name)
         {
-            var cacheId = name.GetCacheId();
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
-            var secret = _secrets.SafeGet(cacheId);
+            var secret = await context.Secrets.SafeGetAsync(name);
 
             return new ValueModel<string>
             {
@@ -76,11 +90,11 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             };
         }
 
-        public SecretBundle? GetDeletedSecret(string name)
+        public async Task<SecretBundle> GetDeletedSecretAsync(string name)
         {
-            var cacheId = name.GetCacheId();
+            ArgumentException.ThrowIfNullOrEmpty(name);
             
-            var secret = _deletedSecrets.SafeGet(cacheId);
+            var secret = await context.Secrets.SafeGetAsync(name, deleted: true);
 
             return secret;
         }
@@ -90,7 +104,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var items = _deletedSecrets.Skip(skipCount).Take(maxResults);
+            var items = context.Secrets.Where(x => x.Deleted == true).Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();
@@ -100,7 +114,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return new ListResult<SecretBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items.Select(kvp => kvp.Value)
+                Values = items
             };
         }
 
@@ -111,9 +125,9 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = _secrets.Where(x => x.Key.Contains(secretName));
+            var allItems = context.Secrets.Where(x => x.PersistedName == secretName).ToList();
 
-            if (!allItems.Any())
+            if (allItems.Count == 0)
                 return new();
 
             var maxedItems = allItems.Skip(skipCount).Take(maxResults);
@@ -123,7 +137,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return new ListResult<SecretBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems.Select(x => x.Value)
+                Values = maxedItems
             };
         }
 
@@ -132,7 +146,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var items = _secrets.Skip(skipCount).Take(maxResults);
+            var items = context.Secrets.Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();
@@ -142,56 +156,44 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return new ListResult<SecretBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items.Select(x => x.Value)
+                Values = items
             };
         }
 
-        public void PurgeDeletedSecret(string name)
+        public async Task PurgeDeletedSecretAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var secret = _deletedSecrets.SafeGet(name);
-            
-            _deletedSecrets.SafeRemove(name);
+            await context.Secrets.SafeRemoveAsync(name, deleted: true);
+
+            await context.SaveChangesAsync();
         }
 
-        public SecretBundle RecoverDeletedSecret(string name)
+        public async Task<SecretBundle> RecoverDeletedSecretAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             
-            var secret = _deletedSecrets.SafeGet(name);
+            var secret = await context.Secrets.SafeGetAsync(name, deleted: true);
 
-            _secrets.SafeAddOrUpdate(name, secret);
+            secret.Deleted = false;
 
-            _deletedSecrets.SafeRemove(name);
+            await context.SaveChangesAsync();
 
             return secret;
         }
 
-        public SecretBundle RestoreSecret(string encodedSecretId)
+        public async Task<SecretBundle> RestoreSecretAsync(string encodedSecretId)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(encodedSecretId);
 
-            return encryption.DecryptFromKeyVaultJwe<SecretBundle>(encodedSecretId);
-        }
+            var secret = encryption.DecryptFromKeyVaultJwe<SecretBundle>(encodedSecretId);
 
-        public SecretAttributesModel UpdateSecret(string name, string version, SecretAttributesModel attributes)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
+            var version = Guid.NewGuid().Neat();
 
-            var cacheId = name.GetCacheId(version);
+            await context.Secrets.SafeAddAsync(secret.PersistedName, version, secret);
+            await context.SaveChangesAsync();
 
-            var secret = _secrets.SafeGet(cacheId);
-
-            if (!string.IsNullOrEmpty(attributes.ContentType))
-                secret.Attributes.ContentType = attributes.ContentType;
-
-            secret.Attributes.Update();
-
-            _secrets.TryUpdate(cacheId, secret, null!);
-
-            return secret.Attributes;
+            return secret;
         }
 
         private string GenerateNextLink(int maxResults)

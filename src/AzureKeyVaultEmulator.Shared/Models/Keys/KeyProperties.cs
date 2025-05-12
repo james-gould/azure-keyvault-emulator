@@ -1,9 +1,17 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 
-public sealed class KeyProperties
+public sealed class KeyProperties : IPersistedItem
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public Guid PersistedId { get; set; } = Guid.NewGuid();
+
     [JsonPropertyName("crv")]
     public string JsonWebKeyCurveName { get; set; } = string.Empty;
 

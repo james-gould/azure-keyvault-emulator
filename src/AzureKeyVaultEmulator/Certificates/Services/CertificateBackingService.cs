@@ -3,109 +3,163 @@ using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Models.Secrets.Requests;
+using AzureKeyVaultEmulator.Shared.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
 
-public sealed class CertificateBackingService(IKeyService keyService, ISecretService secretService)
+public sealed class CertificateBackingService(
+    IKeyService keyService,
+    ISecretService secretService,
+    VaultContext context)
     : ICertificateBackingService
 {
-    // { issuerName, issuerBundle }
-    private static readonly ConcurrentDictionary<string, IssuerBundle> _issuers = new();
-
-    // { certName, IssuerBundle } 
-    private static readonly ConcurrentDictionary<string, IssuerBundle> _certificateIssuers = new();
-
-    // This seems basically unused outside of key vault, the docs, SDK nor portal make use of it?
-    // Might be an artefact or maybe it's just really obvious and I am stupid.
-    private CertificateContacts _certContacts = new();
-
-    public IssuerBundle GetIssuer(string name)
+    public async Task<IssuerBundle> GetIssuerAsync(string name)
     {
-        return _issuers.SafeGet(name.GetCacheId());
+        return await context.Issuers.SafeGetAsync(name);
     }
 
-    public (KeyBundle backingKey, SecretBundle backingSecret) GetBackingComponents(string certName, CertificatePolicy? policy = null)
+    public async Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, CertificatePolicy? policy = null)
     {
         var keySize = policy?.KeyProperties?.KeySize ?? 2048;
         var keyType = !string.IsNullOrEmpty(policy?.KeyProperties?.JsonWebKeyType) ? policy.KeyProperties.JsonWebKeyType : SupportedKeyTypes.RSA;
 
-        var backingKey = CreateBackingKey(certName, keySize, keyType);
+        var backingKey = await CreateBackingKeyAsync(certName, keySize, keyType);
 
         var contentType = policy?.SecretProperies?.ContentType ?? "application/unknown";
-        var backingSecret = CreateBackingSecret(certName, contentType);
+        var backingSecret = await CreateBackingSecretAsync(certName, contentType);
 
         return (backingKey, backingSecret);
     }
 
-    public IssuerBundle DeleteIssuer(string issuerName)
+    public async Task<IssuerBundle> DeleteIssuerAsync(string issuerName)
     {
         ArgumentException.ThrowIfNullOrEmpty(issuerName);
 
-        var cacheId = issuerName.GetCacheId();
+        var bundle = await context.Issuers.SafeGetAsync(issuerName);
 
-        var bundle = _issuers.SafeGet(cacheId);
+        bundle.Deleted = true;
 
-        _issuers.SafeRemove(cacheId);
-
-        return bundle;
-    }
-
-    public IssuerBundle PersistIssuerConfig(string issuerName, IssuerBundle bundle)
-    {
-        // Name is passed as a route arg from the SDK, not set in model
-        // The response model in the SDK has a Name property though, so it needs to be set.
-        bundle.IssuerName = issuerName;
-
-        _issuers.SafeAddOrUpdate(issuerName.GetCacheId(), bundle);
+        await context.SaveChangesAsync();
 
         return bundle;
     }
 
-    public IssuerBundle AllocateIssuerToCertificate(string certName, IssuerBundle bundle)
-    {
-        _certificateIssuers.SafeAddOrUpdate(certName, bundle);
-
-        return bundle;
-    }
-
-    public IssuerBundle UpdateCertificateIssuer(string issuerName, IssuerBundle bundle)
+    public async Task<IssuerBundle> CreateIssuerAsync(string issuerName, IssuerBundle bundle)
     {
         ArgumentException.ThrowIfNullOrEmpty(issuerName);
         ArgumentNullException.ThrowIfNull(bundle);
 
-        _issuers.SafeAddOrUpdate(issuerName, bundle);
+        var version = Guid.NewGuid().Neat();
+
+        bundle.IssuerName = issuerName;
+        bundle.PersistedName = issuerName;
+        bundle.PersistedVersion = version;
+
+        await context.Issuers.SafeAddAsync(issuerName, version, bundle);
+
+        await context.SaveChangesAsync();
 
         return bundle;
     }
 
-    public CertificateContacts SetContactInformation(SetContactsRequest request)
+    public async Task<IssuerBundle> AllocateIssuerToCertificateAsync(string certName, IssuerBundle bundle)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(certName);
+        ArgumentNullException.ThrowIfNull(bundle);
+
+        var cert = await context.Certificates.SafeGetAsync(certName);
+        var issuer = await context.Issuers.SafeGetAsync(bundle.IssuerName);
+
+        if (cert.CertificatePolicy == null)
+            throw new MissingItemException($"Certificate {certName} does not have an associated policy to update");
+
+        if (issuer == null)
+            throw new InvalidOperationException($"Existing issuer for name {bundle.IssuerName} does not exist.");
+
+        cert.CertificatePolicy.IssuerId = issuer.PersistedId;
+
+        await context.SaveChangesAsync();
+
+        return bundle;
+    }
+
+    public async Task<IssuerBundle> UpdateCertificateIssuerAsync(string issuerName, IssuerBundle bundle)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(issuerName);
+        ArgumentNullException.ThrowIfNull(bundle);
+
+        var fromStore = await context.Issuers.SafeGetAsync(issuerName);
+
+        fromStore.OrganisationDetails = bundle.OrganisationDetails;
+        fromStore.Attributes = bundle.Attributes;
+        fromStore.Credentials = bundle.Credentials;
+        fromStore.Provider = bundle.Provider;
+
+        await context.SaveChangesAsync();
+
+        return bundle;
+    }
+
+    public async Task<CertificateContacts> SetContactInformationAsync(SetContactsRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        _certContacts.Contacts = request.Contacts;
+        var name = Guid.NewGuid().Neat();
+        var version = Guid.NewGuid().Neat();
 
-        return _certContacts;
+        var existing = await context.CertificateContacts.Where(x => x.Deleted == false).FirstOrDefaultAsync();
+
+        // handles start up scripts, persisted data test runs etc.
+        if(existing != null)
+        {
+            if (existing.Contacts == request.Contacts)
+                return existing;
+        }
+
+        var contacts = new CertificateContacts
+        {
+            PersistedName = name,
+            PersistedVersion = version,
+            Contacts = request.Contacts,
+        };
+
+        await context.CertificateContacts.SafeAddAsync(name, version, contacts);
+
+        await context.SaveChangesAsync();
+
+        return contacts;
     }
 
-    public CertificateContacts DeleteCertificateContacts()
+    public async Task<CertificateContacts> DeleteCertificateContactsAsync()
     {
-        return _certContacts = new();
+        var contacts = await context.CertificateContacts.Where(x => x.Deleted == false).SingleAsync();
+
+        contacts.Deleted = true;
+
+        await context.SaveChangesAsync();
+
+        return contacts;
     }
 
-    public CertificateContacts GetCertificateContacts() => _certContacts;
+    public async Task<CertificateContacts> GetCertificateContactsAsync()
+    {
+        return await context.CertificateContacts.Where(x => x.Deleted == false).SingleAsync();
+    }
 
-    private KeyBundle CreateBackingKey(
+    private async Task<KeyBundle> CreateBackingKeyAsync(
         string certName,
         int keySize,
         string keyType)
     {
-        return keyService.CreateKey(certName, new CreateKeyModel { KeySize = keySize, KeyType = keyType });
+        return await keyService.CreateKeyAsync(certName, new CreateKeyModel { KeySize = keySize, KeyType = keyType });
     }
 
-    private SecretBundle CreateBackingSecret(string certName, string contentType)
+    private async Task<SecretBundle> CreateBackingSecretAsync(string certName, string contentType)
     {
-        return secretService
-            .SetSecret(certName, new SetSecretModel
+        return await secretService
+            .SetSecretAsync(certName, new SetSecretRequest
             {
                 Value = Guid.NewGuid().Neat(),
                 SecretAttributes = new() { ContentType = contentType }

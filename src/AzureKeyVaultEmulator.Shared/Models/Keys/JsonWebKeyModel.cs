@@ -1,39 +1,47 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 using AzureKeyVaultEmulator.Shared.Constants;
+using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
+using AzureKeyVaultEmulator.Shared.Persistence.Utils;
 using AzureKeyVaultEmulator.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
-    public class JsonWebKeyModel
+    public class JsonWebKeyModel : IPersistedItem
     {
+        [Key]
+        [JsonIgnore]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public Guid PersistedId { get; set; } = Guid.NewGuid();
+
         [JsonPropertyName("crv")]
-        public string KeyCurve { get; set; } = string.Empty;
+        public string? KeyCurve { get; set; } = string.Empty;
 
         [JsonPropertyName("d")]
-        [JsonIgnore]
-        public string D { get; set; } = string.Empty;
+        public string? D { get; set; } = string.Empty;
 
         [JsonPropertyName("dp")]
-        public string Dp { get; set; } = string.Empty;
+        public string? Dp { get; set; } = string.Empty;
 
         [JsonPropertyName("dq")]
-        public string Dq { get; set; } = string.Empty;
+        public string? Dq { get; set; } = string.Empty;
 
         [JsonPropertyName("e")]
-        public string E { get; set; } = string.Empty;
+        public string? E { get; set; } = string.Empty;
 
         [JsonPropertyName("k")]
-        public string K { get; set; } = string.Empty;
+        public string? K { get; set; } = string.Empty;
 
         [JsonPropertyName("key_hsm")]
-        public string KeyHsm { get; set; } = string.Empty;
+        public string? KeyHsm { get; set; } = string.Empty;
 
         [JsonPropertyName("key_ops")]
-        public List<string> KeyOperations { get; set; } = [];
+        public List<string>? KeyOperations { get; set; }
 
         [JsonPropertyName("kty")]
         public string KeyType { get; set; } = string.Empty;
@@ -42,60 +50,78 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         public string KeyIdentifier { get; set; } = string.Empty;
 
         [JsonIgnore]
-        public string KeyName { get; set; } = string.Empty;
+        public string? KeyName { get; set; } = string.Empty;
 
         [JsonIgnore]
         public string KeyVersion { get; set; } = string.Empty;
 
         [JsonPropertyName("n")]
-        public string N { get; set; } = string.Empty;
+        public string? N { get; set; } = string.Empty;
 
         [JsonPropertyName("p")]
-        public string P { get; set; } = string.Empty;
+        public string? P { get; set; } = string.Empty;
 
         [JsonPropertyName("q")]
-        public string Q { get; set; } = string.Empty;
+        public string? Q { get; set; } = string.Empty;
 
         [JsonPropertyName("qi")]
-        public string Qi { get; set; } = string.Empty;
+        public string? Qi { get; set; } = string.Empty;
 
         [JsonPropertyName("x")]
-        public string X { get; set; } = string.Empty;
+        public string? X { get; set; } = string.Empty;
 
         [JsonPropertyName("y")]
-        public string Y { get; set; } = string.Empty;
+        public string? Y { get; set; } = string.Empty;
 
+        [JsonIgnore]
+        public byte[] RSAParametersBlob { get; set; } = [];
+
+        private RSA? _backingRsaKey;
+
+        [NotMapped]
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-        public readonly RSA _rsaKey;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-        public readonly RSAParameters _rsaParameters;
-
-        public JsonWebKeyModel() : this(RSA.Create())
+        public RSA RSAKey
         {
+            get
+            {
+                if(_backingRsaKey != null)
+                    return _backingRsaKey;
+
+                _backingRsaKey = RSA.Create();
+                _backingRsaKey.ImportParameters(RsaParametersSerializer.Deserialize(RSAParametersBlob));
+
+                return _backingRsaKey;
+            }
+            set => RSAParametersBlob = RsaParametersSerializer.Serialize(value.ExportParameters(true));
         }
+
+        [NotMapped]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+        public RSAParameters RSAParameters => RsaParametersSerializer.Deserialize(RSAParametersBlob);
+
+        public JsonWebKeyModel() : this(RSA.Create()) { }
 
         public JsonWebKeyModel(RSA rsaKey)
         {
-            _rsaKey = rsaKey;
-            _rsaParameters = rsaKey.ExportParameters(true);
+            RSAKey = rsaKey;
+
             KeyType = SupportedKeyTypes.RSA;
 
-            D = EncodingUtils.Base64UrlEncode(_rsaParameters.D ?? []);
-            Dp = EncodingUtils.Base64UrlEncode(_rsaParameters.DP ?? []);
-            Dq = EncodingUtils.Base64UrlEncode(_rsaParameters.DQ ?? []);
-            E = EncodingUtils.Base64UrlEncode(_rsaParameters.Exponent ?? []);
-            D = EncodingUtils.Base64UrlEncode(_rsaParameters.D ?? []);
-            N = EncodingUtils.Base64UrlEncode(_rsaParameters.Modulus ?? []);
-            P = EncodingUtils.Base64UrlEncode(_rsaParameters.P ?? []);
-            Q = EncodingUtils.Base64UrlEncode(_rsaParameters.Q ?? []);
-            Qi = EncodingUtils.Base64UrlEncode(_rsaParameters.InverseQ ?? []);
+            D = EncodingUtils.Base64UrlEncode(RSAParameters.D ?? []);
+            Dp = EncodingUtils.Base64UrlEncode(RSAParameters.DP ?? []);
+            Dq = EncodingUtils.Base64UrlEncode(RSAParameters.DQ ?? []);
+            E = EncodingUtils.Base64UrlEncode(RSAParameters.Exponent ?? []);
+            D = EncodingUtils.Base64UrlEncode(RSAParameters.D ?? []);
+            N = EncodingUtils.Base64UrlEncode(RSAParameters.Modulus ?? []);
+            P = EncodingUtils.Base64UrlEncode(RSAParameters.P ?? []);
+            Q = EncodingUtils.Base64UrlEncode(RSAParameters.Q ?? []);
+            Qi = EncodingUtils.Base64UrlEncode(RSAParameters.InverseQ ?? []);
         }
 
         public JsonWebKeyModel(JsonWebKey key, string name, string version, HttpContext? reqContext)
         {
-            _rsaKey = RSA.Create();
-            _rsaParameters = _rsaKey.ExportParameters(true);
+            RSAKey = RSA.Create();
+
             KeyType = key.Kty;
 
             var keyUrl = new UriBuilder
@@ -134,8 +160,8 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
 
         private byte[] RsaEncrypt(string plaintext, RSAEncryptionPadding padding)
         {
-            using var rsaAlg = new RSACryptoServiceProvider(_rsaKey.KeySize);
-            rsaAlg.ImportParameters(_rsaParameters);
+            using var rsaAlg = new RSACryptoServiceProvider(RSAKey.KeySize);
+            rsaAlg.ImportParameters(RSAParameters);
             return rsaAlg.Encrypt(Encoding.UTF8.GetBytes(plaintext), padding);
         }
 
@@ -151,11 +177,11 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
 
         private string RsaDecrypt(string ciphertext, RSAEncryptionPadding padding)
         {
-            using var rsaAlg = new RSACryptoServiceProvider(_rsaKey.KeySize);
-            rsaAlg.ImportParameters(_rsaParameters);
+            using var rsaAlg = new RSACryptoServiceProvider(RSAKey.KeySize);
+            rsaAlg.ImportParameters(RSAParameters);
             return Encoding.UTF8.GetString(rsaAlg.Decrypt(EncodingUtils.Base64UrlDecode(ciphertext), padding));
         }
 
-        public int GetKeySize() => _rsaKey.KeySize;
+        public int GetKeySize() => RSAKey.KeySize;
     }
 }

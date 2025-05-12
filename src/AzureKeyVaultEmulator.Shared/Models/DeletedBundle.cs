@@ -2,11 +2,9 @@
 
 namespace AzureKeyVaultEmulator.Shared.Models;
 
-public class DeletedBundle<TAttributes> : TaggedModel where TAttributes : AttributeBase
+public class DeletedBundle<TAttributes> : TaggedModel
+    where TAttributes : AttributeBase
 {
-    [JsonPropertyName("name")]
-    public required string Name { get; set; } = string.Empty;
-
     [JsonPropertyName("attributes")]
     public TAttributes? Attributes { get; set; }
 

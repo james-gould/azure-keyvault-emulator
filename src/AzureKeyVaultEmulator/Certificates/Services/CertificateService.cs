@@ -2,6 +2,8 @@
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
+using AzureKeyVaultEmulator.Shared.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace AzureKeyVaultEmulator.Certificates.Services;
 
@@ -9,13 +11,11 @@ public sealed class CertificateService(
     IHttpContextAccessor httpContextAccessor,
     ICertificateBackingService backingService,
     IEncryptionService encryptionService,
-    ITokenService tokenService)
+    ITokenService tokenService,
+    VaultContext context)
     : ICertificateService
 {
-    private static readonly ConcurrentDictionary<string, CertificateBundle> _certs = [];
-    private static readonly ConcurrentDictionary<string, DeletedCertificateBundle> _deletedCerts = [];
-
-    public CertificateOperation CreateCertificate(
+    public async Task<CertificateOperation> CreateCertificateAsync(
         string name,
         CertificateAttributesModel attributes,
         CertificatePolicy? policy)
@@ -25,7 +25,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.BuildX509Certificate(name, policy);
 
-        var (backingKey, backingSecret) = backingService.GetBackingComponents(name, policy);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, policy);
 
         var version = Guid.NewGuid().Neat();
 
@@ -35,82 +35,89 @@ public sealed class CertificateService(
 
         var certIdentifier = httpContextAccessor.BuildIdentifierUri(name, version, "certificates");
 
+        var concretePolicy = UpdateNullablePolicy(policy, certIdentifier, attributes);
+
         var bundle = new CertificateBundle
         {
+            PersistedName = name,
+            PersistedVersion = version,
             CertificateIdentifier = certIdentifier,
+            RecoveryId = certIdentifier,
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            CertificatePolicy = UpdateNullablePolicy(policy, certIdentifier, attributes),
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
+            CertificatePolicy = concretePolicy,
             SecretId = backingSecret.SecretIdentifier,
             KeyId = backingKey.Key.KeyIdentifier,
 
             FullCertificate = certificate
         };
 
-        _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
-        _certs.SafeAddOrUpdate(name.GetCacheId(version), bundle);
+        context.Add(bundle);
+
+        //await context.Certificates.SafeAddAsync(name, version, bundle);
+
+        await context.SaveChangesAsync();
 
         return new CertificateOperation(certIdentifier, name);
     }
 
-    public CertificateBundle GetCertificate(string name, string version = "")
+    public async Task<CertificateBundle> GetCertificateAsync(string name, string version = "")
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        return _certs.SafeGet(name.GetCacheId(version));
+        return await context.Certificates.SafeGetAsync(name, version);
     }
 
-    public CertificatePolicy GetCertificatePolicy(string name)
+    public async Task<CertificatePolicy> GetCertificatePolicyAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = _certs.SafeGet(name.GetCacheId());
+        var cert = await context.Certificates.SafeGetAsync(name);
 
         return cert.CertificatePolicy
             ?? throw new InvalidOperationException($"Found certificate {cert.CertificateName} but the associated policy was null.");
     }
 
-    public CertificatePolicy UpdateCertificatePolicy(string name, CertificatePolicy policy)
+    public async Task<CertificatePolicy> UpdateCertificatePolicyAsync(string name, CertificatePolicy policy)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cacheId = name.GetCacheId();
+        var cert = await context.Certificates.SafeGetAsync(name);
 
-        var cert = _certs.SafeGet(cacheId);
+        ArgumentNullException.ThrowIfNull(cert.CertificatePolicy);
 
+        policy.IssuerId = cert.CertificatePolicy.IssuerId;
         cert.CertificatePolicy = policy;
 
-        _certs.SafeAddOrUpdate(name, cert);
-
-        backingService.AllocateIssuerToCertificate(cacheId, policy.Issuer);
+        await context.SaveChangesAsync();
 
         return policy;
     }
 
-    public CertificateOperation GetPendingCertificate(string name)
+    public async Task<CertificateOperation> GetPendingCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = _certs.SafeGet(name.GetCacheId());
+        var cert = await context.Certificates.SafeGetAsync(name);
 
         return new CertificateOperation(cert.CertificateIdentifier, name);
     }
 
-    public IssuerBundle GetCertificateIssuer(string name)
+    public async Task<IssuerBundle> GetCertificateIssuerAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        return backingService.GetIssuer(name);
+        return await backingService.GetIssuerAsync(name);
     }
 
-    public ValueModel<string> BackupCertificate(string name)
+    public async Task<ValueModel<string>> BackupCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = _certs.SafeGet(name.GetCacheId());
+        var cert = await context.Certificates.SafeGetAsync(name);
 
         return new ValueModel<string>
         {
@@ -118,26 +125,36 @@ public sealed class CertificateService(
         };
     }
 
-    public CertificateBundle RestoreCertificate(ValueModel<string> backup)
+    public async Task<CertificateBundle> RestoreCertificateAsync(ValueModel<string> backup)
     {
         ArgumentNullException.ThrowIfNull(backup);
 
-        return encryptionService.DecryptFromKeyVaultJwe<CertificateBundle>(backup.Value);
+        var bundle = encryptionService.DecryptFromKeyVaultJwe<CertificateBundle>(backup.Value);
+        var policy = bundle?.CertificatePolicy ?? throw new InvalidOperationException($"Failed to find {nameof(CertificatePolicy)} in backup.");
+
+        policy.IssuerId = bundle.CertificatePolicy.Issuer.PersistedId;
+
+        var newVersion = Guid.NewGuid().Neat();
+
+        await context.Certificates.SafeAddAsync(bundle.PersistedName, newVersion, bundle);
+        await context.SaveChangesAsync();
+
+        return bundle;
     }
 
-    public ListResult<CertificateVersionItem> GetCertificateVersions(string name, int maxResults = 25, int skipCount = 25)
+    public async Task<ListResult<CertificateVersionItem>> GetCertificateVersionsAsync(string name, int maxResults = 25, int skipCount = 25)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
-        var allItems = _certs.Where(x => x.Key.Contains(name)).ToList();
+        var allItems = await context.Certificates.Where(x => x.PersistedName == name).ToListAsync();
 
         if (allItems.Count == 0)
             return new();
 
-        var maxedItems = allItems.Skip(skipCount).Take(maxResults).Select(x => x.Value);
+        var maxedItems = allItems.Skip(skipCount).Take(maxResults).Select(x => x);
 
         var requiresPaging = maxedItems.Count() >= maxResults;
 
@@ -148,17 +165,17 @@ public sealed class CertificateService(
         };
     }
 
-    public ListResult<CertificateVersionItem> GetCertificates(int maxResults = 25, int skipCount = 25)
+    public async Task<ListResult<CertificateVersionItem>> GetCertificatesAsync(int maxResults = 25, int skipCount = 25)
     {
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
-        var allItems = _certs.ToList();
+        var allItems = await context.Certificates.ToListAsync();
 
         if (allItems.Count == 0)
             return new();
 
-        var maxedItems = allItems.Skip(skipCount).Take(maxResults).Select(x => x.Value);
+        var maxedItems = allItems.Skip(skipCount).Take(maxResults).Select(x => x);
 
         var requiresPaging = maxedItems.Count() >= maxResults;
 
@@ -169,7 +186,7 @@ public sealed class CertificateService(
         };
     }
 
-    public CertificateBundle ImportCertificate(string name, ImportCertificateRequest request)
+    public async Task<CertificateBundle> ImportCertificateAsync(string name, ImportCertificateRequest request)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
@@ -177,7 +194,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.ImportFromBase64(request.Value);
 
-        var (backingKey, backingSecret) = backingService.GetBackingComponents(name);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name);
 
         var attributes = new CertificateAttributesModel
         {
@@ -190,7 +207,10 @@ public sealed class CertificateService(
 
         var bundle = new CertificateBundle
         {
+            PersistedName = name,
+            PersistedVersion = version,
             CertificateIdentifier = certIdentifier,
+            RecoveryId = certIdentifier,
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
@@ -203,17 +223,18 @@ public sealed class CertificateService(
             FullCertificate = certificate
         };
 
-        _certs.SafeAddOrUpdate(name.GetCacheId(), bundle);
-        _certs.SafeAddOrUpdate(name.GetCacheId(version), bundle);
+        await context.Certificates.SafeAddAsync(name, version, bundle);
+
+        await context.SaveChangesAsync();
 
         return bundle;
     }
 
-    public CertificateBundle MergeCertificates(string name, MergeCertificatesRequest request)
+    public async Task<CertificateBundle> MergeCertificatesAsync(string name, MergeCertificatesRequest request)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = _certs.SafeGet(name.GetCacheId());
+        var cert = await context.Certificates.SafeGetAsync(name.GetCacheId());
 
         ArgumentNullException.ThrowIfNull(cert.FullCertificate);
 
@@ -223,115 +244,103 @@ public sealed class CertificateService(
 
         var copied = cert.CopyWithNewCertificate(mergedCert);
 
-        _certs.SafeAddOrUpdate(name.GetCacheId(version), copied);
+        await context.Certificates.SafeAddAsync(name, version, copied);
+
+        await context.SaveChangesAsync();
 
         return copied;
     }
 
-    public CertificateOperation DeleteCertificate(string name)
+    public async Task<CertificateOperation> DeleteCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = _certs.SafeGet(name.GetCacheId());
+        var cert = await context.Certificates.SafeGetAsync(name);
 
-        var matches = _certs.Where(x => x.Key.Contains(name));
+        var matches = await context.Certificates.Where(x => x.PersistedName == name).ToListAsync();
 
-        foreach (var deleted in matches)
-            _certs.SafeRemove(deleted.Key);
+        foreach (var match in matches)
+            match.Deleted = true;
 
-        var deletedCert = new DeletedCertificateBundle
-        {
-            Name = name,
-            CertificateIdentifier = $"{AuthConstants.EmulatorUri}/certificates/{name}",
-            RecoveryId = cert.CertificateIdentifier,
-            ContentType = cert.CertificatePolicy?.SecretProperies?.ContentType ?? string.Empty,
-            Attributes = cert.Attributes,
-            Tags = cert.Tags,
-            Kid = cert.KeyId,
-            SecretId = cert.SecretId,
-            Policy = cert.CertificatePolicy ?? new(),
-            CertificateThumbprint = cert.X509Thumbprint,
-            CertBase64 = cert.CertificateContents,
+        cert.Deleted = true;
 
-            FullCertificate = cert
-        };
-
-        _deletedCerts.SafeAddOrUpdate(name.GetCacheId(), deletedCert);
-
-        return new(deletedCert.RecoveryId, name.GetCacheId());
-    }
-
-    public CertificateOperation GetPendingDeletedCertificate(string name)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-
-        var cert = _deletedCerts.SafeGet(name.GetCacheId());
+        await context.SaveChangesAsync();
 
         return new(cert.RecoveryId, name.GetCacheId());
     }
 
-    public ListResult<DeletedCertificateBundle> GetDeletedCertificates(int maxResults = 25, int skipCount = 25)
+    public async Task<CertificateOperation> GetPendingDeletedCertificateAsync(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var cert = await context.Certificates.SafeGetAsync(name, deleted: true);
+
+        return new(cert.CertificateIdentifier, name.GetCacheId());
+    }
+
+    public async Task<ListResult<CertificateBundle>> GetDeletedCertificatesAsync(int maxResults = 25, int skipCount = 25)
     {
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
-        var allItems = _deletedCerts.ToList();
+        var allItems = await context.Certificates.Where(x => x.Deleted == true).ToListAsync();
 
-        if (allItems.Count == 0)
+        if (allItems == null || allItems.Count == 0)
             return new();
 
         var maxedItems = allItems.Skip(skipCount).Take(maxResults);
 
         var requiresPaging = maxedItems.Count() >= maxResults;
 
-        return new ListResult<DeletedCertificateBundle>
+        return new ListResult<CertificateBundle>
         {
             NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-            Values = maxedItems.Select(x => x.Value)
+            Values = maxedItems
         };
     }
 
-    public CertificateOperation GetDeletedCertificate(string name)
+    public async Task<CertificateOperation> GetDeletedCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = _deletedCerts.SafeGet(name.GetCacheId());
+        var cert = await context.Certificates.SafeGetAsync(name, deleted: true);
 
-        return new CertificateOperation(cert.RecoveryId, name.GetCacheId());
+        return new CertificateOperation(cert.RecoveryId, name);
     }
 
-    public CertificateOperation RecoverCerticate(string name)
+    public async Task<CertificateOperation> RecoverCerticateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cacheId = name.GetCacheId();
+        var bundle = await context.Certificates.SafeGetAsync(name, deleted: true);
 
-        var deletedCert = _deletedCerts.SafeGet(cacheId);
+        var fullCertificate = bundle.FullCertificate;
 
-        var cert = deletedCert.FullCertificate;
+        ArgumentNullException.ThrowIfNull(fullCertificate);
 
-        ArgumentNullException.ThrowIfNull(cert);
+        bundle.Deleted = false;
 
-        _certs.SafeAddOrUpdate(cacheId, cert);
-        _deletedCerts.SafeRemove(cacheId);
+        await context.SaveChangesAsync();
+
+        return new(bundle.CertificateIdentifier, name);
+    }
+
+    public async Task<CertificateOperation> GetPendingRecoveryOperationAsync(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var cert = await context.Certificates.SafeGetAsync(name);
 
         return new(cert.CertificateIdentifier, name);
     }
 
-    public CertificateOperation GetPendingRecoveryOperation(string name)
+    public async Task PurgeDeletedCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = _certs.SafeGet(name.GetCacheId());
+        await context.Certificates.SafeRemoveAsync(name, deleted: true);
 
-        return new(cert.CertificateIdentifier, name);
-    }
-
-    public void PurgeDeletedCertificate(string name)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-
-        _deletedCerts.SafeRemove(name);
+        await context.SaveChangesAsync();
     }
 
     private string GenerateNextLink(int maxResults)
@@ -357,10 +366,14 @@ public sealed class CertificateService(
         string identifier,
         CertificateAttributesModel attributes)
     {
+        var issuer = policy?.Issuer ?? new();
         policy ??= new();
 
         policy.Identifier = identifier;
         policy.CertificateAttributes ??= attributes;
+
+        policy.Issuer = issuer;
+        policy.IssuerId = issuer.PersistedId;
 
         return policy;
     }

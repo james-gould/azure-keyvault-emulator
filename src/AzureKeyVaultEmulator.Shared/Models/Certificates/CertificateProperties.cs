@@ -12,6 +12,9 @@ public class CertificateProperties : TaggedModel
     [JsonPropertyName("id")]
     public required string CertificateIdentifier { get; set; }
 
+    [JsonPropertyName("recoveryId")]
+    public string RecoveryId { get; set; } = string.Empty;
+
     [JsonPropertyName("name")]
     public required string CertificateName { get; set; }
 

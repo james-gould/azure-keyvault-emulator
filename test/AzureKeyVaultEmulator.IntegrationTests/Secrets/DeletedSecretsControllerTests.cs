@@ -11,8 +11,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var secretName = "getDeletedSecretName";
-            var secretValue = "getSelectedSecretPassword";
+            var secretName = fixture.FreshlyGeneratedGuid;
+            var secretValue = fixture.FreshlyGeneratedGuid;
 
             var secret = await fixture.CreateSecretAsync(secretName, secretValue);
 
@@ -32,7 +32,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var multiSecretName = "multiDelete";
+            var multiSecretName = fixture.FreshlyGeneratedGuid;
 
             var executionCount = await RequestSetup
                 .CreateMultiple(26, 51, i => client.SetSecretAsync(multiSecretName, $"{i}value"));
@@ -57,8 +57,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var secretName = "purgingSecret";
-            var secretValue = "purgedValue";
+            var secretName = fixture.FreshlyGeneratedGuid;
+            var secretValue = fixture.FreshlyGeneratedGuid;
 
             var secret = await fixture.CreateSecretAsync(secretName, secretValue);
 
@@ -84,8 +84,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var secretName = "recoveredDeletedSecret";
-            var secretValue = "recoveredPassword";
+            var secretName = fixture.FreshlyGeneratedGuid;
+            var secretValue = fixture.FreshlyGeneratedGuid;
 
             var secret = await fixture.CreateSecretAsync(secretName, secretValue);
 

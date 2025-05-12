@@ -2,7 +2,7 @@
 {
     internal partial class KeyVaultEmulatorContainerConstants
     {
-        // Container
+        // Image
 
         public const string Registry = "docker.io";
         public const string Image = "jamesgoulddev/azure-keyvault-emulator";
@@ -11,7 +11,7 @@
 #if DEBUG
         public const string Tag = "dev-unstable";
 #else
-        public const string Tag = "windows";
+        public const string Tag = "latest";
 #endif
     }
 
@@ -20,5 +20,12 @@
         // Connection related
 
         public const string Endpoint = "https://localhost:4997";
+    }
+
+    internal partial class KeyVaultEmulatorContainerConstants
+    {
+        // Environment Variables
+
+        public const string PersistData = "Persist";
     }
 }

@@ -47,7 +47,7 @@ internal static class KeyVaultEmulatorCertHelper
         ArgumentNullException.ThrowIfNull(options);
 
         if (!string.IsNullOrEmpty(options.LocalCertificatePath) && !Directory.Exists(options.LocalCertificatePath))
-            throw new KeyVaultEmulatorException($"The local path specified for your SSL certificates does not exist.");
+            Directory.CreateDirectory(options.LocalCertificatePath);
 
         var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
 
@@ -57,15 +57,12 @@ internal static class KeyVaultEmulatorCertHelper
         var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
         var crtPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Crt);
 
-        var pfxExists = File.Exists(pfxPath);
-        var crtExists = File.Exists(crtPath);
-
-        var certsAlreadyExist = (pfxExists && crtExists);
+        var certsAlreadyExist = File.Exists(pfxPath) && File.Exists(crtPath);
 
         // Both required certs exist so noop.
         // Will also require a cert check for expiration
         // Out of scope for now
-        if (pfxExists && crtExists && !options.LoadCertificatesIntoTrustStore)
+        if (certsAlreadyExist && !options.LoadCertificatesIntoTrustStore)
             return new(certPath);
 
         // One has been deleted, try to remove them both and regenerate.
@@ -78,13 +75,11 @@ internal static class KeyVaultEmulatorCertHelper
                             ? GenerateAndSaveCert(pfxPath, crtPath)
                             : LoadExistingCertificatesToInstall(pfxPath, crtPath);
 
-        //TryWriteToStore(options, pfx, pfxPath, cert);
-
         return new(certPath) { Pfx = pfx, pem = pem };
     }
 
     /// <summary>
-    /// Attempts to load existing certificates to the host trust store.
+    /// Attempts to find and read the contents of the certificates used for SSL.
     /// </summary>
     /// <param name="pfxPath">The path to the PFX.</param>
     /// <param name="pemPath">The path to the PEM.</param>
@@ -152,8 +147,8 @@ internal static class KeyVaultEmulatorCertHelper
 
         var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
 
+        // Setting FriendlyName is only supported on Windows for some reason.
         if (OperatingSystem.IsWindows())
-            // Setting FriendlyName is only supported on Windows for some reason.
             cert.FriendlyName = "Azure Key Vault Emulator";
 
         var pfxBytes = cert.Export(X509ContentType.Pfx, KeyVaultEmulatorCertConstants.Pword);
@@ -166,6 +161,10 @@ internal static class KeyVaultEmulatorCertHelper
         return (cert, pem);
     }
 
+    /// <summary>
+    /// Defines the SAN extension used to bind to "localhost"
+    /// </summary>
+    /// <returns></returns>
     private static X509Extension BuildSubjectAlternativeNames()
     {
         var builder = new SubjectAlternativeNameBuilder();
@@ -224,7 +223,7 @@ internal static class KeyVaultEmulatorCertHelper
         }
         catch (Exception)
         {
-            throw new KeyVaultEmulatorException("Failed to insert SSL certificates into local Trust Store. If this is your first time using the Emulator, or have enabled ForceCleanupOnShutdown, you need to run as Administrator for this process.");
+            throw new KeyVaultEmulatorException($"Failed to insert SSL certificates into local Trust Store. To use the Emulator you must install the certificates at {pfxPath} yourself first, then try again.");
         }
     }
 

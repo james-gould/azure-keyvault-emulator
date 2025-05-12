@@ -185,8 +185,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     {
         var client = await fixture.GetClientAsync();
 
-        //var issuerName = fixture.FreshlyGeneratedGuid;
-        var issuerName = "testingNonGuid";
+        var issuerName = fixture.FreshlyGeneratedGuid;
 
         await Assert.RequestFailsAsync(() => client.GetIssuerAsync(issuerName));
 
@@ -207,29 +206,6 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.Equal(issuerConfig.Provider, issuer.Provider);
 
         Assert.NotEqual(issuerConfig.Id, issuer.Id);
-    }
-
-    [Fact]
-    public async Task GetCertificateIssuerWillSucceed()
-    {
-        var client = await fixture.GetClientAsync();
-
-        var issuerName = fixture.FreshlyGeneratedGuid;
-        var certName = fixture.FreshlyGeneratedGuid;
-
-        await Assert.RequestFailsAsync(() => client.GetIssuerAsync(issuerName));
-
-        var issuerConfig = fixture.CreateIssuerConfiguration(issuerName);
-
-        var createdResponse = await client.CreateIssuerAsync(issuerConfig);
-
-        var response = await client.GetIssuerAsync(issuerName);
-
-        Assert.NotNull(response.Value);
-
-        var issuer = response.Value;
-
-        Assert.IssuersAreEqual(issuerConfig, issuer);
     }
 
     [Fact]
@@ -273,7 +249,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         await foreach (var cer in client.GetPropertiesOfCertificateVersionsAsync(certName))
             certs.Add(cer);
 
-        Assert.Equal(executionCount + 1, certs.Count);
+        Assert.Equal(executionCount, certs.Count);
     }
 
     [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]

@@ -1,10 +1,11 @@
-﻿using Aspire.Hosting.Azure;
+﻿using System.Net.Sockets;
+using Aspire.Hosting.Azure;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Net.Sockets;
+//using System.Net.Sockets;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
@@ -92,7 +93,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     source: hostCertificatePath,
                     target: KeyVaultEmulatorCertConstants.CertMountTarget,
                     type: ContainerMountType.BindMount,
-                    isReadOnly: true))
+                    isReadOnly: false))
                 .WithAnnotation(new ContainerLifetimeAnnotation { Lifetime = options.Lifetime })
                 .WithAnnotation(new EndpointAnnotation(ProtocolType.Tcp)
                 {
@@ -100,13 +101,31 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     TargetPort = KeyVaultEmulatorContainerConstants.Port,
                     UriScheme = "https",
                     Name = "https"
-                });
+                })
+                .WithAnnotation(
+                    new EnvironmentCallbackAnnotation(ctx => RegisterEnvironmentVariables(ctx, options))
+                );
 
             builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorContainerConstants.Endpoint);
 
             builder.RegisterOptionalLifecycleHandler(options, hostCertificatePath);
 
             return builder;
+        }
+
+        /// <summary>
+        /// Registers the necessary Environment Variables for the container runtime.
+        /// </summary>
+        /// <param name="context">The environment context for execution.</param>
+        /// <param name="options">The options defined for the emulator.</param>
+        /// <returns>The context with the EnvironmentVariables extended.</returns>
+        private static EnvironmentCallbackContext RegisterEnvironmentVariables(
+            EnvironmentCallbackContext context,
+            KeyVaultEmulatorOptions options)
+        {
+            context.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, options.Persist.ToString());
+
+            return context;
         }
 
         /// <summary>

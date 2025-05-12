@@ -6,9 +6,6 @@ public class SecretsTestingFixture : KeyVaultClientTestingFixture<SecretClient>
 {
     private SecretClient? _secretClient;
 
-    public readonly string DefaultSecretName = "password";
-    public readonly string DefaultSecretValue = "hunter2";
-
     private KeyVaultSecret? _defaultSecret = null;
 
     public override async ValueTask<SecretClient> GetClientAsync()
@@ -34,7 +31,7 @@ public class SecretsTestingFixture : KeyVaultClientTestingFixture<SecretClient>
 
         ArgumentNullException.ThrowIfNull(_secretClient);
 
-        return _defaultSecret = await _secretClient.SetSecretAsync(DefaultSecretName, DefaultSecretValue);
+        return _defaultSecret = await _secretClient.SetSecretAsync(FreshlyGeneratedGuid, FreshlyGeneratedGuid);
     }
 
     public async Task<KeyVaultSecret> CreateSecretAsync(string secretName, string secretValue)
