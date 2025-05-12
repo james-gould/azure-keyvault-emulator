@@ -136,7 +136,7 @@ else
 The primary purpose of this project is to provide `.NET Aspire` support it does *not* require it. To use the Emulator in a different environment simply pull down the image and follow the [setup instructions](docs/CertificateUtilities/README.md):
 
 ```
-docker pull jamesgoulddev/azure-keyvault-emulator:windows
+docker pull jamesgoulddev/azure-keyvault-emulator:latest
 ```
 
 > [!NOTE]
