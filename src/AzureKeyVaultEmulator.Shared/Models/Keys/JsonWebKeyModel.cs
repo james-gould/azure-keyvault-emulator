@@ -7,7 +7,6 @@ using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 using AzureKeyVaultEmulator.Shared.Persistence.Utils;
 using AzureKeyVaultEmulator.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys

@@ -320,11 +320,9 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.NotEqual(data, encrypted.Ciphertext);
 
          var decrypted = keyPair.Decrypt(encrypted.Ciphertext, encryptionPadding);
-        //var decrypted = (await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext)).Plaintext;
 
         Assert.NotEqual(decrypted, encrypted.Ciphertext);
         Assert.Equal(decrypted, data);
-        //Assert.NotNull(encryptionPadding);
     }
 
     [Fact]
