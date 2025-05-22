@@ -103,7 +103,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
         public async Task<KeyOperationResult?> EncryptAsync(string name, string version, KeyOperationParameters keyOperationParameters)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
             var foundKey = await context.Keys.SafeGetAsync(name, version);
 
@@ -119,7 +118,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
         public async Task<KeyOperationResult?> DecryptAsync(string name, string version, KeyOperationParameters keyOperationParameters)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
             var foundKey = await context.Keys.SafeGetAsync(name, version);
 
