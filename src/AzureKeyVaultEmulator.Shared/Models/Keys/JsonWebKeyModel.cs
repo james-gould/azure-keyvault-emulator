@@ -122,14 +122,14 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         {
             var parameters = new RSAParameters
             {
-                Modulus = Base64UrlEncoder.DecodeBytes(key.N),
-                Exponent = Base64UrlEncoder.DecodeBytes(key.E),
-                D = string.IsNullOrEmpty(key.D) ? null : Base64UrlEncoder.DecodeBytes(key.D),
-                P = string.IsNullOrEmpty(key.P) ? null : Base64UrlEncoder.DecodeBytes(key.P),
-                Q = string.IsNullOrEmpty(key.Q) ? null : Base64UrlEncoder.DecodeBytes(key.Q),
-                DP = string.IsNullOrEmpty(key.DP) ? null : Base64UrlEncoder.DecodeBytes(key.DP),
-                DQ = string.IsNullOrEmpty(key.DQ) ? null : Base64UrlEncoder.DecodeBytes(key.DQ),
-                InverseQ = string.IsNullOrEmpty(key.QI) ? null : Base64UrlEncoder.DecodeBytes(key.QI)
+                Modulus = EncodingUtils.Base64UrlDecode(key.N),
+                Exponent = EncodingUtils.Base64UrlDecode(key.E),
+                D = string.IsNullOrEmpty(key.D) ? null : EncodingUtils.Base64UrlDecode(key.D),
+                P = string.IsNullOrEmpty(key.P) ? null : EncodingUtils.Base64UrlDecode(key.P),
+                Q = string.IsNullOrEmpty(key.Q) ? null : EncodingUtils.Base64UrlDecode(key.Q),
+                DP = string.IsNullOrEmpty(key.DP) ? null : EncodingUtils.Base64UrlDecode(key.DP),
+                DQ = string.IsNullOrEmpty(key.DQ) ? null : EncodingUtils.Base64UrlDecode(key.DQ),
+                InverseQ = string.IsNullOrEmpty(key.QI) ? null : EncodingUtils.Base64UrlDecode(key.QI)
             };
 
             RSAKey = RSA.Create(parameters);
