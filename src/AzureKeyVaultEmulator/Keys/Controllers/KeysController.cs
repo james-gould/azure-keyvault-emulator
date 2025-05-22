@@ -65,7 +65,6 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
-        
         [HttpPatch("{name}")]
         public async Task<IActionResult> UpdateKeyWithoutVersion(
             [FromRoute] string name,
@@ -134,6 +133,17 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
+        [HttpPost("{name}/encrypt")]
+        public async Task<IActionResult> Encrypt(
+           [FromRoute] string name,
+           [ApiVersion] string apiVersion,
+           [FromBody] KeyOperationParameters keyOperationParameters)
+        {
+            var result = await keyService.EncryptAsync(name, string.Empty, keyOperationParameters);
+
+            return Ok(result);
+        }
+
         [HttpPost("{name}/{version}/decrypt")]
         public async Task<IActionResult> Decrypt(
             [FromRoute] string name,
@@ -142,6 +152,17 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromBody] KeyOperationParameters keyOperationParameters)
         {
             var result = await keyService.DecryptAsync(name, version, keyOperationParameters);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{name}/decrypt")]
+        public async Task<IActionResult> Decrypt(
+           [FromRoute] string name,
+           [ApiVersion] string apiVersion,
+           [FromBody] KeyOperationParameters keyOperationParameters)
+        {
+            var result = await keyService.DecryptAsync(name, string.Empty, keyOperationParameters);
 
             return Ok(result);
         }

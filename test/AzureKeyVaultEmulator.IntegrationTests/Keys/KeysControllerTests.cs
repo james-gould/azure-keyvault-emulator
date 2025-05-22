@@ -193,6 +193,32 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
     [Theory]
     [MemberData(nameof(SupportedEncryptionAlgorithms))]
+    public async Task EncryptAndDecryptWithKeyLatestVersionSucceeds(EncryptionAlgorithm algo)
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa)).Value;
+
+        Assert.Equal(keyName, key.Name);
+
+        var data = RequestSetup.CreateRandomBytes(128);
+
+        var cryptoClient = client.GetCryptographyClient(keyName, null); //null means the latest version
+
+        var encrypted = await cryptoClient.EncryptAsync(algo, data);
+
+        Assert.NotEqual(data, encrypted.Ciphertext);
+
+        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext);
+
+        Assert.NotEqual(decrypted.Plaintext, encrypted.Ciphertext);
+        Assert.Equal(decrypted.Plaintext, data);
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedEncryptionAlgorithms))]
     public async Task EncryptAndDecryptWithImportedKeySucceeds(EncryptionAlgorithm algo)
     {
         var client = await fixture.GetClientAsync();
