@@ -70,7 +70,7 @@ var keyVault = builder
 
 ### Run the automated script
 
-> [!IMPORTANT]
+> [!IMPORTANT]  
 > If you're using **Windows**, use `Git Bash` to execute the setup script.
 
 The setup process can be fully automated by using the installation script:
@@ -87,6 +87,8 @@ The script is interactive and will create the necessary SSL certificates, instal
 docker run -d -p 4997:4997 -v {/host/path/to/certs}:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest
 ```
 
+A break down of the command:
+
 | Command | Description | Optional? |
 | ------- | ----------- | --------- |
 | `-d`    | Runs the container in `detatched` mode. | ✅ |
@@ -94,6 +96,8 @@ docker run -d -p 4997:4997 -v {/host/path/to/certs}:/certs -e Persist=true james
 | `-v {/host/path/to/certs}:/certs` | Binds the directory containing the SSL `PFX` and `CRT` files, required for the Azure SDK. | ❌ |
 | `-e Persist=true` | Instructs the emulator to create an `SQLite` database, written to your mounted volume/directory alongside the certificate files. | ✅ |
 | `jamesgoulddev/azure-keyvault-emulator:latest` | The container image name and tag. Always use `latest`. | ❌ |
+
+You can read more about configuration [here.](docs/CONFIG.md#local-docker)
 
 </details>
 
