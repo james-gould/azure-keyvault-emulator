@@ -24,7 +24,7 @@ Choose from one of the following options to get going with the Azure Key Vault E
 
 <details>
 
-<summary>1. .NET Aspire</summary>
+<summary>.NET Aspire</summary>
 
 ### 1. Install the [AzureKeyVaultEmulator.Aspire.Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
 
@@ -66,7 +66,7 @@ var keyVault = builder
 
 <details>
 
-<summary>2. Docker</summary>
+<summary>Docker</summary>
 
 ### Run the automated script
 
