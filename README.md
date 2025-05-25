@@ -15,23 +15,19 @@ You can find [sample applications here](https://github.com/james-gould/azure-key
 ## Prerequisites
 
 - You'll need [Docker](https://www.docker.com/) installed, or [Podman](https://podman.io/) installed and configured to support Docker commands.
+    - Windows users will also need `WSL2` installed, which is normally a dependency of `Docker` anyway.
 
-## Quickstart
+## Running the Emulator with Docker
 
-Choose from one of the following options to get going with the Azure Key Vault Emulator:
-
-### Using Docker
-
-#### Run the automated script
-
-> [!NOTE]
-> If you're using **Windows**, use `Git Bash` to execute the setup script.
 
 The setup process can be fully automated by using the installation script:
 
 ```
 bash <(curl -fsSL https://bugged.io/kve/setup.sh)
 ```
+
+> [!IMPORTANT]
+> If you're using **Windows**, use `Git Bash` to execute the setup script.
 
 Alternatively you can download a copy of [setup.sh](docs/setup.sh) and run it locally, or read the [long form, manual set up docs.](docs/CONFIG.md#local-docker)
 
@@ -53,15 +49,15 @@ A break down of the command:
 
 You can read more about configuration [here.](docs/CONFIG.md#local-docker)
 
-### Using .NET Aspire
+## Running the Emulator with .NET Aspire
 
-#### 1. Install the [AzureKeyVaultEmulator.Aspire.Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
+### 1. Install the [AzureKeyVaultEmulator.Aspire.Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
 
 ```
 dotnet add package AzureKeyVaultEmulator.Aspire.Hosting
 ```
 
-#### 2. Override an existing Aspire resource or directly include the `AzureKeyVaultEmulator`: 
+### 2. Override an existing Aspire resource or directly include the `AzureKeyVaultEmulator`: 
 
 ```csharp
 var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
