@@ -15,7 +15,6 @@ You can find [sample applications here](https://github.com/james-gould/azure-key
 ## Prerequisites
 
 - You'll need [Docker](https://www.docker.com/) installed, or [Podman](https://podman.io/) installed and configured to support Docker commands.
-    - Windows users will also need `WSL2` installed, which is normally a dependency of `Docker` anyway.
 
 ## Running the Emulator with Docker
 
