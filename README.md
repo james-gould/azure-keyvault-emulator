@@ -16,15 +16,46 @@ You can find [sample applications here](https://github.com/james-gould/azure-key
 
 - On your first run with .NET Aspire you will be prompted to install a `localhost` certificate to support the Emulator SSL. 
     - [Not using .NET Aspire, want to learn more or provide your own certificates?](docs/CONFIG.md)
-- You'll need either [Docker](https://www.docker.com/) or [Podman](https://podman.io/) installed on your machine.
+- You'll need [Docker](https://www.docker.com/) installed, or [Podman](https://podman.io/) installed and configured to support Docker commands.
 
 ## Quickstart
 
 Choose from one of the following options to get going with the Azure Key Vault Emulator:
 
-<details>
+## Using Docker
 
-<summary>.NET Aspire</summary>
+### Run the automated script
+
+> [!NOTE]
+> If you're using **Windows**, use `Git Bash` to execute the setup script.
+
+The setup process can be fully automated by using the installation script:
+
+```
+bash <(curl -fsSL https://bugged.io/kve/setup.sh)
+```
+
+Alternatively you can download a copy of [setup.sh](docs/setup.sh) and run it locally, or read the [long form, manual set up docs.](docs/CONFIG.md#local-docker)
+
+The script is interactive and will create the necessary SSL certificates, install them to your `User` trust store and provide the commands to run the container. Once configured, you can start the Emulator with:
+
+```
+docker run -d -p 4997:4997 -v {/host/path/to/certs}:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest
+```
+
+A break down of the command:
+
+| Command | Description | Optional? |
+| ------- | ----------- | --------- |
+| `-d`    | Runs the container in `detatched` mode. | ✅ |
+| `-p 4997: 4997`    | Specifies the port to run on. Note `4997` is required, it is **not** configurable currently. | ✅ |
+| `-v {/host/path/to/certs}:/certs` | Binds the directory containing the SSL `PFX` and `CRT` files, required for the Azure SDK. | ❌ |
+| `-e Persist=true` | Instructs the emulator to create an `SQLite` database, written to your mounted volume/directory alongside the certificate files. | ✅ |
+| `jamesgoulddev/azure-keyvault-emulator:latest` | The container image name and tag. Always use `latest`. | ❌ |
+
+You can read more about configuration [here.](docs/CONFIG.md#local-docker)
+
+## Using .NET Aspire
 
 ### 1. Install the [AzureKeyVaultEmulator.Aspire.Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
 
@@ -62,49 +93,9 @@ var keyVault = builder
 
 [Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
-</details>
-
-<details>
-
-<summary>Docker</summary>
-
-### Run the automated script
-
-> [!NOTE]
-> 
-> If you're using **Windows**, use `Git Bash` to execute the setup script.
-
-The setup process can be fully automated by using the installation script:
-
-```
-bash <(curl -fsSL https://bugged.io/kve/setup.sh)
-```
-
-Alternatively you can download a copy of [setup.sh](docs/setup.sh) and run it locally, or read the [long form, manual set up docs.](docs/CONFIG.md#local-docker)
-
-The script is interactive and will create the necessary SSL certificates, install them to your `User` trust store and provide the commands to run the container. Once configured, you can start the Emulator with:
-
-```
-docker run -d -p 4997:4997 -v {/host/path/to/certs}:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest
-```
-
-A break down of the command:
-
-| Command | Description | Optional? |
-| ------- | ----------- | --------- |
-| `-d`    | Runs the container in `detatched` mode. | ✅ |
-| `-p 4997: 4997`    | Specifies the port to run on. Note `4997` is required, it is **not** configurable currently. | ✅ |
-| `-v {/host/path/to/certs}:/certs` | Binds the directory containing the SSL `PFX` and `CRT` files, required for the Azure SDK. | ❌ |
-| `-e Persist=true` | Instructs the emulator to create an `SQLite` database, written to your mounted volume/directory alongside the certificate files. | ✅ |
-| `jamesgoulddev/azure-keyvault-emulator:latest` | The container image name and tag. Always use `latest`. | ❌ |
-
-You can read more about configuration [here.](docs/CONFIG.md#local-docker)
-
-</details>
-
 ## Using The Emulator
 
-### 3. Permit requests to the Emulator using the Azure SDK:
+### 1. Permit requests to the Emulator using the Azure SDK:
 
 This can be done easily by installing the [AzureKeyVaultEmulator.Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package:
 
@@ -142,7 +133,7 @@ builder.Services.AddTransient(s => new SecretClient(new Uri(vaultUri), new Defau
 
 [You can use this code from the client library](src/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) replacing `EmulatedCredential` with `DefaultAzureCredential`.
 
-### 4. Use your `AzureClients` as normal dependency injected services:
+### 2. Use your `AzureClients` as normal dependency injected services:
 
 ```csharp
 private SecretClient _secretClient;
@@ -183,9 +174,6 @@ else
 ```
 
 </details>
-
-
-
 
 # Roadmap
 
