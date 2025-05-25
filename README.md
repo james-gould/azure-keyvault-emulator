@@ -92,9 +92,9 @@ var keyVault = builder
 
 [Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
-### Using The Emulator
+## Using The Emulator in your applications.
 
-#### 1. Permit requests to the Emulator using the Azure SDK:
+### 1. Permit requests to the Emulator using the Azure SDK:
 
 This can be done easily by installing the [AzureKeyVaultEmulator.Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package:
 
@@ -132,7 +132,7 @@ builder.Services.AddTransient(s => new SecretClient(new Uri(vaultUri), new Defau
 
 [You can use this code from the client library](src/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) replacing `EmulatedCredential` with `DefaultAzureCredential`.
 
-#### 2. Use your `AzureClients` as normal dependency injected services:
+### 2. Use your `AzureClients` as normal dependency injected services:
 
 ```csharp
 private SecretClient _secretClient;
