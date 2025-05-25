@@ -70,7 +70,7 @@ var keyVault = builder
 
 ### Run the automated script
 
-> [!IMPORTANT]  
+> [!NOTE]
 > If you're using **Windows**, use `Git Bash` to execute the setup script.
 
 The setup process can be fully automated by using the installation script:
