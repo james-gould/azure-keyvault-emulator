@@ -20,9 +20,9 @@ You can find [sample applications here](https://github.com/james-gould/azure-key
 
 Choose from one of the following options to get going with the Azure Key Vault Emulator:
 
-## Using Docker
+### Using Docker
 
-### Run the automated script
+#### Run the automated script
 
 > [!NOTE]
 > If you're using **Windows**, use `Git Bash` to execute the setup script.
@@ -53,15 +53,15 @@ A break down of the command:
 
 You can read more about configuration [here.](docs/CONFIG.md#local-docker)
 
-## Using .NET Aspire
+### Using .NET Aspire
 
-### 1. Install the [AzureKeyVaultEmulator.Aspire.Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
+#### 1. Install the [AzureKeyVaultEmulator.Aspire.Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
 
 ```
 dotnet add package AzureKeyVaultEmulator.Aspire.Hosting
 ```
 
-### 2. Override an existing Aspire resource or directly include the `AzureKeyVaultEmulator`: 
+#### 2. Override an existing Aspire resource or directly include the `AzureKeyVaultEmulator`: 
 
 ```csharp
 var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
@@ -91,9 +91,9 @@ var keyVault = builder
 
 [Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
-## Using The Emulator
+### Using The Emulator
 
-### 1. Permit requests to the Emulator using the Azure SDK:
+#### 1. Permit requests to the Emulator using the Azure SDK:
 
 This can be done easily by installing the [AzureKeyVaultEmulator.Client](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) package:
 
@@ -131,7 +131,7 @@ builder.Services.AddTransient(s => new SecretClient(new Uri(vaultUri), new Defau
 
 [You can use this code from the client library](src/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) replacing `EmulatedCredential` with `DefaultAzureCredential`.
 
-### 2. Use your `AzureClients` as normal dependency injected services:
+#### 2. Use your `AzureClients` as normal dependency injected services:
 
 ```csharp
 private SecretClient _secretClient;
