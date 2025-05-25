@@ -14,8 +14,6 @@ You can find [sample applications here](https://github.com/james-gould/azure-key
 
 ## Prerequisites
 
-- On your first run with .NET Aspire you will be prompted to install a `localhost` certificate to support the Emulator SSL. 
-    - [Not using .NET Aspire, want to learn more or provide your own certificates?](docs/CONFIG.md)
 - You'll need [Docker](https://www.docker.com/) installed, or [Podman](https://podman.io/) installed and configured to support Docker commands.
 
 ## Quickstart
