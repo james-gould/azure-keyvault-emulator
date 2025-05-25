@@ -152,7 +152,7 @@ public async Task<string> GetSecretValue(string name)
 
 <details>
 
-<summary>Optional, if you're using the AzureKeyVaultEmulator.Client package</summary>
+<summary>Optional, if you're using the `AzureKeyVaultEmulator.Client` package</summary>
 
 Configure your `Program.cs` to optionally inject the emulated or real Azure Key Vault clients depending on your current execution environment:
 
