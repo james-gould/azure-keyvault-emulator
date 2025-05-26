@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json.Serialization;
 using AzureKeyVaultEmulator.Shared.Constants;
 using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
@@ -120,7 +119,19 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
 
         public JsonWebKeyModel(JsonWebKey key, string name, string version, HttpContext? reqContext)
         {
-            RSAKey = RSA.Create();
+            var parameters = new RSAParameters
+            {
+                Modulus = EncodingUtils.Base64UrlDecode(key.N),
+                Exponent = EncodingUtils.Base64UrlDecode(key.E),
+                D = string.IsNullOrEmpty(key.D) ? null : EncodingUtils.Base64UrlDecode(key.D),
+                P = string.IsNullOrEmpty(key.P) ? null : EncodingUtils.Base64UrlDecode(key.P),
+                Q = string.IsNullOrEmpty(key.Q) ? null : EncodingUtils.Base64UrlDecode(key.Q),
+                DP = string.IsNullOrEmpty(key.DP) ? null : EncodingUtils.Base64UrlDecode(key.DP),
+                DQ = string.IsNullOrEmpty(key.DQ) ? null : EncodingUtils.Base64UrlDecode(key.DQ),
+                InverseQ = string.IsNullOrEmpty(key.QI) ? null : EncodingUtils.Base64UrlDecode(key.QI)
+            };
+
+            RSAKey = RSA.Create(parameters);
 
             KeyType = key.Kty;
 
@@ -154,15 +165,15 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
             {
                 EncryptionAlgorithms.RSA1_5 => RsaEncrypt(data.Data, RSAEncryptionPadding.Pkcs1),
                 EncryptionAlgorithms.RSA_OAEP => RsaEncrypt(data.Data, RSAEncryptionPadding.OaepSHA1),
+                EncryptionAlgorithms.RSA_OAEP_256 => RsaEncrypt(data.Data, RSAEncryptionPadding.OaepSHA256),
                 _ => throw new NotImplementedException($"Algorithm '{data.Algorithm}' does not support Encryption")
             };
         }
 
         private byte[] RsaEncrypt(string plaintext, RSAEncryptionPadding padding)
         {
-            using var rsaAlg = new RSACryptoServiceProvider(RSAKey.KeySize);
-            rsaAlg.ImportParameters(RSAParameters);
-            return rsaAlg.Encrypt(Encoding.UTF8.GetBytes(plaintext), padding);
+            using var rsaAlg = RSA.Create(RSAParameters);
+            return rsaAlg.Encrypt(EncodingUtils.Base64UrlDecode(plaintext), padding);
         }
 
         public string Decrypt(KeyOperationParameters data)
@@ -171,15 +182,15 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
             {
                 EncryptionAlgorithms.RSA1_5 => RsaDecrypt(data.Data, RSAEncryptionPadding.Pkcs1),
                 EncryptionAlgorithms.RSA_OAEP => RsaDecrypt(data.Data, RSAEncryptionPadding.OaepSHA1),
+                EncryptionAlgorithms.RSA_OAEP_256 => RsaDecrypt(data.Data, RSAEncryptionPadding.OaepSHA256),
                 _ => throw new NotImplementedException($"Algorithm '{data.Algorithm}' does not support Decryption")
             };
         }
 
         private string RsaDecrypt(string ciphertext, RSAEncryptionPadding padding)
         {
-            using var rsaAlg = new RSACryptoServiceProvider(RSAKey.KeySize);
-            rsaAlg.ImportParameters(RSAParameters);
-            return Encoding.UTF8.GetString(rsaAlg.Decrypt(EncodingUtils.Base64UrlDecode(ciphertext), padding));
+            using var rsaAlg = RSA.Create(RSAParameters);
+            return EncodingUtils.Base64UrlEncode(rsaAlg.Decrypt(EncodingUtils.Base64UrlDecode(ciphertext), padding));
         }
 
         public int GetKeySize() => RSAKey.KeySize;

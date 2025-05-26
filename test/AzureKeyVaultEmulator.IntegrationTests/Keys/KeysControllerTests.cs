@@ -8,6 +8,20 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Keys;
 
 public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixture<KeysTestingFixture>
 {
+    public static TheoryData<EncryptionAlgorithm> SupportedEncryptionAlgorithms => new TheoryData<EncryptionAlgorithm>
+    {
+        EncryptionAlgorithm.Rsa15,
+        EncryptionAlgorithm.RsaOaep,
+        EncryptionAlgorithm.RsaOaep256,
+    };
+
+    public static TheoryData<EncryptionAlgorithm, RSAEncryptionPadding> SupportedEncryptionAlgorithmsAndPadding => new TheoryData<EncryptionAlgorithm, RSAEncryptionPadding>
+    {
+        { EncryptionAlgorithm.Rsa15, RSAEncryptionPadding.Pkcs1 },
+        { EncryptionAlgorithm.RsaOaep, RSAEncryptionPadding.OaepSHA1 },
+        { EncryptionAlgorithm.RsaOaep256, RSAEncryptionPadding.OaepSHA256 },
+    };
+
     [Fact]
     public async Task CreateAndGetKeySucceeds()
     {
@@ -80,7 +94,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         };
 
         newProps.Tags.Add(tagKey, tagValue);
-        
+
         var disabledKeyWithTags = (await client.UpdateKeyPropertiesAsync(newProps)).Value;
 
         var shouldBeUpdated = (await client.GetKeyAsync(keyName, disabledKeyWithTags.Properties.Version)).Value;
@@ -126,7 +140,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         List<string> matchingKeys = [];
 
         await foreach (var key in client.GetPropertiesOfKeysAsync())
-            if(!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
+            if (!string.IsNullOrEmpty(key.Name) && key.Name.Contains(keyName))
                 matchingKeys.Add(key.Name);
 
         Assert.Equal(executionCount, matchingKeys.Count);
@@ -151,8 +165,9 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(executionCount, matchingKeys.Count);
     }
 
-    [Fact]
-    public async Task EncryptAndDecryptWithKeySucceeds()
+    [Theory]
+    [MemberData(nameof(SupportedEncryptionAlgorithms))]
+    public async Task EncryptAndDecryptWithKeySucceeds(EncryptionAlgorithm algo)
     {
         var client = await fixture.GetClientAsync();
 
@@ -164,7 +179,61 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var data = RequestSetup.CreateRandomBytes(128);
 
-        var algo = EncryptionAlgorithm.RsaOaep;
+        var cryptoClient = client.GetCryptographyClient(keyName, key.Properties.Version);
+
+        var encrypted = await cryptoClient.EncryptAsync(algo, data);
+
+        Assert.NotEqual(data, encrypted.Ciphertext);
+
+        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext);
+
+        Assert.NotEqual(decrypted.Plaintext, encrypted.Ciphertext);
+        Assert.Equal(decrypted.Plaintext, data);
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedEncryptionAlgorithms))]
+    public async Task EncryptAndDecryptWithKeyLatestVersionSucceeds(EncryptionAlgorithm algo)
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa)).Value;
+
+        Assert.Equal(keyName, key.Name);
+
+        var data = RequestSetup.CreateRandomBytes(128);
+
+        var cryptoClient = client.GetCryptographyClient(keyName, null); //null means the latest version
+
+        var encrypted = await cryptoClient.EncryptAsync(algo, data);
+
+        Assert.NotEqual(data, encrypted.Ciphertext);
+
+        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted.Ciphertext);
+
+        Assert.NotEqual(decrypted.Plaintext, encrypted.Ciphertext);
+        Assert.Equal(decrypted.Plaintext, data);
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedEncryptionAlgorithms))]
+    public async Task EncryptAndDecryptWithImportedKeySucceeds(EncryptionAlgorithm algo)
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        using var keyPair = RSA.Create();
+
+        var jwk = new JsonWebKey(keyPair, true);
+
+        var key = (await client.ImportKeyAsync(keyName, jwk)).Value;
+
+        Assert.Equal(keyName, key.Name);
+
+        var data = RequestSetup.CreateRandomBytes(128);
 
         var cryptoClient = client.GetCryptographyClient(keyName, key.Properties.Version);
 
@@ -176,6 +245,110 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         Assert.NotEqual(decrypted.Plaintext, encrypted.Ciphertext);
         Assert.Equal(decrypted.Plaintext, data);
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedEncryptionAlgorithmsAndPadding))]
+    public async Task EncryptWithPublicKeyAndDecryptWithVaultKeySucceeds(EncryptionAlgorithm algo, RSAEncryptionPadding encryptionPadding)
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var key = (await client.CreateKeyAsync(keyName, KeyType.Rsa)).Value;
+
+        Assert.Equal(keyName, key.Name);
+
+        var data = RequestSetup.CreateRandomBytes(128);
+
+        var cryptoClient = client.GetCryptographyClient(keyName, key.Properties.Version);
+
+        var publicKeyParameters = new RSAParameters()
+        {
+            Exponent = key.Key.E,
+            Modulus = key.Key.N,
+        };
+
+        using var publicKey = RSA.Create(publicKeyParameters);
+
+        var encrypted = publicKey.Encrypt(data, encryptionPadding);
+
+        Assert.NotEqual(data, encrypted);
+
+        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted);
+
+        Assert.NotEqual(decrypted.Plaintext, encrypted);
+        Assert.Equal(decrypted.Plaintext, data);
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedEncryptionAlgorithmsAndPadding))]
+    public async Task EncryptWithPublicKeyAndDecryptWithImportedVaultKeySucceeds(EncryptionAlgorithm algo, RSAEncryptionPadding encryptionPadding)
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        using var keyPair = RSA.Create();
+
+        var jwk = new JsonWebKey(keyPair, true);
+
+        var key = (await client.ImportKeyAsync(keyName, jwk)).Value;
+
+        Assert.Equal(keyName, key.Name);
+
+        var data = RequestSetup.CreateRandomBytes(128);
+
+        var cryptoClient = client.GetCryptographyClient(keyName, key.Properties.Version);
+
+        var publicKeyParameters = new RSAParameters()
+        {
+            Exponent = key.Key.E,
+            Modulus = key.Key.N,
+        };
+
+        using var publicKey = RSA.Create(publicKeyParameters);
+
+        var encrypted = publicKey.Encrypt(data, encryptionPadding);
+
+        Assert.NotEqual(data, encrypted);
+
+        var decrypted = await cryptoClient.DecryptAsync(algo, encrypted);
+
+        Assert.NotEqual(decrypted.Plaintext, encrypted);
+        Assert.Equal(decrypted.Plaintext, data);
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedEncryptionAlgorithmsAndPadding))]
+    public async Task EncryptWithVaultKeyAndDecryptWithPrivateKeySucceeds(EncryptionAlgorithm algo, RSAEncryptionPadding encryptionPadding)
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        using var keyPair = RSA.Create();
+
+        var jwk = new JsonWebKey(keyPair, true);
+
+        var key = (await client.ImportKeyAsync(keyName, jwk)).Value;
+
+        Assert.Equal(keyName, key.Name);
+        Assert.Equal(jwk.E, key.Key.E);
+        Assert.Equal(jwk.N, key.Key.N);
+
+        var data = RequestSetup.CreateRandomBytes(128);
+
+        var cryptoClient = client.GetCryptographyClient(keyName, key.Properties.Version);
+
+        var encrypted = await cryptoClient.EncryptAsync(algo, data);
+
+        Assert.NotEqual(data, encrypted.Ciphertext);
+
+         var decrypted = keyPair.Decrypt(encrypted.Ciphertext, encryptionPadding);
+
+        Assert.NotEqual(decrypted, encrypted.Ciphertext);
+        Assert.Equal(decrypted, data);
     }
 
     [Fact]
