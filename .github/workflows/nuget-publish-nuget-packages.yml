@@ -49,5 +49,5 @@ jobs:
       - name: Trigger TestContainers CI
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.WORKFLOW_PAT }}
           event-type: nuget-package-published
