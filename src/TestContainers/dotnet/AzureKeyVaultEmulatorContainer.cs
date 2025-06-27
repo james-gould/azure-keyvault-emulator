@@ -69,7 +69,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// </summary>
     /// <param name="containerPort">The container port.</param>
     /// <returns>The mapped public port.</returns>
-    public ushort GetMappedPublicPort(int containerPort) => _container.GetMappedPublicPort(containerPort);
+    public ushort GetMappedPublicPort(int containerPort = AzureKeyVaultEmulatorConstants.Port) => _container.GetMappedPublicPort(containerPort);
 
     /// <summary>
     /// Starts the container.
@@ -126,7 +126,8 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
         if (!File.Exists(pfxPath))
         {
             throw new FileNotFoundException(
-                $"Required certificate file '{AzureKeyVaultEmulatorConstants.RequiredPfxFileName}' not found in directory: {certificatesDirectory}");
+                $"Required certificate file '{AzureKeyVaultEmulatorConstants.RequiredPfxFileName}' not found in directory: {certificatesDirectory}. " +
+                "If running locally run \"bash docs/setup.sh\" to generate the required SSL certificates.");
         }
     }
 }
