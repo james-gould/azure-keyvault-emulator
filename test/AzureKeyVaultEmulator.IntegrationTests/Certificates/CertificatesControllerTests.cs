@@ -80,6 +80,73 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task CreatingCertificateWithOrganisationWillPersist()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
+
+        var issuerName = "Self";
+        var subject = "CN=keyvault-emulator.com, O=Key Vault Emulator Ltd";
+
+        var policy = new CertificatePolicy(issuerName, subject)
+        {
+            Exportable = true,
+            KeyType = CertificateKeyType.Rsa,
+            KeySize = 2048,
+            ReuseKey = true,
+            ContentType = Azure.Security.KeyVault.Certificates.CertificateContentType.Pkcs12,
+            ValidityInMonths = 12
+
+        };
+
+        var operation = await client.StartCreateCertificateAsync(certName, policy);
+
+        await operation.WaitForCompletionAsync();
+
+        Assert.True(operation.HasCompleted);
+
+        var certFromStore = await client.GetCertAsync(certName);
+
+        Assert.Equal(subject, certFromStore.Policy.Subject);
+        Assert.Equal(issuerName, certFromStore.Policy.IssuerName);
+    }
+
+    [Fact]
+    public async Task CreatingCertificateWithTagsWillPersist()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
+
+        var tagId = fixture.FreshlyGeneratedGuid;
+
+        var operation = await client.StartCreateCertificateAsync(
+                    certName,
+                    fixture.BasicPolicy,
+                    tags: new Dictionary<string, string> { { "id", tagId } }
+        );
+
+        await operation.WaitForCompletionAsync();
+
+        Assert.True(operation.HasCompleted);
+
+        var certFromStore = await client.GetCertAsync(certName);
+
+        Assert.NotEmpty(certFromStore.Properties.Tags);
+        Assert.Single(certFromStore.Properties.Tags);
+
+        var tagValue = certFromStore.Properties.Tags.FirstOrDefault().Value;
+
+        Assert.NotNull(tagValue);
+        Assert.Equal(tagId, tagValue);
+    }
+
+    [Fact]
     public async Task GetCertificateByVersionWillSucceed()
     {
         var client = await fixture.GetClientAsync();
