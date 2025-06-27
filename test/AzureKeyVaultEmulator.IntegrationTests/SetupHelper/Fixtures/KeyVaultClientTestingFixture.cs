@@ -6,7 +6,6 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using AzureKeyVaultEmulator.Shared.Constants;
 using AzureKeyVaultEmulator.Shared.Utilities;
-using IdentityModel.Client;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
@@ -94,11 +93,7 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
 
         response.EnsureSuccessStatusCode();
 
-        _bearerToken = await response.Content.ReadAsStringAsync();
-
-        _testingClient.SetBearerToken(_bearerToken);
-
-        return _bearerToken;
+        return _bearerToken = await response.Content.ReadAsStringAsync();
     }
 
     /// <summary>

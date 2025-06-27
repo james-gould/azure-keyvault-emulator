@@ -1,27 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <Title>Azure KeyVault Emulator for .NET Aspire</Title>
+    <Title>Azure Key Vault Emulator TestContainers Module</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Copyright>James Gould - 2025</Copyright>
     <PackageProjectUrl>https://github.com/james-gould/azure-keyvault-emulator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/james-gould/azure-keyvault-emulator</RepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Company>James Gould</Company>
-    <Description>.NET Aspire AppHost support for the Azure KeyVault Emulator</Description>
+    <Description>TestContainers module for the Azure Key Vault Emulator</Description>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-    <PackageTags>.net aspire, aspire, aspire.host, aspire.hosting</PackageTags>
+    <PackageTags>testcontainers, azure, keyvault, emulator, testing, docker</PackageTags>
     <IsPackable>true</IsPackable>
-    <UserSecretsId>c0273fdf-91dd-4646-856a-0f7cbcd39d13</UserSecretsId>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.3.1" />
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0" />
+    <PackageReference Include="Testcontainers" Version="4.0.0" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
   </ItemGroup>
+
 </Project>

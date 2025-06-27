@@ -18,7 +18,8 @@ public sealed class CertificateService(
     public async Task<CertificateOperation> CreateCertificateAsync(
         string name,
         CertificateAttributesModel attributes,
-        CertificatePolicy? policy)
+        CertificatePolicy? policy,
+        Dictionary<string, string>? tags = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(attributes);
@@ -51,6 +52,7 @@ public sealed class CertificateService(
             CertificatePolicy = concretePolicy,
             SecretId = backingSecret.SecretIdentifier,
             KeyId = backingKey.Key.KeyIdentifier,
+            Tags = tags ??= [],
 
             FullCertificate = certificate
         };
