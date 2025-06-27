@@ -28,7 +28,7 @@ You can find [sample applications here](https://github.com/james-gould/azure-key
 The setup process can be fully automated by using the installation script:
 
 ```
-bash <(curl -fsSL https://bugged.io/kve/setup.sh)
+bash <(curl -fsSL https://github.com/james-gould/azure-keyvault-emulator/blob/master/docs/setup.sh)
 ```
 
 > [!IMPORTANT]

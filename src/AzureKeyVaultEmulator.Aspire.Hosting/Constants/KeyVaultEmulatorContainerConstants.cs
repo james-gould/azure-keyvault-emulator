@@ -8,11 +8,7 @@
         public const string Image = "jamesgoulddev/azure-keyvault-emulator";
         public const int Port = 4997;
 
-#if DEBUG
-        public const string Tag = "dev-unstable";
-#else
         public const string Tag = "latest";
-#endif
     }
 
     internal partial class KeyVaultEmulatorContainerConstants
