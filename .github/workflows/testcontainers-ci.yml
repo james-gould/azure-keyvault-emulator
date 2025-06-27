@@ -1,0 +1,55 @@
+name: TestContainers Module CI
+
+on:
+  push:
+    branches: [ master, development ]
+    paths:
+      - 'src/TestContainers/**'
+      - 'test/AzureKeyVaultEmulator.TestContainers.Tests/**'
+      - '.github/workflows/testcontainers-ci.yml'
+  pull_request:
+    branches: [ master, development ]
+    paths:
+      - 'src/TestContainers/**'
+      - 'test/AzureKeyVaultEmulator.TestContainers.Tests/**'
+      - '.github/workflows/testcontainers-ci.yml'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore Dependencies
+      run: |
+        dotnet restore src/TestContainers/dotnet/AzureKeyVaultEmulator.TestContainers.csproj
+        dotnet restore test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
+
+    - name: Build TestContainers Module
+      run: |
+        dotnet build src/TestContainers/dotnet/AzureKeyVaultEmulator.TestContainers.csproj --no-restore --configuration Release
+
+    - name: Build Tests
+      run: |
+        dotnet build test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj --no-restore --configuration Release
+
+    - name: Run Tests
+      run: |
+        dotnet test test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj --no-build --configuration Release --verbosity normal
+
+    - name: Pack NuGet Package
+      run: |
+        dotnet pack src/TestContainers/dotnet/AzureKeyVaultEmulator.TestContainers.csproj --no-build --configuration Release --output ./artifacts
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: testcontainers-package
+        path: ./artifacts/*.nupkg
