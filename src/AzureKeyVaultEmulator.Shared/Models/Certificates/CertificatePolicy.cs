@@ -32,9 +32,6 @@ public sealed class CertificatePolicy : INamedItem
     [JsonPropertyName("id")]
     public string Identifier { get; set; } = string.Empty;
 
-    [JsonPropertyName("subject")]
-    public string Subject { get; set; } = string.Empty;
-
     [JsonPropertyName("issuer")]
     public IssuerBundle Issuer { get; set; } = new();
 
