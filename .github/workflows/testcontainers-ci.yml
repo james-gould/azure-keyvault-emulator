@@ -13,6 +13,8 @@ on:
       - 'src/TestContainers/**'
       - 'test/AzureKeyVaultEmulator.TestContainers.Tests/**'
       - '.github/workflows/testcontainers-ci.yml'
+  repository_dispatch:
+    types: [nuget-package-published]
 
 jobs:
   build-and-test:

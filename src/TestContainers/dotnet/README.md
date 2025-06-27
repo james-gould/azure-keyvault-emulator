@@ -5,7 +5,7 @@ This module provides TestContainers support for the Azure KeyVault Emulator, ena
 ## Features
 
 - Automatic container lifecycle management
-- SSL certificate handling and validation
+- SSL certificate handling and validation (also generates certificates automatically)
 - Configurable persistence options
 - Easy integration with .NET test frameworks
 
