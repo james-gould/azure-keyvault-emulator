@@ -5,14 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <Title>Azure KeyVault Emulator TestContainers Module</Title>
+    <Title>Azure Key Vault Emulator TestContainers Module</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Copyright>James Gould - 2025</Copyright>
     <PackageProjectUrl>https://github.com/james-gould/azure-keyvault-emulator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/james-gould/azure-keyvault-emulator</RepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Company>James Gould</Company>
-    <Description>TestContainers module for the Azure KeyVault Emulator</Description>
+    <Description>TestContainers module for the Azure Key Vault Emulator</Description>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <PackageTags>testcontainers, azure, keyvault, emulator, testing, docker</PackageTags>
     <IsPackable>true</IsPackable>

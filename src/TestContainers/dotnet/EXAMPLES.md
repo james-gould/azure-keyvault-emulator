@@ -28,6 +28,24 @@ await using var container = new AzureKeyVaultEmulatorContainer("/path/to/certs",
 
 This feature eliminates the need for manual certificate setup in most testing scenarios, making it easier to get started with the emulator.
 
+## CI/CD Usage
+
+When using the TestContainers module in CI/CD environments like GitHub Actions, you can use the system's temporary directory for certificate storage. This ensures a clean environment for each run:
+
+```csharp
+using AzureKeyVaultEmulator.TestContainers;
+
+// Use system temp directory for CI/CD environments
+var certificatesPath = Path.GetTempPath();
+await using var container = new AzureKeyVaultEmulatorContainer(certificatesPath);
+
+// The container will automatically generate certificates in the temp directory
+await container.StartAsync();
+var endpoint = container.GetConnectionString();
+```
+
+On GitHub Actions, the temp directory is automatically cleaned between runs, making it ideal for ephemeral testing environments.
+
 ## Basic Usage
 
 ```csharp
