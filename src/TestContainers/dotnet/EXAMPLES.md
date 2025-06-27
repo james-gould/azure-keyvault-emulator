@@ -2,15 +2,23 @@
 
 This directory contains examples of how to use the Azure KeyVault Emulator TestContainers module in different scenarios.
 
+## Certificate Requirements
+
+The TestContainers module requires a directory containing valid SSL certificates:
+
+- `emulator.pfx` - Required PFX certificate file
+- `emulator.crt` - Optional CRT certificate file
+
+You can generate these certificates using the existing Azure KeyVault Emulator tools or by following the SSL certificate setup instructions outlined in the [setup.sh script](https://github.com/james-gould/azure-keyvault-emulator/blob/master/docs/setup.sh).
+
 ## Basic Usage
 
 ```csharp
 using AzureKeyVaultEmulator.TestContainers;
-using Azure.Security.KeyVault.Secrets;
-using Azure.Identity;
+using AzureKeyVaultEmulator.Aspire.Client;
 
-// Create container with certificate directory
-var certificatesPath = "/path/to/certs"; // Must contain emulator.pfx
+// Create container with certificate directory (certificates will be auto-generated if missing)
+var certificatesPath = "/path/to/certs"; // Directory will be created if it doesn't exist
 await using var container = new AzureKeyVaultEmulatorContainer(certificatesPath);
 
 // Start the container
@@ -19,16 +27,12 @@ await container.StartAsync();
 // Get the endpoint
 var endpoint = container.GetConnectionString();
 
-// Use with Azure SDK clients
-var secretClient = new SecretClient(
-    new Uri(endpoint), 
-    new DefaultAzureCredential(),
-    new SecretClientOptions 
-    { 
-        DisableChallengeResourceVerification = true 
-    });
+// Use with the new extension methods for easier client creation
+var secretClient = AddEmulatorSupport.GetSecretClient(endpoint);
+var keyClient = AddEmulatorSupport.GetKeyClient(endpoint);
+var certificateClient = AddEmulatorSupport.GetCertificateClient(endpoint);
 
-// Use the client
+// Use the clients
 await secretClient.SetSecretAsync("test-secret", "test-value");
 var secret = await secretClient.GetSecretAsync("test-secret");
 
@@ -39,8 +43,8 @@ var secret = await secretClient.GetSecretAsync("test-secret");
 
 ```csharp
 using AzureKeyVaultEmulator.TestContainers;
+using AzureKeyVaultEmulator.Aspire.Client;
 using Azure.Security.KeyVault.Secrets;
-using Azure.Identity;
 using Xunit;
 
 public class KeyVaultTests : IAsyncLifetime
@@ -55,13 +59,7 @@ public class KeyVaultTests : IAsyncLifetime
         await _container.StartAsync();
 
         var endpoint = _container.GetConnectionString();
-        _secretClient = new SecretClient(
-            new Uri(endpoint), 
-            new DefaultAzureCredential(),
-            new SecretClientOptions 
-            { 
-                DisableChallengeResourceVerification = true 
-            });
+        _secretClient = AddEmulatorSupport.GetSecretClient(endpoint);
     }
 
     public async Task DisposeAsync()
@@ -82,7 +80,7 @@ public class KeyVaultTests : IAsyncLifetime
 
     private string GetCertificatesPath()
     {
-        // Return path to directory containing emulator.pfx
+        // Return path to directory for certificates (will be auto-generated if missing)
         return Environment.GetEnvironmentVariable("KEYVAULT_CERTS_PATH") 
                ?? "/path/to/your/certificates";
     }
@@ -93,8 +91,8 @@ public class KeyVaultTests : IAsyncLifetime
 
 ```csharp
 using AzureKeyVaultEmulator.TestContainers;
+using AzureKeyVaultEmulator.Aspire.Client;
 using Azure.Security.KeyVault.Secrets;
-using Azure.Identity;
 using NUnit.Framework;
 
 [TestFixture]
@@ -111,13 +109,7 @@ public class KeyVaultTests
         await _container.StartAsync();
 
         var endpoint = _container.GetConnectionString();
-        _secretClient = new SecretClient(
-            new Uri(endpoint), 
-            new DefaultAzureCredential(),
-            new SecretClientOptions 
-            { 
-                DisableChallengeResourceVerification = true 
-            });
+        _secretClient = AddEmulatorSupport.GetSecretClient(endpoint);
     }
 
     [OneTimeTearDown]
@@ -139,7 +131,7 @@ public class KeyVaultTests
 
     private string GetCertificatesPath()
     {
-        // Return path to directory containing emulator.pfx
+        // Return path to directory for certificates (will be auto-generated if missing)
         return Environment.GetEnvironmentVariable("KEYVAULT_CERTS_PATH") 
                ?? "/path/to/your/certificates";
     }
@@ -150,8 +142,8 @@ public class KeyVaultTests
 
 ```csharp
 using AzureKeyVaultEmulator.TestContainers;
+using AzureKeyVaultEmulator.Aspire.Client;
 using Azure.Security.KeyVault.Secrets;
-using Azure.Identity;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [TestClass]
@@ -168,13 +160,7 @@ public class KeyVaultTests
         await _container.StartAsync();
 
         var endpoint = _container.GetConnectionString();
-        _secretClient = new SecretClient(
-            new Uri(endpoint), 
-            new DefaultAzureCredential(),
-            new SecretClientOptions 
-            { 
-                DisableChallengeResourceVerification = true 
-            });
+        _secretClient = AddEmulatorSupport.GetSecretClient(endpoint);
     }
 
     [ClassCleanup]
@@ -196,18 +182,9 @@ public class KeyVaultTests
 
     private static string GetCertificatesPath()
     {
-        // Return path to directory containing emulator.pfx
+        // Return path to directory for certificates (will be auto-generated if missing)
         return Environment.GetEnvironmentVariable("KEYVAULT_CERTS_PATH") 
                ?? "/path/to/your/certificates";
     }
 }
 ```
-
-## Certificate Requirements
-
-The TestContainers module requires a directory containing valid SSL certificates:
-
-- `emulator.pfx` - Required PFX certificate file
-- `emulator.crt` - Optional CRT certificate file
-
-You can generate these certificates using the existing Azure KeyVault Emulator tools or by following the SSL certificate setup instructions in the main documentation.

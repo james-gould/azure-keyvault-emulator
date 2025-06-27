@@ -30,7 +30,7 @@ public class AzureKeyVaultEmulatorContainerTests
         var nonExistentPath = "/non/existent/path";
 
         // Act & Assert
-        var exception = Assert.Throws<DirectoryNotFoundException>(() => new AzureKeyVaultEmulatorContainer(nonExistentPath));
+        var exception = Assert.Throws<DirectoryNotFoundException>(() => new AzureKeyVaultEmulatorContainer(nonExistentPath, persist: true, generateCertificates: false));
         Assert.Equal($"Certificates directory not found: {nonExistentPath}", exception.Message);
     }
 
@@ -38,11 +38,20 @@ public class AzureKeyVaultEmulatorContainerTests
     public void Constructor_WithExistingDirectoryButMissingPfx_ThrowsFileNotFoundException()
     {
         // Arrange
-        var tempDir = Path.GetTempPath();
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
 
-        // Act & Assert
-        var exception = Assert.Throws<FileNotFoundException>(() => new AzureKeyVaultEmulatorContainer(tempDir));
-        Assert.Contains("Required certificate file 'emulator.pfx' not found in directory:", exception.Message);
+        try
+        {
+            // Act & Assert
+            var exception = Assert.Throws<FileNotFoundException>(() => new AzureKeyVaultEmulatorContainer(tempDir, persist: true, generateCertificates: false));
+            Assert.Contains("Required certificate file 'emulator.pfx' not found in directory:", exception.Message);
+        }
+        finally
+        {
+            // Cleanup
+            Directory.Delete(tempDir, true);
+        }
     }
 
     [Fact]
@@ -98,6 +107,53 @@ public class AzureKeyVaultEmulatorContainerTests
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => container.GetEndpoint());
+        }
+        finally
+        {
+            // Cleanup
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Fact]
+    public void Constructor_WithNonExistentDirectoryAndGenerateCertificates_CreatesDirectoryAndCertificates()
+    {
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+        try
+        {
+            // Act
+            using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: true, generateCertificates: true);
+
+            // Assert
+            Assert.True(Directory.Exists(tempDir));
+            Assert.True(File.Exists(Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.RequiredPfxFileName)));
+            Assert.True(File.Exists(Path.Combine(tempDir, "emulator.crt")));
+        }
+        finally
+        {
+            // Cleanup
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Fact]
+    public void Constructor_WithExistingDirectoryAndMissingCertificatesAndGenerateCertificates_CreatesCertificates()
+    {
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            // Act
+            using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: true, generateCertificates: true);
+
+            // Assert
+            Assert.True(File.Exists(Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.RequiredPfxFileName)));
+            Assert.True(File.Exists(Path.Combine(tempDir, "emulator.crt")));
         }
         finally
         {
