@@ -28,7 +28,7 @@ internal static class CertificateHelper
             }
 
             var pfxPath = Path.Combine(certificatesDirectory, AzureKeyVaultEmulatorConstants.RequiredPfxFileName);
-            var crtPath = Path.Combine(certificatesDirectory, "emulator.crt");
+            var crtPath = Path.Combine(certificatesDirectory, AzureKeyVaultEmulatorConstants.CrtFileName);
 
             // Check if certificates already exist
             if (File.Exists(pfxPath) && File.Exists(crtPath))
