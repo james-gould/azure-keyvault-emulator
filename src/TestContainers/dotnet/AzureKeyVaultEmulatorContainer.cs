@@ -15,9 +15,17 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// </summary>
     /// <param name="certificatesDirectory">The host directory containing SSL certificates.</param>
     /// <param name="persist">Whether to enable data persistence.</param>
-    public AzureKeyVaultEmulatorContainer(string certificatesDirectory, bool persist = true)
+    /// <param name="generateCertificates">Whether to automatically generate SSL certificates if they don't exist.</param>
+    public AzureKeyVaultEmulatorContainer(string certificatesDirectory, bool persist = true, bool generateCertificates = true)
     {
-        TryValidateCertificatesDirectory(certificatesDirectory);
+        if (generateCertificates)
+        {
+            TryGenerateOrValidateCertificatesDirectory(certificatesDirectory);
+        }
+        else
+        {
+            TryValidateCertificatesDirectory(certificatesDirectory);
+        }
 
         _container = new ContainerBuilder()
             .WithImage($"{AzureKeyVaultEmulatorConstants.Registry}/{AzureKeyVaultEmulatorConstants.Image}:{AzureKeyVaultEmulatorConstants.Tag}")
@@ -103,6 +111,30 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     }
 
     /// <summary>
+    /// Generates certificates if they don't exist, or validates them if they do.
+    /// </summary>
+    /// <param name="certificatesDirectory">The certificates directory path.</param>
+    /// <exception cref="ArgumentException">Thrown when the directory path is null or empty.</exception>
+    /// <exception cref="DirectoryNotFoundException">Thrown when certificate generation fails and the directory cannot be created.</exception>
+    /// <exception cref="FileNotFoundException">Thrown when certificate generation fails and the required emulator.pfx file is not found.</exception>
+    private static void TryGenerateOrValidateCertificatesDirectory(string certificatesDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(certificatesDirectory))
+        {
+            throw new ArgumentException("Certificates directory path cannot be null or empty.", nameof(certificatesDirectory));
+        }
+
+        // Try to generate certificates if they don't exist
+        if (CertificateHelper.EnsureCertificatesExist(certificatesDirectory))
+        {
+            return; // Certificates exist or were generated successfully
+        }
+
+        // If generation failed, fall back to validation
+        TryValidateCertificatesDirectory(certificatesDirectory);
+    }
+
+    /// <summary>
     /// Validates the certificates directory and required files.
     /// </summary>
     /// <param name="certificatesDirectory">The certificates directory path.</param>
@@ -127,7 +159,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
         {
             throw new FileNotFoundException(
                 $"Required certificate file '{AzureKeyVaultEmulatorConstants.RequiredPfxFileName}' not found in directory: {certificatesDirectory}. " +
-                "If running locally run \"bash docs/setup.sh\" to generate the required SSL certificates.");
+                "If running locally run \"bash <(curl -fsSL https://raw.githubusercontent.com/james-gould/azure-keyvault-emulator/master/docs/setup.sh)\" to generate the required SSL certificates.");
         }
     }
 }
