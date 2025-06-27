@@ -17,13 +17,13 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <param name="persist">Whether to enable data persistence.</param>
     public AzureKeyVaultEmulatorContainer(string certificatesDirectory, bool persist = true)
     {
-        ValidateCertificatesDirectory(certificatesDirectory);
+        TryValidateCertificatesDirectory(certificatesDirectory);
 
         _container = new ContainerBuilder()
             .WithImage($"{AzureKeyVaultEmulatorConstants.Registry}/{AzureKeyVaultEmulatorConstants.Image}:{AzureKeyVaultEmulatorConstants.Tag}")
             .WithPortBinding(AzureKeyVaultEmulatorConstants.Port, true)
             .WithBindMount(certificatesDirectory, AzureKeyVaultEmulatorConstants.CertificatesMountPath)
-            .WithEnvironment(AzureKeyVaultEmulatorConstants.PersistEnvironmentVariable, persist.ToString().ToLowerInvariant())
+            .WithEnvironment(AzureKeyVaultEmulatorConstants.PersistEnvironmentVariable, $"{persist}")
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(AzureKeyVaultEmulatorConstants.Port))
             .Build();
     }
@@ -52,10 +52,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// Gets the connection string for the Azure KeyVault Emulator.
     /// </summary>
     /// <returns>The HTTPS endpoint URL for the emulator.</returns>
-    public string GetConnectionString()
-    {
-        return GetEndpoint();
-    }
+    public string GetConnectionString() => GetEndpoint();
 
     /// <summary>
     /// Gets the endpoint URL for the Azure KeyVault Emulator.
@@ -72,30 +69,21 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// </summary>
     /// <param name="containerPort">The container port.</param>
     /// <returns>The mapped public port.</returns>
-    public ushort GetMappedPublicPort(int containerPort)
-    {
-        return _container.GetMappedPublicPort(containerPort);
-    }
+    public ushort GetMappedPublicPort(int containerPort) => _container.GetMappedPublicPort(containerPort);
 
     /// <summary>
     /// Starts the container.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public Task StartAsync(CancellationToken ct = default)
-    {
-        return _container.StartAsync(ct);
-    }
+    public Task StartAsync(CancellationToken ct = default) => _container.StartAsync(ct);
 
     /// <summary>
     /// Stops the container.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public Task StopAsync(CancellationToken ct = default)
-    {
-        return _container.StopAsync(ct);
-    }
+    public Task StopAsync(CancellationToken ct = default) => _container.StopAsync(ct);
 
     /// <summary>
     /// Disposes the container.
@@ -121,7 +109,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <exception cref="ArgumentException">Thrown when the directory path is null or empty.</exception>
     /// <exception cref="DirectoryNotFoundException">Thrown when the specified directory does not exist.</exception>
     /// <exception cref="FileNotFoundException">Thrown when the required emulator.pfx file is not found in the directory.</exception>
-    private static void ValidateCertificatesDirectory(string certificatesDirectory)
+    private static void TryValidateCertificatesDirectory(string certificatesDirectory)
     {
         if (string.IsNullOrWhiteSpace(certificatesDirectory))
         {
@@ -134,6 +122,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
         }
 
         var pfxPath = Path.Combine(certificatesDirectory, AzureKeyVaultEmulatorConstants.RequiredPfxFileName);
+
         if (!File.Exists(pfxPath))
         {
             throw new FileNotFoundException(
