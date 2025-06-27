@@ -6,7 +6,7 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public interface ICertificateService
 {
-    Task<CertificateOperation> CreateCertificateAsync(string name, CertificateAttributesModel attributes, CertificatePolicy? policy);
+    Task<CertificateOperation> CreateCertificateAsync(string name, CertificateAttributesModel attributes, CertificatePolicy? policy, Dictionary<string, string>? tags = null);
     Task<CertificateBundle> GetCertificateAsync(string name, string version = "");
     Task<ListResult<CertificateVersionItem>> GetCertificatesAsync(int maxResults = 25, int skipToken = 25);
     Task<ListResult<CertificateVersionItem>> GetCertificateVersionsAsync(string name, int maxResults = 25, int skipCount = 25);
