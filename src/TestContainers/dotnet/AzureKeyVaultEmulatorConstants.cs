@@ -36,6 +36,11 @@ public static class AzureKeyVaultEmulatorConstants
     public const string RequiredPfxFileName = "emulator.pfx";
 
     /// <summary>
+    /// The CRT certificate file name.
+    /// </summary>
+    public const string CrtFileName = "emulator.crt";
+
+    /// <summary>
     /// The environment variable name for persistence configuration.
     /// </summary>
     public const string PersistEnvironmentVariable = "Persist";

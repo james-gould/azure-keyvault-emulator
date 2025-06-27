@@ -11,6 +11,23 @@ The TestContainers module requires a directory containing valid SSL certificates
 
 You can generate these certificates using the existing Azure KeyVault Emulator tools or by following the SSL certificate setup instructions outlined in the [setup.sh script](https://github.com/james-gould/azure-keyvault-emulator/blob/master/docs/setup.sh).
 
+## Automatic Certificate Generation
+
+The TestContainers module includes automatic certificate generation that is **enabled by default**. When you create a container, it will automatically generate the required SSL certificates if they don't already exist in the specified directory.
+
+```csharp
+// Certificates will be automatically generated if missing (default behavior)
+await using var container = new AzureKeyVaultEmulatorContainer("/path/to/certs");
+
+// Explicitly enable automatic certificate generation
+await using var container = new AzureKeyVaultEmulatorContainer("/path/to/certs", generateCertificates: true);
+
+// Disable automatic certificate generation (requires manual setup)
+await using var container = new AzureKeyVaultEmulatorContainer("/path/to/certs", generateCertificates: false);
+```
+
+This feature eliminates the need for manual certificate setup in most testing scenarios, making it easier to get started with the emulator.
+
 ## Basic Usage
 
 ```csharp
@@ -27,10 +44,10 @@ await container.StartAsync();
 // Get the endpoint
 var endpoint = container.GetConnectionString();
 
-// Use with the new extension methods for easier client creation
-var secretClient = AddEmulatorSupport.GetSecretClient(endpoint);
-var keyClient = AddEmulatorSupport.GetKeyClient(endpoint);
-var certificateClient = AddEmulatorSupport.GetCertificateClient(endpoint);
+// Use with the new helper methods for easier client creation
+var secretClient = KeyVaultHelper.GetSecretClient(endpoint);
+var keyClient = KeyVaultHelper.GetKeyClient(endpoint);
+var certificateClient = KeyVaultHelper.GetCertificateClient(endpoint);
 
 // Use the clients
 await secretClient.SetSecretAsync("test-secret", "test-value");
@@ -59,7 +76,7 @@ public class KeyVaultTests : IAsyncLifetime
         await _container.StartAsync();
 
         var endpoint = _container.GetConnectionString();
-        _secretClient = AddEmulatorSupport.GetSecretClient(endpoint);
+        _secretClient = KeyVaultHelper.GetSecretClient(endpoint);
     }
 
     public async Task DisposeAsync()
@@ -109,7 +126,7 @@ public class KeyVaultTests
         await _container.StartAsync();
 
         var endpoint = _container.GetConnectionString();
-        _secretClient = AddEmulatorSupport.GetSecretClient(endpoint);
+        _secretClient = KeyVaultHelper.GetSecretClient(endpoint);
     }
 
     [OneTimeTearDown]
@@ -160,7 +177,7 @@ public class KeyVaultTests
         await _container.StartAsync();
 
         var endpoint = _container.GetConnectionString();
-        _secretClient = AddEmulatorSupport.GetSecretClient(endpoint);
+        _secretClient = KeyVaultHelper.GetSecretClient(endpoint);
     }
 
     [ClassCleanup]
