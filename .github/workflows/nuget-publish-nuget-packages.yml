@@ -9,7 +9,7 @@ on:
 
 jobs:
   publish:
-    if: github.event.pull_request.merged == true  # Ensures it only runs on merge
+    if: github.event.pull_request.merged == true 
     runs-on: ubuntu-latest
 
     steps:
