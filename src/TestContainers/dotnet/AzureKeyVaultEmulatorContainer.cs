@@ -2,6 +2,9 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using AzureKeyVaultEmulator.TestContainers.Constants;
 using AzureKeyVaultEmulator.TestContainers.Models;
+using AzureKeyVaultEmulator.TestContainers.Helpers;
+using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics;
 
 namespace AzureKeyVaultEmulator.TestContainers;
 
@@ -27,7 +30,11 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     {
         _certDirectory = certificatesDirectory;
 
-        var options = new KeyVaultEmulatorOptions { Persist = persist, ShouldGenerateCertificates = generateCertificates };
+        var options = new KeyVaultEmulatorOptions
+        {
+            Persist = persist,
+            ShouldGenerateCertificates = generateCertificates
+        };
 
         _loadedCertificates = KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options);
 
@@ -102,13 +109,41 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <returns>A task representing the asynchronous operation.</returns>
     public Task StopAsync(CancellationToken ct = default) => _container.StopAsync(ct);
 
+    private static void UninstallContainerCertificates()
+    {
+        var thumbprint = _loadedCertificates?.Pfx?.Thumbprint;
+
+        if (string.IsNullOrEmpty(thumbprint))
+            return; // hmm
+
+        using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+        store.Open(OpenFlags.ReadWrite);
+
+        var certsToRemove = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+
+        foreach (var cert in certsToRemove)
+            store.Remove(cert);
+
+        store.Close();
+    }
+
     /// <summary>
     /// Disposes the container.
     /// </summary>
     /// <returns>A task representing the asynchronous operation.</returns>
     public ValueTask DisposeAsync()
     {
-        return _container.DisposeAsync();
+        if (OperatingSystem.IsWindows())
+        {
+            UninstallContainerCertificates();
+        }
+        else
+        {
+            Debug.WriteLine($"To remove the container certificates you must remove {KeyVaultEmulatorCertConstants.Crt} from your Trusted Root CA store in the User location.");
+            Debug.WriteLine(@"Execute sudo rm /usr/local/share/ca-certificates/mycert.crt \n sudo update-ca-certificates --fresh");
+        }
+
+            return _container.DisposeAsync();
     }
 
     /// <summary>
