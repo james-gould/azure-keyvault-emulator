@@ -15,7 +15,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
 {
     private readonly IContainer _container;
     private CertificateLoaderVM _loadedCertificates;
-    private readonly KeyVaultEmulatorOptions _options;
+    private readonly AzureKeyVaultEmulatorOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureKeyVaultEmulatorContainer"/> class.
@@ -30,9 +30,9 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
         bool generateCertificates = true,
         bool forceCleanupCertificates = false)
     // This feels horrendous. Must be a better way to do this...
-    : this(new KeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates }) { }
+    : this(new AzureKeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates }) { }
 
-    public AzureKeyVaultEmulatorContainer(KeyVaultEmulatorOptions options)
+    public AzureKeyVaultEmulatorContainer(AzureKeyVaultEmulatorOptions options)
     {
         _options = options;
 

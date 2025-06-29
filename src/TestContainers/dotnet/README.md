@@ -2,33 +2,41 @@
 
 This module provides TestContainers support for the Azure KeyVault Emulator, enabling easy integration testing with automatic container lifecycle management.
 
+> [!IMPORTANT]
+> On `Windows` you will be prompted to install an SSL certificate to the `CurrentUser Trusted Root CA` store on your **first** run.
+
 ## Features
 
 - Automatic container lifecycle management
-- SSL certificate handling and validation (also generates certificates automatically)
+- SSL certificate generation, installation and usage
 - Configurable persistence options
 - Easy integration with .NET test frameworks
 
-## Usage
+## Basic Usage
 
 ```csharp
 using AzureKeyVaultEmulator.TestContainers;
 
 // Create container with certificate directory and persistence
-var container = new AzureKeyVaultEmulatorContainer("/path/to/certs", persist: true);
+await using var container = new AzureKeyVaultEmulatorContainer();
 
 // Start the container
 await container.StartAsync();
 
-// Use the container endpoint
-var endpoint = container.GetConnectionString();
+// Get a AzureSDK KeyClient configured for the container
+var keyClient = container.GetKeyClient();
 
-// Clean up
-await container.DisposeAsync();
+// Get a AzureSDK SecretClient configured for the container
+var secretClient = container.GetSecretClient();
+
+// Get a AzureSDK CertificateClient configured for the container
+var certificateClient = container.GetCertificateClient();
+
+// Use as normal
+var secret = await secretClient.GetSecretAsync("mySecretName");
 ```
 
 ## Requirements
 
 - Docker installed and running
 - .NET 8.0 or later
-- Valid SSL certificates in the specified directory (emulator.pfx required)

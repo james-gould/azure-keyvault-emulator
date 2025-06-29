@@ -5,7 +5,7 @@ namespace AzureKeyVaultEmulator.TestContainers;
 /// <summary>
 /// Allows for granular configuration of the Azure Key Vault Emulator.
 /// </summary>
-public sealed class KeyVaultEmulatorOptions
+public sealed class AzureKeyVaultEmulatorOptions
 {
     /// <summary>
     /// Allows the Emulator to persist data beyond temporary storage for multi-session use.
