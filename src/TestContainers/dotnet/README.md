@@ -128,3 +128,5 @@ public AzureKeyVaultEmulatorContainer(
 // In your test class
 await using var container = new AzureKeyVaultEmulatorContainer(persist: true);
 ```
+
+[You can find more complete examples in different test frameworks here.](./EXAMPLES.md)

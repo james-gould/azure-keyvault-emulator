@@ -2,31 +2,7 @@
 
 This directory contains examples of how to use the Azure KeyVault Emulator TestContainers module in different scenarios.
 
-## Certificate Requirements
-
-The TestContainers module requires a directory containing valid SSL certificates:
-
-- `emulator.pfx` - Required PFX certificate file
-- `emulator.crt` - Optional CRT certificate file
-
-You can generate these certificates using the existing Azure KeyVault Emulator tools or by following the SSL certificate setup instructions outlined in the [setup.sh script](https://github.com/james-gould/azure-keyvault-emulator/blob/master/docs/setup.sh).
-
-## Automatic Certificate Generation
-
-The TestContainers module includes automatic certificate generation that is **enabled by default**. When you create a container, it will automatically generate the required SSL certificates if they don't already exist in the specified directory.
-
-```csharp
-// Certificates will be automatically generated if missing (default behavior)
-await using var container = new AzureKeyVaultEmulatorContainer("/path/to/certs");
-
-// Explicitly enable automatic certificate generation
-await using var container = new AzureKeyVaultEmulatorContainer("/path/to/certs", generateCertificates: true);
-
-// Disable automatic certificate generation (requires manual setup)
-await using var container = new AzureKeyVaultEmulatorContainer("/path/to/certs", generateCertificates: false);
-```
-
-This feature eliminates the need for manual certificate setup in most testing scenarios, making it easier to get started with the emulator.
+[You can read more about the inner working of the container here.](./README.md)
 
 ## CI/CD Usage
 
@@ -41,7 +17,12 @@ await using var container = new AzureKeyVaultEmulatorContainer(certificatesPath)
 
 // The container will automatically generate certificates in the temp directory
 await container.StartAsync();
-var endpoint = container.GetConnectionString();
+
+// Get an official AzureSDK SecretClient
+var client = container.GetSecretClient();
+
+// Use as normal
+var secret = await client.SetSecretAsync("ApiKey", "12345");
 ```
 
 On GitHub Actions, the temp directory is automatically cleaned between runs, making it ideal for ephemeral testing environments.
@@ -50,28 +31,24 @@ On GitHub Actions, the temp directory is automatically cleaned between runs, mak
 
 ```csharp
 using AzureKeyVaultEmulator.TestContainers;
-using AzureKeyVaultEmulator.Aspire.Client;
 
-// Create container with certificate directory (certificates will be auto-generated if missing)
-var certificatesPath = "/path/to/certs"; // Directory will be created if it doesn't exist
-await using var container = new AzureKeyVaultEmulatorContainer(certificatesPath);
+// Create container with certificate directory and persistence
+await using var container = new AzureKeyVaultEmulatorContainer();
 
 // Start the container
 await container.StartAsync();
 
-// Get the endpoint
-var endpoint = container.GetConnectionString();
+// Get a AzureSDK KeyClient configured for the container
+var keyClient = container.GetKeyClient();
 
-// Use with the new helper methods for easier client creation
-var secretClient = KeyVaultHelper.GetSecretClient(endpoint);
-var keyClient = KeyVaultHelper.GetKeyClient(endpoint);
-var certificateClient = KeyVaultHelper.GetCertificateClient(endpoint);
+// Get a AzureSDK SecretClient configured for the container
+var secretClient = container.GetSecretClient();
 
-// Use the clients
-await secretClient.SetSecretAsync("test-secret", "test-value");
-var secret = await secretClient.GetSecretAsync("test-secret");
+// Get a AzureSDK CertificateClient configured for the container
+var certificateClient = container.GetCertificateClient();
 
-// Container will be automatically disposed when using statement ends
+// Use as normal
+var secret = await secretClient.SetSecretAsync("mySecretName", "mySecretValue");
 ```
 
 ## XUnit Test Example
@@ -89,12 +66,10 @@ public class KeyVaultTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        var certificatesPath = GetCertificatesPath();
-        _container = new AzureKeyVaultEmulatorContainer(certificatesPath);
+        _container = new AzureKeyVaultEmulatorContainer();
         await _container.StartAsync();
 
-        var endpoint = _container.GetConnectionString();
-        _secretClient = KeyVaultHelper.GetSecretClient(endpoint);
+        _secretClient = _container.GetSecretClient();
     }
 
     public async Task DisposeAsync()
@@ -111,13 +86,6 @@ public class KeyVaultTests : IAsyncLifetime
 
         // Assert
         Assert.Equal("value", secret.Value.Value);
-    }
-
-    private string GetCertificatesPath()
-    {
-        // Return path to directory for certificates (will be auto-generated if missing)
-        return Environment.GetEnvironmentVariable("KEYVAULT_CERTS_PATH") 
-               ?? "/path/to/your/certificates";
     }
 }
 ```
@@ -139,12 +107,10 @@ public class KeyVaultTests
     [OneTimeSetUp]
     public async Task SetUp()
     {
-        var certificatesPath = GetCertificatesPath();
-        _container = new AzureKeyVaultEmulatorContainer(certificatesPath);
+        _container = new AzureKeyVaultEmulatorContainer();
         await _container.StartAsync();
 
-        var endpoint = _container.GetConnectionString();
-        _secretClient = KeyVaultHelper.GetSecretClient(endpoint);
+        _secretClient = _container.GetSecretClient();
     }
 
     [OneTimeTearDown]
@@ -162,13 +128,6 @@ public class KeyVaultTests
 
         // Assert
         Assert.AreEqual("value", secret.Value.Value);
-    }
-
-    private string GetCertificatesPath()
-    {
-        // Return path to directory for certificates (will be auto-generated if missing)
-        return Environment.GetEnvironmentVariable("KEYVAULT_CERTS_PATH") 
-               ?? "/path/to/your/certificates";
     }
 }
 ```
@@ -190,12 +149,10 @@ public class KeyVaultTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        var certificatesPath = GetCertificatesPath();
-        _container = new AzureKeyVaultEmulatorContainer(certificatesPath);
+        _container = new AzureKeyVaultEmulatorContainer();
         await _container.StartAsync();
 
-        var endpoint = _container.GetConnectionString();
-        _secretClient = KeyVaultHelper.GetSecretClient(endpoint);
+        _secretClient = _container.GetSecretClient();
     }
 
     [ClassCleanup]
@@ -213,13 +170,6 @@ public class KeyVaultTests
 
         // Assert
         Assert.AreEqual("value", secret.Value.Value);
-    }
-
-    private static string GetCertificatesPath()
-    {
-        // Return path to directory for certificates (will be auto-generated if missing)
-        return Environment.GetEnvironmentVariable("KEYVAULT_CERTS_PATH") 
-               ?? "/path/to/your/certificates";
     }
 }
 ```
