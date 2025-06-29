@@ -1,6 +1,6 @@
 ﻿namespace AzureKeyVaultEmulator.TestContainers.Constants;
 
-internal partial class KeyVaultEmulatorContainerConstants
+public partial class AzureKeyVaultEmulatorContainerConstants
 {
     // Image
 
@@ -11,14 +11,14 @@ internal partial class KeyVaultEmulatorContainerConstants
     public const string Tag = "latest";
 }
 
-internal partial class KeyVaultEmulatorContainerConstants
+public partial class AzureKeyVaultEmulatorContainerConstants
 {
     // Connection related
 
     public const string Endpoint = "https://localhost:4997";
 }
 
-internal partial class KeyVaultEmulatorContainerConstants
+public partial class AzureKeyVaultEmulatorContainerConstants
 {
     // Environment Variables
 

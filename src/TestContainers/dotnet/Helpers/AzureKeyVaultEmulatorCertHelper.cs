@@ -7,9 +7,9 @@ using AzureKeyVaultEmulator.TestContainers.Constants;
 using AzureKeyVaultEmulator.TestContainers.Models;
 using AzureKeyVaultEmulator.TestContainers.Exceptions;
 
-namespace AzureKeyVaultEmulator.TestContainers;
+namespace AzureKeyVaultEmulator.TestContainers.Helpers;
 
-internal static class KeyVaultEmulatorCertHelper
+internal static class AzureKeyVaultEmulatorCertHelper
 {
     /// <summary>
     /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
@@ -28,8 +28,8 @@ internal static class KeyVaultEmulatorCertHelper
         if (!Directory.Exists(certPath))
             Directory.CreateDirectory(certPath);
 
-        var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
-        var crtPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Crt);
+        var pfxPath = Path.Combine(certPath, AzureKeyVaultEmulatorCertConstants.Pfx);
+        var crtPath = Path.Combine(certPath, AzureKeyVaultEmulatorCertConstants.Crt);
 
         var certsAlreadyExist = File.Exists(pfxPath) && File.Exists(crtPath);
 
@@ -66,15 +66,15 @@ internal static class KeyVaultEmulatorCertHelper
             baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         else if (OperatingSystem.IsMacOS())
-            baseDir = KeyVaultEmulatorCertConstants.OSXPath;
+            baseDir = AzureKeyVaultEmulatorCertConstants.OSXPath;
 
         else
-            baseDir = KeyVaultEmulatorCertConstants.LinuxPath;
+            baseDir = AzureKeyVaultEmulatorCertConstants.LinuxPath;
 
         return Path.Combine(
             baseDir,
-            KeyVaultEmulatorCertConstants.HostParentDirectory,
-            KeyVaultEmulatorCertConstants.HostChildDirectory
+            AzureKeyVaultEmulatorCertConstants.HostParentDirectory,
+            AzureKeyVaultEmulatorCertConstants.HostChildDirectory
         );
     }
 
@@ -108,7 +108,7 @@ internal static class KeyVaultEmulatorCertHelper
 
             return (pfx, pem);
 #elif NET8_0
-            var pfx = new X509Certificate2(pfxPath, KeyVaultEmulatorCertConstants.Pword);
+            var pfx = new X509Certificate2(pfxPath, AzureKeyVaultEmulatorCertConstants.Pword);
             var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
 
             if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
@@ -134,7 +134,7 @@ internal static class KeyVaultEmulatorCertHelper
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
         ArgumentException.ThrowIfNullOrEmpty(pemPath);
 
-        var subject = new X500DistinguishedName(KeyVaultEmulatorCertConstants.Subject);
+        var subject = new X500DistinguishedName(AzureKeyVaultEmulatorCertConstants.Subject);
         using var rsa = RSA.Create();
 
         var request = new CertificateRequest(subject, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -151,7 +151,7 @@ internal static class KeyVaultEmulatorCertHelper
         if (OperatingSystem.IsWindows())
             cert.FriendlyName = "Azure Key Vault Emulator";
 
-        var pfxBytes = cert.Export(X509ContentType.Pfx, KeyVaultEmulatorCertConstants.Pword);
+        var pfxBytes = cert.Export(X509ContentType.Pfx, AzureKeyVaultEmulatorCertConstants.Pword);
 
         var pem = ExportToPem(cert);
 
@@ -250,7 +250,7 @@ internal static class KeyVaultEmulatorCertHelper
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
 
-        var destination = $"{KeyVaultEmulatorCertConstants.LinuxPath}/{KeyVaultEmulatorCertConstants.Crt}";
+        var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
 
         File.WriteAllText(destination, pem);
     }
@@ -278,13 +278,13 @@ internal static class KeyVaultEmulatorCertHelper
         if (!string.IsNullOrEmpty(pfx) && File.Exists(pfx))
         {
             File.Delete(pfx);
-            Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
+            Debug.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
 
         if (!string.IsNullOrEmpty(pem) && File.Exists(pem))
         {
             File.Delete(pem);
-            Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
+            Debug.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
     }
 }

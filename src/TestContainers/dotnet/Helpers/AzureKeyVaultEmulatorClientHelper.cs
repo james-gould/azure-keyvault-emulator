@@ -5,14 +5,14 @@ using AzureKeyVaultEmulator.TestContainers.Models;
 
 namespace AzureKeyVaultEmulator.TestContainers.Helpers;
 
-internal static class KeyVaultEmulatorClientHelper
+public static class AzureKeyVaultEmulatorClientHelper
 {
     /// <summary>
     /// Gets a <see cref="SecretClient"/> configured for the Azure KeyVault Emulator.
     /// </summary>
     /// <param name="container">The TestContainers container hosting the AzureKeyVaultEmulator image.</param>
     /// <returns>A configured <see cref="SecretClient"/>.</returns>
-    public static SecretClient GetSecretClient(AzureKeyVaultEmulatorContainer container)
+    public static SecretClient GetSecretClient(this AzureKeyVaultEmulatorContainer container)
     {
         ArgumentNullException.ThrowIfNull(container);
 
@@ -32,7 +32,7 @@ internal static class KeyVaultEmulatorClientHelper
     /// </summary>
     /// <param name="container">The TestContainers container hosting the AzureKeyVaultEmulator image.</param>
     /// <returns>A configured <see cref="KeyClient"/>.</returns>
-    public static KeyClient GetKeyClient(AzureKeyVaultEmulatorContainer container)
+    public static KeyClient GetKeyClient(this AzureKeyVaultEmulatorContainer container)
     {
         ArgumentNullException.ThrowIfNull(container);
 
@@ -52,7 +52,7 @@ internal static class KeyVaultEmulatorClientHelper
     /// </summary>
     /// /// <param name="container">The TestContainers container hosting the AzureKeyVaultEmulator image.</param>
     /// <returns>A configured <see cref="CertificateClient"/>.</returns>
-    public static CertificateClient GetCertificateClient(AzureKeyVaultEmulatorContainer container)
+    public static CertificateClient GetCertificateClient(this AzureKeyVaultEmulatorContainer container)
     {
         ArgumentNullException.ThrowIfNull(container);
 

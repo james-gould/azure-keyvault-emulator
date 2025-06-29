@@ -1,5 +1,6 @@
-using AzureKeyVaultEmulator.Aspire.Client;
 using Xunit;
+using AzureKeyVaultEmulator.TestContainers.Helpers;
+using AzureKeyVaultEmulator.TestContainers.Constants;
 
 namespace AzureKeyVaultEmulator.TestContainers.Tests;
 
@@ -13,9 +14,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
     [Fact]
     public async Task ContainerCanStartAndStopSuccessfully()
     {
-        var tempDir = CreateTempDirectoryWithValidCertificates();
-
-        await using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: false);
+        await using var container = new AzureKeyVaultEmulatorContainer();
 
         await container.StartAsync();
 
@@ -23,39 +22,36 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
         Assert.StartsWith("https://", endpoint);
         Assert.Contains("4997", endpoint);
 
-        var port = container.GetMappedPublicPort(AzureKeyVaultEmulatorConstants.Port);
-        Assert.Equal(AzureKeyVaultEmulatorConstants.Port, port);
+        var port = container.GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
+        Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, port);
 
         await container.StopAsync();
     }
 
     //[Fact(Skip = "Integration test - requires Docker")]
-    [Fact]    public async Task ContainerWithPersistenceConfiguresCorrectly()
+    [Fact]
+    public async Task ContainerWithPersistenceConfiguresCorrectly()
     {
-        var tempDir = CreateTempDirectoryWithValidCertificates();
+        await using var container = new AzureKeyVaultEmulatorContainer();
 
-        try
-        {
-            await using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: true);
+        await container.StartAsync();
 
-            await container.StartAsync();
+        var endpoint = container.GetConnectionString();
+        Assert.StartsWith("https://", endpoint);
 
-            var endpoint = container.GetConnectionString();
-            Assert.StartsWith("https://", endpoint);
+        var client = container.GetSecretClient();
 
-            var client = KeyVaultHelper.GetSecretClient(endpoint);
+        var secretName = Guid.NewGuid().ToString();
+        var secretValue = Guid.NewGuid().ToString();
 
-            var secretName = Guid.NewGuid().ToString();
-            var secretValue = Guid.NewGuid().ToString();
+        var createOperation = await client.SetSecretAsync(secretName, secretValue);
 
-            var createOperation = await client.SetSecretAsync(secretName, secretValue);
+        Assert.Equal(secretValue, createOperation.Value.Value);
 
-            Assert.Equal(secretValue, createOperation.Value.Value);
+        var fromStore = await client.GetSecretAsync(secretName);
 
-            var fromStore = await client.GetSecretAsync(secretName);
+        Assert.Equal(secretValue, fromStore.Value.Value);
 
-            Assert.Equal(secretValue, fromStore.Value.Value);
-
-            await container.StopAsync();
+        await container.StopAsync();
     }
 }

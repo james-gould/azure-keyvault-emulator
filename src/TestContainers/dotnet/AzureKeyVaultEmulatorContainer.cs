@@ -14,36 +14,37 @@ namespace AzureKeyVaultEmulator.TestContainers;
 public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposable
 {
     private readonly IContainer _container;
-    private static string _certDirectory = string.Empty;
     private static CertificateLoaderVM? _loadedCertificates;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureKeyVaultEmulatorContainer"/> class.
     /// </summary>
-    /// <param name="certificatesDirectory">The host directory containing SSL certificates.</param>
+    /// <param name="certificatesDirectory">The optional host directory containing SSL certificates. If not provided the certificate will be generated to your User profile.</param>
     /// <param name="persist">Whether to enable data persistence.</param>
     /// <param name="generateCertificates">Whether to automatically generate SSL certificates if they don't exist.</param>
     public AzureKeyVaultEmulatorContainer(
-        string certificatesDirectory,
+        string? certificatesDirectory = null,
         bool persist = true,
         bool generateCertificates = true)
     {
-        _certDirectory = certificatesDirectory;
-
         var options = new KeyVaultEmulatorOptions
         {
             Persist = persist,
-            ShouldGenerateCertificates = generateCertificates
+            ShouldGenerateCertificates = generateCertificates,
+            LocalCertificatePath = certificatesDirectory ?? string.Empty,
         };
 
-        _loadedCertificates = KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options);
+        _loadedCertificates = AzureKeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options);
+
+        if (options.LoadCertificatesIntoTrustStore)
+            AzureKeyVaultEmulatorCertHelper.TryWriteToStore(options, _loadedCertificates.Pfx, _loadedCertificates.LocalCertificatePath, _loadedCertificates.pem);
 
         _container = new ContainerBuilder()
-            .WithImage($"{KeyVaultEmulatorContainerConstants.Registry}/{KeyVaultEmulatorContainerConstants.Image}:{KeyVaultEmulatorContainerConstants.Tag}")
-            .WithPortBinding(KeyVaultEmulatorContainerConstants.Port, false)
-            .WithBindMount(certificatesDirectory, KeyVaultEmulatorCertConstants.CertMountTarget)
-            .WithEnvironment(KeyVaultEmulatorContainerConstants.PersistData, $"{persist}")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(KeyVaultEmulatorContainerConstants.Port))
+            .WithImage($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{AzureKeyVaultEmulatorContainerConstants.Tag}")
+            .WithPortBinding(AzureKeyVaultEmulatorContainerConstants.Port, false)
+            .WithBindMount(certificatesDirectory, AzureKeyVaultEmulatorCertConstants.CertMountTarget)
+            .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.PersistData, $"{persist}")
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(AzureKeyVaultEmulatorContainerConstants.Port))
             .Build();
     }
 
@@ -67,10 +68,6 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// </summary>
     public string Hostname => _container.Hostname;
 
-    internal static string PfxFilePath => Path.Combine(_certDirectory, KeyVaultEmulatorCertConstants.Pfx);
-
-    internal static string CrtFilePath => Path.Combine(_certDirectory, KeyVaultEmulatorCertConstants.Crt);
-
     /// <summary>
     /// Gets the connection string for the Azure KeyVault Emulator.
     /// </summary>
@@ -83,7 +80,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <returns>The HTTPS endpoint URL for the emulator.</returns>
     public string GetEndpoint()
     {
-        var port = GetMappedPublicPort(KeyVaultEmulatorContainerConstants.Port);
+        var port = GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
         return $"https://{Hostname}:{port}";
     }
 
@@ -92,7 +89,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// </summary>
     /// <param name="containerPort">The container port.</param>
     /// <returns>The mapped public port.</returns>
-    public ushort GetMappedPublicPort(int containerPort = KeyVaultEmulatorContainerConstants.Port)
+    public ushort GetMappedPublicPort(int containerPort = AzureKeyVaultEmulatorContainerConstants.Port)
         => _container.GetMappedPublicPort(containerPort);
 
     /// <summary>
@@ -139,7 +136,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
         }
         else
         {
-            Debug.WriteLine($"To remove the container certificates you must remove {KeyVaultEmulatorCertConstants.Crt} from your Trusted Root CA store in the User location.");
+            Debug.WriteLine($"To remove the container certificates you must remove {AzureKeyVaultEmulatorCertConstants.Crt} from your Trusted Root CA store in the User location.");
             Debug.WriteLine(@"Execute sudo rm /usr/local/share/ca-certificates/mycert.crt \n sudo update-ca-certificates --fresh");
         }
 
