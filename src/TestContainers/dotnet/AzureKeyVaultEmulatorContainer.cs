@@ -1,5 +1,10 @@
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using AzureKeyVaultEmulator.TestContainers.Constants;
+using AzureKeyVaultEmulator.TestContainers.Models;
+using AzureKeyVaultEmulator.TestContainers.Helpers;
+using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics;
 
 namespace AzureKeyVaultEmulator.TestContainers;
 
@@ -9,30 +14,41 @@ namespace AzureKeyVaultEmulator.TestContainers;
 public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposable
 {
     private readonly IContainer _container;
+    private CertificateLoaderVM _loadedCertificates;
+    private readonly AzureKeyVaultEmulatorOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureKeyVaultEmulatorContainer"/> class.
     /// </summary>
-    /// <param name="certificatesDirectory">The host directory containing SSL certificates.</param>
+    /// <param name="certificatesDirectory">The optional host directory containing SSL certificates. If not provided the certificate will be generated to your User profile.</param>
     /// <param name="persist">Whether to enable data persistence.</param>
     /// <param name="generateCertificates">Whether to automatically generate SSL certificates if they don't exist.</param>
-    public AzureKeyVaultEmulatorContainer(string certificatesDirectory, bool persist = true, bool generateCertificates = true)
+    /// <param name="forceCleanupCertificates">Uninstall the SSL certificates for the container on shutdown.</param>
+    public AzureKeyVaultEmulatorContainer(
+        string? certificatesDirectory = null,
+        bool persist = false,
+        bool generateCertificates = true,
+        bool forceCleanupCertificates = false)
+    // This feels horrendous. Must be a better way to do this...
+    : this(new AzureKeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates }) { }
+
+    public AzureKeyVaultEmulatorContainer(AzureKeyVaultEmulatorOptions options)
     {
-        if (generateCertificates)
-        {
-            TryGenerateOrValidateCertificatesDirectory(certificatesDirectory);
-        }
-        else
-        {
-            TryValidateCertificatesDirectory(certificatesDirectory);
-        }
+        _options = options;
+
+        _loadedCertificates = AzureKeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(_options);
+
+        _options.LocalCertificatePath = _loadedCertificates.LocalCertificatePath;
+
+        if (_options.LoadCertificatesIntoTrustStore)
+            AzureKeyVaultEmulatorCertHelper.TryWriteToStore(_options, _loadedCertificates.Pfx, _loadedCertificates.LocalCertificatePath, _loadedCertificates.pem);
 
         _container = new ContainerBuilder()
-            .WithImage($"{AzureKeyVaultEmulatorConstants.Registry}/{AzureKeyVaultEmulatorConstants.Image}:{AzureKeyVaultEmulatorConstants.Tag}")
-            .WithPortBinding(AzureKeyVaultEmulatorConstants.Port, true)
-            .WithBindMount(certificatesDirectory, AzureKeyVaultEmulatorConstants.CertificatesMountPath)
-            .WithEnvironment(AzureKeyVaultEmulatorConstants.PersistEnvironmentVariable, $"{persist}")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(AzureKeyVaultEmulatorConstants.Port))
+            .WithImage($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{AzureKeyVaultEmulatorContainerConstants.Tag}")
+            .WithPortBinding(AzureKeyVaultEmulatorContainerConstants.Port, false)
+            .WithBindMount(_options.LocalCertificatePath, AzureKeyVaultEmulatorCertConstants.CertMountTarget)
+            .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.PersistData, $"{_options.Persist}")
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(AzureKeyVaultEmulatorContainerConstants.Port))
             .Build();
     }
 
@@ -68,7 +84,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <returns>The HTTPS endpoint URL for the emulator.</returns>
     public string GetEndpoint()
     {
-        var port = GetMappedPublicPort(AzureKeyVaultEmulatorConstants.Port);
+        var port = GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
         return $"https://{Hostname}:{port}";
     }
 
@@ -77,7 +93,8 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// </summary>
     /// <param name="containerPort">The container port.</param>
     /// <returns>The mapped public port.</returns>
-    public ushort GetMappedPublicPort(int containerPort = AzureKeyVaultEmulatorConstants.Port) => _container.GetMappedPublicPort(containerPort);
+    public ushort GetMappedPublicPort(int containerPort = AzureKeyVaultEmulatorContainerConstants.Port)
+        => _container.GetMappedPublicPort(containerPort);
 
     /// <summary>
     /// Starts the container.
@@ -93,12 +110,43 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <returns>A task representing the asynchronous operation.</returns>
     public Task StopAsync(CancellationToken ct = default) => _container.StopAsync(ct);
 
+    private void UninstallContainerCertificates()
+    {
+        var thumbprint = _loadedCertificates.Pfx?.Thumbprint;
+
+        if (string.IsNullOrEmpty(thumbprint))
+            return; // hmm
+
+        using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+        store.Open(OpenFlags.ReadWrite);
+
+        var certsToRemove = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+
+        foreach (var cert in certsToRemove)
+            store.Remove(cert);
+
+        store.Close();
+    }
+
     /// <summary>
     /// Disposes the container.
     /// </summary>
     /// <returns>A task representing the asynchronous operation.</returns>
     public ValueTask DisposeAsync()
     {
+        if (_options.ForceCleanupOnShutdown)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                UninstallContainerCertificates();
+            }
+            else
+            {
+                Debug.WriteLine($"To remove the container certificates you must remove {AzureKeyVaultEmulatorCertConstants.Crt} from your Trusted Root CA store in the User location.");
+                Debug.WriteLine(@"Execute sudo rm /usr/local/share/ca-certificates/mycert.crt \n sudo update-ca-certificates --fresh");
+            }
+        }
+
         return _container.DisposeAsync();
     }
 
@@ -108,58 +156,5 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     public void Dispose()
     {
         _container.DisposeAsync().AsTask().GetAwaiter().GetResult();
-    }
-
-    /// <summary>
-    /// Generates certificates if they don't exist, or validates them if they do.
-    /// </summary>
-    /// <param name="certificatesDirectory">The certificates directory path.</param>
-    /// <exception cref="ArgumentException">Thrown when the directory path is null or empty.</exception>
-    /// <exception cref="DirectoryNotFoundException">Thrown when certificate generation fails and the directory cannot be created.</exception>
-    /// <exception cref="FileNotFoundException">Thrown when certificate generation fails and the required emulator.pfx file is not found.</exception>
-    private static void TryGenerateOrValidateCertificatesDirectory(string certificatesDirectory)
-    {
-        if (string.IsNullOrWhiteSpace(certificatesDirectory))
-        {
-            throw new ArgumentException("Certificates directory path cannot be null or empty.", nameof(certificatesDirectory));
-        }
-
-        // Try to generate certificates if they don't exist
-        if (CertificateHelper.EnsureCertificatesExist(certificatesDirectory))
-        {
-            return; // Certificates exist or were generated successfully
-        }
-
-        // If generation failed, fall back to validation
-        TryValidateCertificatesDirectory(certificatesDirectory);
-    }
-
-    /// <summary>
-    /// Validates the certificates directory and required files.
-    /// </summary>
-    /// <param name="certificatesDirectory">The certificates directory path.</param>
-    /// <exception cref="ArgumentException">Thrown when the directory path is null or empty.</exception>
-    /// <exception cref="DirectoryNotFoundException">Thrown when the specified directory does not exist.</exception>
-    /// <exception cref="FileNotFoundException">Thrown when the required emulator.pfx file is not found in the directory.</exception>
-    private static void TryValidateCertificatesDirectory(string certificatesDirectory)
-    {
-        if (string.IsNullOrWhiteSpace(certificatesDirectory))
-        {
-            throw new ArgumentException("Certificates directory path cannot be null or empty.", nameof(certificatesDirectory));
-        }
-
-        if (!Directory.Exists(certificatesDirectory))
-        {
-            throw new DirectoryNotFoundException($"Certificates directory not found: {certificatesDirectory}");
-        }
-
-        var pfxPath = Path.Combine(certificatesDirectory, AzureKeyVaultEmulatorConstants.RequiredPfxFileName);
-
-        if (!File.Exists(pfxPath))
-        {
-            throw new FileNotFoundException(
-                $"Required certificate file '{AzureKeyVaultEmulatorConstants.RequiredPfxFileName}' not found in directory: {certificatesDirectory}. " +
-                "If running locally run \"bash <(curl -fsSL https://raw.githubusercontent.com/james-gould/azure-keyvault-emulator/master/docs/setup.sh)\" to generate the required SSL certificates.");
-        }
     }
 }

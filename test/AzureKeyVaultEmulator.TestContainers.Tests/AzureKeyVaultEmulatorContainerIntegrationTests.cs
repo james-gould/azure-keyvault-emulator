@@ -1,4 +1,9 @@
 using Xunit;
+using AzureKeyVaultEmulator.TestContainers.Helpers;
+using AzureKeyVaultEmulator.TestContainers.Constants;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
+using Azure;
 
 namespace AzureKeyVaultEmulator.TestContainers.Tests;
 
@@ -6,84 +11,135 @@ namespace AzureKeyVaultEmulator.TestContainers.Tests;
 /// Integration tests for the AzureKeyVaultEmulatorContainer.
 /// These tests demonstrate real usage patterns but require Docker to be available.
 /// </summary>
-public class AzureKeyVaultEmulatorContainerIntegrationTests
+public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
 {
-    [Fact(Skip = "Integration test - requires Docker")]
-    public async Task Container_CanStartAndStop_Successfully()
+    private AzureKeyVaultEmulatorContainer? _container;
+
+    public async Task InitializeAsync()
     {
-        // Arrange
-        var tempDir = CreateTempDirectoryWithValidCertificates();
+        _container = new AzureKeyVaultEmulatorContainer();
 
-        try
-        {
-            await using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: false);
-
-            // Act
-            await container.StartAsync();
-
-            // Assert
-            var endpoint = container.GetConnectionString();
-            Assert.StartsWith("https://", endpoint);
-            Assert.Contains("4997", endpoint);
-
-            // Verify we can get the mapped port
-            var port = container.GetMappedPublicPort(AzureKeyVaultEmulatorConstants.Port);
-            Assert.True(port > 0);
-
-            // Stop the container
-            await container.StopAsync();
-        }
-        finally
-        {
-            // Cleanup
-            Directory.Delete(tempDir, true);
-        }
+        await _container.StartAsync();
     }
 
-    [Fact(Skip = "Integration test - requires Docker")]
-    public async Task Container_WithPersistence_ConfiguresCorrectly()
+    public async Task DisposeAsync()
     {
-        // Arrange
-        var tempDir = CreateTempDirectoryWithValidCertificates();
-
-        try
-        {
-            await using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: true);
-
-            // Act
-            await container.StartAsync();
-
-            // Assert
-            var endpoint = container.GetConnectionString();
-            Assert.StartsWith("https://", endpoint);
-
-            // Stop the container
-            await container.StopAsync();
-        }
-        finally
-        {
-            // Cleanup
-            Directory.Delete(tempDir, true);
-        }
+        if(_container is not null)
+            await _container.DisposeAsync();
     }
 
-    /// <summary>
-    /// Creates a temporary directory with valid certificate files for testing.
-    /// In a real scenario, these would be proper SSL certificates.
-    /// </summary>
-    /// <returns>The path to the temporary directory.</returns>
-    private static string CreateTempDirectoryWithValidCertificates()
+    [Fact]
+    public void ContainerCanStartAndStopSuccessfully()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempDir);
+        ArgumentNullException.ThrowIfNull(_container);
 
-        // Create dummy certificate files for testing
-        var pfxPath = Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.RequiredPfxFileName);
-        var crtPath = Path.Combine(tempDir, "emulator.crt");
+        var endpoint = _container.GetConnectionString();
+        Assert.StartsWith("https://", endpoint);
+        Assert.Contains("4997", endpoint);
 
-        File.WriteAllText(pfxPath, "dummy pfx content");
-        File.WriteAllText(crtPath, "dummy crt content");
+        var port = _container.GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
+        Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, port);
+    }
 
-        return tempDir;
+    [Fact]
+    public async Task ContainerCanPersistSecretsCorrectly()
+    {
+        ArgumentNullException.ThrowIfNull(_container);
+
+        var secretClient = _container.GetSecretClient();
+
+        var secretName = Guid.NewGuid().ToString();
+        var secretValue = Guid.NewGuid().ToString();
+
+        var createOperation = await secretClient.SetSecretAsync(secretName, secretValue);
+
+        Assert.Equal(secretValue, createOperation.Value.Value);
+
+        var fromStore = await secretClient.GetSecretAsync(secretName);
+
+        Assert.Equal(secretValue, fromStore.Value.Value);
+    }
+
+    [Fact]
+    public async Task ContainerCanPersistCertificatesCorrectly()
+    {
+        ArgumentNullException.ThrowIfNull(_container);
+
+        var certClient = _container.GetCertificateClient();
+
+        var certName = Guid.NewGuid().ToString();
+
+        var createOperation = await certClient.StartCreateCertificateAsync(certName, CertificatePolicy.Default);
+
+        await createOperation.WaitForCompletionAsync();
+
+        var createdCert = createOperation.Value;
+
+        Assert.Equal(certName, createdCert.Name);
+
+        var fromStore = await certClient.GetCertificateAsync(certName);
+
+        Assert.Equal(certName, fromStore.Value.Name);
+    }
+
+    [Fact]
+    public async Task ContainerCanPersistKeysCorrectly()
+    {
+        ArgumentNullException.ThrowIfNull(_container);
+
+        var client = _container.GetKeyClient();
+
+        var keyName = Guid.NewGuid().ToString();
+
+        var createResponse = await client.CreateKeyAsync(keyName, KeyType.Rsa);
+
+        Assert.Equal(keyName, createResponse.Value.Name);
+
+        var fromStore = await client.GetKeyAsync(keyName);
+
+        Assert.Equal(keyName, fromStore.Value.Name);
+    }
+
+    [Fact(Skip = "Dev run only while port is unconfigurable, error: Bind for 0.0.0.0:4997 failed: port is already allocated")]
+    public async Task CreatingSetupDatabaseWillPersistBetweenRuns()
+    {
+        var secretName = Guid.NewGuid().ToString();
+        var secretValue = Guid.NewGuid().ToString();
+
+        // Marks with -e Persist=true to create an SQLite Database
+        await using var container = new AzureKeyVaultEmulatorContainer(persist: true);
+
+        await container.StartAsync();
+
+        var setupClient = container.GetSecretClient();
+
+        await Assert.ThrowsAsync<RequestFailedException>(() => setupClient.GetSecretAsync(secretName));
+
+        var setupSecret = await setupClient.SetSecretAsync(secretName, secretValue);
+
+        Assert.Equal(secretName, setupSecret.Value.Name);
+        Assert.Equal(secretValue, setupSecret.Value.Value);
+
+        var fromStoreAfterSetup = await setupClient.GetSecretAsync(secretName);
+
+        Assert.Equal(secretName, fromStoreAfterSetup.Value.Name);
+        Assert.Equal(secretValue, fromStoreAfterSetup.Value.Value);
+
+        // Kill the setup container
+        await container.StopAsync();
+
+        // Create another with -e Persist=true so it uses the existing SQLite Database.
+        await using var secondaryContainer = new AzureKeyVaultEmulatorContainer(persist: true);
+
+        await secondaryContainer.StartAsync();
+
+        // Get secondary client, acting as if this is done within a test class using a fixture
+        var secondaryClient = secondaryContainer.GetSecretClient();
+
+        var secretFromSecondaryStore = await secondaryClient.GetSecretAsync(secretName);
+
+        Assert.Equal(secretName, secretFromSecondaryStore.Value.Name);
+        Assert.Equal(secretValue, secretFromSecondaryStore.Value.Value);
+        Assert.Equal(fromStoreAfterSetup.Value.Value, secretFromSecondaryStore.Value.Value);
     }
 }
