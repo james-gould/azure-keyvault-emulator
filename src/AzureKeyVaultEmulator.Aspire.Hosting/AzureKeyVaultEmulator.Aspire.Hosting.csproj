@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <Title>Azure KeyVault Emulator for .NET Aspire</Title>
+    <Title>Azure Key Vault Emulator for .NET Aspire</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Copyright>James Gould - 2025</Copyright>
     <PackageProjectUrl>https://github.com/james-gould/azure-keyvault-emulator</PackageProjectUrl>
@@ -13,7 +13,7 @@
     <Company>James Gould</Company>
     <Description>.NET Aspire AppHost support for the Azure KeyVault Emulator</Description>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-    <PackageTags>.net aspire, aspire, aspire.host, aspire.hosting</PackageTags>
+    <PackageTags>keyvault, key vault, azure, .net aspire, aspire, aspire.host, aspire.hosting</PackageTags>
     <IsPackable>true</IsPackable>
     <UserSecretsId>c0273fdf-91dd-4646-856a-0f7cbcd39d13</UserSecretsId>
   </PropertyGroup>
