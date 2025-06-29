@@ -128,7 +128,7 @@ public class AzureKeyVaultEmulatorContainerTests
 
             // Assert
             Assert.True(Directory.Exists(tempDir));
-            Assert.True(File.Exists(Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.RequiredPfxFileName)));
+            Assert.True(File.Exists(Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.PfxFileName)));
             Assert.True(File.Exists(Path.Combine(tempDir, "emulator.crt")));
         }
         finally
@@ -152,7 +152,7 @@ public class AzureKeyVaultEmulatorContainerTests
             using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: true, generateCertificates: true);
 
             // Assert
-            Assert.True(File.Exists(Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.RequiredPfxFileName)));
+            Assert.True(File.Exists(Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.PfxFileName)));
             Assert.True(File.Exists(Path.Combine(tempDir, "emulator.crt")));
         }
         finally
@@ -171,7 +171,7 @@ public class AzureKeyVaultEmulatorContainerTests
         var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(tempDir);
 
-        var pfxPath = Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.RequiredPfxFileName);
+        var pfxPath = Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.PfxFileName);
         File.WriteAllText(pfxPath, "dummy content"); // Create a dummy file for testing
 
         return tempDir;

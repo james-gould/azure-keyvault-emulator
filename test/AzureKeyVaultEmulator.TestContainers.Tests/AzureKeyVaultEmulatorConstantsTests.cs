@@ -16,7 +16,7 @@ public class AzureKeyVaultEmulatorConstantsTests
         Assert.Equal("latest", AzureKeyVaultEmulatorConstants.Tag);
         Assert.Equal(4997, AzureKeyVaultEmulatorConstants.Port);
         Assert.Equal("/certs", AzureKeyVaultEmulatorConstants.CertificatesMountPath);
-        Assert.Equal("emulator.pfx", AzureKeyVaultEmulatorConstants.RequiredPfxFileName);
+        Assert.Equal("emulator.pfx", AzureKeyVaultEmulatorConstants.PfxFileName);
         Assert.Equal("Persist", AzureKeyVaultEmulatorConstants.PersistEnvironmentVariable);
     }
 }

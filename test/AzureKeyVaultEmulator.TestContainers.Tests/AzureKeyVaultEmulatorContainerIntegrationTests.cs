@@ -1,3 +1,4 @@
+using AzureKeyVaultEmulator.Aspire.Client;
 using Xunit;
 
 namespace AzureKeyVaultEmulator.TestContainers.Tests;
@@ -8,82 +9,53 @@ namespace AzureKeyVaultEmulator.TestContainers.Tests;
 /// </summary>
 public class AzureKeyVaultEmulatorContainerIntegrationTests
 {
-    [Fact(Skip = "Integration test - requires Docker")]
-    public async Task Container_CanStartAndStop_Successfully()
+    //[Fact(Skip = "Integration test - requires Docker")]
+    [Fact]
+    public async Task ContainerCanStartAndStopSuccessfully()
     {
-        // Arrange
         var tempDir = CreateTempDirectoryWithValidCertificates();
 
-        try
-        {
-            await using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: false);
+        await using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: false);
 
-            // Act
-            await container.StartAsync();
+        await container.StartAsync();
 
-            // Assert
-            var endpoint = container.GetConnectionString();
-            Assert.StartsWith("https://", endpoint);
-            Assert.Contains("4997", endpoint);
+        var endpoint = container.GetConnectionString();
+        Assert.StartsWith("https://", endpoint);
+        Assert.Contains("4997", endpoint);
 
-            // Verify we can get the mapped port
-            var port = container.GetMappedPublicPort(AzureKeyVaultEmulatorConstants.Port);
-            Assert.True(port > 0);
+        var port = container.GetMappedPublicPort(AzureKeyVaultEmulatorConstants.Port);
+        Assert.Equal(AzureKeyVaultEmulatorConstants.Port, port);
 
-            // Stop the container
-            await container.StopAsync();
-        }
-        finally
-        {
-            // Cleanup
-            Directory.Delete(tempDir, true);
-        }
+        await container.StopAsync();
     }
 
-    [Fact(Skip = "Integration test - requires Docker")]
-    public async Task Container_WithPersistence_ConfiguresCorrectly()
+    //[Fact(Skip = "Integration test - requires Docker")]
+    [Fact]    public async Task ContainerWithPersistenceConfiguresCorrectly()
     {
-        // Arrange
         var tempDir = CreateTempDirectoryWithValidCertificates();
 
         try
         {
             await using var container = new AzureKeyVaultEmulatorContainer(tempDir, persist: true);
 
-            // Act
             await container.StartAsync();
 
-            // Assert
             var endpoint = container.GetConnectionString();
             Assert.StartsWith("https://", endpoint);
 
-            // Stop the container
+            var client = KeyVaultHelper.GetSecretClient(endpoint);
+
+            var secretName = Guid.NewGuid().ToString();
+            var secretValue = Guid.NewGuid().ToString();
+
+            var createOperation = await client.SetSecretAsync(secretName, secretValue);
+
+            Assert.Equal(secretValue, createOperation.Value.Value);
+
+            var fromStore = await client.GetSecretAsync(secretName);
+
+            Assert.Equal(secretValue, fromStore.Value.Value);
+
             await container.StopAsync();
-        }
-        finally
-        {
-            // Cleanup
-            Directory.Delete(tempDir, true);
-        }
-    }
-
-    /// <summary>
-    /// Creates a temporary directory with valid certificate files for testing.
-    /// In a real scenario, these would be proper SSL certificates.
-    /// </summary>
-    /// <returns>The path to the temporary directory.</returns>
-    private static string CreateTempDirectoryWithValidCertificates()
-    {
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempDir);
-
-        // Create dummy certificate files for testing
-        var pfxPath = Path.Combine(tempDir, AzureKeyVaultEmulatorConstants.RequiredPfxFileName);
-        var crtPath = Path.Combine(tempDir, "emulator.crt");
-
-        File.WriteAllText(pfxPath, "dummy pfx content");
-        File.WriteAllText(crtPath, "dummy crt content");
-
-        return tempDir;
     }
 }
