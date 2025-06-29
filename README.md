@@ -181,7 +181,6 @@ The Azure Key Vault Emulator is now **stable** and ready for public consumption,
 
 ## Pending
 
-- [ ] TestContainers module. (#158)
 - [ ] Management UI, similar to the Azure Portal UI. (#195)
 
 ## Completed
@@ -195,3 +194,4 @@ The Azure Key Vault Emulator is now **stable** and ready for public consumption,
 - [x] Separate NuGet package for easy usage of the [emulator in client applications](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Client).
 - [x] Optional vault data persistence and importing for dev environment distribution. (#196)
 - [x] Automated environment + Docker setup script, and documentation updated to reflect it.
+- [x] TestContainers module. (#158)
