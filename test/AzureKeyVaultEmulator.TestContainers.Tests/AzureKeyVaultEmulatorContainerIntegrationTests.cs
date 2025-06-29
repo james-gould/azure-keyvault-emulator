@@ -1,6 +1,8 @@
 using Xunit;
 using AzureKeyVaultEmulator.TestContainers.Helpers;
 using AzureKeyVaultEmulator.TestContainers.Constants;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
 
 namespace AzureKeyVaultEmulator.TestContainers.Tests;
 
@@ -10,7 +12,6 @@ namespace AzureKeyVaultEmulator.TestContainers.Tests;
 /// </summary>
 public class AzureKeyVaultEmulatorContainerIntegrationTests
 {
-    //[Fact(Skip = "Integration test - requires Docker")]
     [Fact]
     public async Task ContainerCanStartAndStopSuccessfully()
     {
@@ -28,16 +29,12 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
         await container.StopAsync();
     }
 
-    //[Fact(Skip = "Integration test - requires Docker")]
     [Fact]
-    public async Task ContainerWithPersistenceConfiguresCorrectly()
+    public async Task ContainerCanPersistSecretsCorrectly()
     {
         await using var container = new AzureKeyVaultEmulatorContainer();
 
         await container.StartAsync();
-
-        var endpoint = container.GetConnectionString();
-        Assert.StartsWith("https://", endpoint);
 
         var client = container.GetSecretClient();
 
@@ -53,5 +50,49 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
         Assert.Equal(secretValue, fromStore.Value.Value);
 
         await container.StopAsync();
+    }
+
+    [Fact]
+    public async Task ContainerCanPersistCertificatesCorrectly()
+    {
+        await using var container = new AzureKeyVaultEmulatorContainer();
+
+        await container.StartAsync();
+
+        var client = container.GetCertificateClient();
+
+        var certName = Guid.NewGuid().ToString();
+
+        var createOperation = await client.StartCreateCertificateAsync(certName, CertificatePolicy.Default);
+
+        await createOperation.WaitForCompletionAsync();
+
+        var createdCert = createOperation.Value;
+
+        Assert.Equal(certName, createdCert.Name);
+
+        var fromStore = await client.GetCertificateAsync(certName);
+
+        Assert.Equal(certName, fromStore.Value.Name);
+    }
+
+    [Fact]
+    public async Task ContainerCanPersistKeysCorrectly()
+    {
+        await using var container = new AzureKeyVaultEmulatorContainer();
+
+        await container.StartAsync();
+
+        var client = container.GetKeyClient();
+
+        var keyName = Guid.NewGuid().ToString();
+
+        var createResponse = await client.CreateKeyAsync(keyName, KeyType.Rsa);
+
+        Assert.Equal(keyName, createResponse.Value.Name);
+
+        var fromStore = await client.GetKeyAsync(keyName);
+
+        Assert.Equal(keyName, fromStore.Value.Name);
     }
 }
