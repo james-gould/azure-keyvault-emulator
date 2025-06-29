@@ -7,6 +7,17 @@ The Azure Key Vault Client SDK requires `HTTPS` and trusted SSL for valid connec
 
 The `AzureKeyVaultEmulator.Aspire.Hosting` library will generate and install these certificates for you. If you're not using Aspire, or wish to provide your own certificates, follow the instructions below to get started using the Emulator.
 
+# Automated Certificate Creation
+
+The setup process can be fully automated by using the installation script:
+
+```
+bash <(curl -fsSL https://github.com/james-gould/azure-keyvault-emulator/blob/master/docs/setup.sh)
+```
+
+> [!IMPORTANT]
+> If you're using **Windows**, use `Git Bash` to execute the setup script.
+
 ## Creating valid certificates
 
 ### With dotnet
