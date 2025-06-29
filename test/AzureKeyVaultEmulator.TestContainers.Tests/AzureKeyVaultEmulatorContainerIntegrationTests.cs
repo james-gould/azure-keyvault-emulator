@@ -100,7 +100,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(keyName, fromStore.Value.Name);
     }
 
-    [Fact]
+    [Fact(Skip = "Dev run only while port is unconfigurable, error: Bind for 0.0.0.0:4997 failed: port is already allocated")]
     public async Task CreatingSetupDatabaseWillPersistBetweenRuns()
     {
         var secretName = Guid.NewGuid().ToString();
