@@ -37,6 +37,8 @@ If you wish to provide the certificates and disable automatic generation, there 
 - The certificates must be called `emulator.pfx` (and `emulator.crt` if being used on a *NIX host machine)
 - The password for `emulator.pfx` **must** be `emulator`.
 
+[See more about configuration here.](#optional-configuration)
+
 ## Basic Usage
 
 Using the container can be done without configuration or heavy setup requirements.
@@ -65,7 +67,7 @@ var secret = await secretClient.SetSecretAsync("mySecretName", "mySecretValue");
 
 ## Optional Configuration
 
-If you wish to alter the behaviour of the [Azure Key Vault Emulator](https://github.com/james-gould/azure-keyvault-emulator) you can do so with the following:
+If you wish to alter the default behaviour of the [Azure Key Vault Emulator](https://github.com/james-gould/azure-keyvault-emulator) you can do so with the following:
 
 ```csharp
 public sealed class AzureKeyVaultEmulatorOptions
