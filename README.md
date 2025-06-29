@@ -24,7 +24,6 @@ You can find [sample applications here](https://github.com/james-gould/azure-key
 
 ## Running the Emulator with Docker
 
-
 The setup process can be fully automated by using the installation script:
 
 ```
