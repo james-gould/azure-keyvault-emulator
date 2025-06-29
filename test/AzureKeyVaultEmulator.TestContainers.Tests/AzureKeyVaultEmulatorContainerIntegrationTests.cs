@@ -11,60 +11,65 @@ namespace AzureKeyVaultEmulator.TestContainers.Tests;
 /// Integration tests for the AzureKeyVaultEmulatorContainer.
 /// These tests demonstrate real usage patterns but require Docker to be available.
 /// </summary>
-public class AzureKeyVaultEmulatorContainerIntegrationTests
+public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
 {
-    [Fact]
-    public async Task ContainerCanStartAndStopSuccessfully()
+    private AzureKeyVaultEmulatorContainer? _container;
+
+    public async Task InitializeAsync()
     {
-        await using var container = new AzureKeyVaultEmulatorContainer();
+        _container = new AzureKeyVaultEmulatorContainer();
 
-        await container.StartAsync();
+        await _container.StartAsync();
+    }
 
-        var endpoint = container.GetConnectionString();
+    public async Task DisposeAsync()
+    {
+        if(_container is not null)
+            await _container.DisposeAsync();
+    }
+
+    [Fact]
+    public void ContainerCanStartAndStopSuccessfully()
+    {
+        ArgumentNullException.ThrowIfNull(_container);
+
+        var endpoint = _container.GetConnectionString();
         Assert.StartsWith("https://", endpoint);
         Assert.Contains("4997", endpoint);
 
-        var port = container.GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
+        var port = _container.GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
         Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, port);
-
-        await container.StopAsync();
     }
 
     [Fact]
     public async Task ContainerCanPersistSecretsCorrectly()
     {
-        await using var container = new AzureKeyVaultEmulatorContainer();
+        ArgumentNullException.ThrowIfNull(_container);
 
-        await container.StartAsync();
-
-        var client = container.GetSecretClient();
+        var secretClient = _container.GetSecretClient();
 
         var secretName = Guid.NewGuid().ToString();
         var secretValue = Guid.NewGuid().ToString();
 
-        var createOperation = await client.SetSecretAsync(secretName, secretValue);
+        var createOperation = await secretClient.SetSecretAsync(secretName, secretValue);
 
         Assert.Equal(secretValue, createOperation.Value.Value);
 
-        var fromStore = await client.GetSecretAsync(secretName);
+        var fromStore = await secretClient.GetSecretAsync(secretName);
 
         Assert.Equal(secretValue, fromStore.Value.Value);
-
-        await container.StopAsync();
     }
 
     [Fact]
     public async Task ContainerCanPersistCertificatesCorrectly()
     {
-        await using var container = new AzureKeyVaultEmulatorContainer();
+        ArgumentNullException.ThrowIfNull(_container);
 
-        await container.StartAsync();
-
-        var client = container.GetCertificateClient();
+        var certClient = _container.GetCertificateClient();
 
         var certName = Guid.NewGuid().ToString();
 
-        var createOperation = await client.StartCreateCertificateAsync(certName, CertificatePolicy.Default);
+        var createOperation = await certClient.StartCreateCertificateAsync(certName, CertificatePolicy.Default);
 
         await createOperation.WaitForCompletionAsync();
 
@@ -72,7 +77,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
 
         Assert.Equal(certName, createdCert.Name);
 
-        var fromStore = await client.GetCertificateAsync(certName);
+        var fromStore = await certClient.GetCertificateAsync(certName);
 
         Assert.Equal(certName, fromStore.Value.Name);
     }
@@ -80,11 +85,9 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
     [Fact]
     public async Task ContainerCanPersistKeysCorrectly()
     {
-        await using var container = new AzureKeyVaultEmulatorContainer();
+        ArgumentNullException.ThrowIfNull(_container);
 
-        await container.StartAsync();
-
-        var client = container.GetKeyClient();
+        var client = _container.GetKeyClient();
 
         var keyName = Guid.NewGuid().ToString();
 
@@ -103,7 +106,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
         var secretName = Guid.NewGuid().ToString();
         var secretValue = Guid.NewGuid().ToString();
 
-        // Mark with -e Persist=true to create an SQLite Database
+        // Marks with -e Persist=true to create an SQLite Database
         await using var container = new AzureKeyVaultEmulatorContainer(persist: true);
 
         await container.StartAsync();
