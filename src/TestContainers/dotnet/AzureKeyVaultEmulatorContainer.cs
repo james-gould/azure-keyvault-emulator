@@ -14,7 +14,8 @@ namespace AzureKeyVaultEmulator.TestContainers;
 public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposable
 {
     private readonly IContainer _container;
-    private static CertificateLoaderVM? _loadedCertificates;
+    private CertificateLoaderVM _loadedCertificates;
+    private readonly KeyVaultEmulatorOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureKeyVaultEmulatorContainer"/> class.
@@ -22,28 +23,31 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <param name="certificatesDirectory">The optional host directory containing SSL certificates. If not provided the certificate will be generated to your User profile.</param>
     /// <param name="persist">Whether to enable data persistence.</param>
     /// <param name="generateCertificates">Whether to automatically generate SSL certificates if they don't exist.</param>
+    /// <param name="forceCleanupCertificates">Uninstall the SSL certificates for the container on shutdown.</param>
     public AzureKeyVaultEmulatorContainer(
         string? certificatesDirectory = null,
-        bool persist = true,
-        bool generateCertificates = true)
+        bool persist = false,
+        bool generateCertificates = true,
+        bool forceCleanupCertificates = false)
+    // This feels horrendous. Must be a better way to do this...
+    : this(new KeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates }) { }
+
+    public AzureKeyVaultEmulatorContainer(KeyVaultEmulatorOptions options)
     {
-        var options = new KeyVaultEmulatorOptions
-        {
-            Persist = persist,
-            ShouldGenerateCertificates = generateCertificates,
-            LocalCertificatePath = certificatesDirectory ?? string.Empty,
-        };
+        _options = options;
 
-        _loadedCertificates = AzureKeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options);
+        _loadedCertificates = AzureKeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(_options);
 
-        if (options.LoadCertificatesIntoTrustStore)
-            AzureKeyVaultEmulatorCertHelper.TryWriteToStore(options, _loadedCertificates.Pfx, _loadedCertificates.LocalCertificatePath, _loadedCertificates.pem);
+        _options.LocalCertificatePath = _loadedCertificates.LocalCertificatePath;
+
+        if (_options.LoadCertificatesIntoTrustStore)
+            AzureKeyVaultEmulatorCertHelper.TryWriteToStore(_options, _loadedCertificates.Pfx, _loadedCertificates.LocalCertificatePath, _loadedCertificates.pem);
 
         _container = new ContainerBuilder()
             .WithImage($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{AzureKeyVaultEmulatorContainerConstants.Tag}")
             .WithPortBinding(AzureKeyVaultEmulatorContainerConstants.Port, false)
-            .WithBindMount(certificatesDirectory, AzureKeyVaultEmulatorCertConstants.CertMountTarget)
-            .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.PersistData, $"{persist}")
+            .WithBindMount(_options.LocalCertificatePath, AzureKeyVaultEmulatorCertConstants.CertMountTarget)
+            .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.PersistData, $"{_options.Persist}")
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(AzureKeyVaultEmulatorContainerConstants.Port))
             .Build();
     }
@@ -106,9 +110,9 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <returns>A task representing the asynchronous operation.</returns>
     public Task StopAsync(CancellationToken ct = default) => _container.StopAsync(ct);
 
-    private static void UninstallContainerCertificates()
+    private void UninstallContainerCertificates()
     {
-        var thumbprint = _loadedCertificates?.Pfx?.Thumbprint;
+        var thumbprint = _loadedCertificates.Pfx?.Thumbprint;
 
         if (string.IsNullOrEmpty(thumbprint))
             return; // hmm
@@ -130,17 +134,20 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <returns>A task representing the asynchronous operation.</returns>
     public ValueTask DisposeAsync()
     {
-        if (OperatingSystem.IsWindows())
+        if (_options.ForceCleanupOnShutdown)
         {
-            UninstallContainerCertificates();
-        }
-        else
-        {
-            Debug.WriteLine($"To remove the container certificates you must remove {AzureKeyVaultEmulatorCertConstants.Crt} from your Trusted Root CA store in the User location.");
-            Debug.WriteLine(@"Execute sudo rm /usr/local/share/ca-certificates/mycert.crt \n sudo update-ca-certificates --fresh");
+            if (OperatingSystem.IsWindows())
+            {
+                UninstallContainerCertificates();
+            }
+            else
+            {
+                Debug.WriteLine($"To remove the container certificates you must remove {AzureKeyVaultEmulatorCertConstants.Crt} from your Trusted Root CA store in the User location.");
+                Debug.WriteLine(@"Execute sudo rm /usr/local/share/ca-certificates/mycert.crt \n sudo update-ca-certificates --fresh");
+            }
         }
 
-            return _container.DisposeAsync();
+        return _container.DisposeAsync();
     }
 
     /// <summary>

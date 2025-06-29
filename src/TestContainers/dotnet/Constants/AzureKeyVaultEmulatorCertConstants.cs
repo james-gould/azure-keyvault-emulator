@@ -1,6 +1,6 @@
 ﻿namespace AzureKeyVaultEmulator.TestContainers.Constants;
 
-public sealed class AzureKeyVaultEmulatorCertConstants
+internal sealed class AzureKeyVaultEmulatorCertConstants
 {
     private const string _rootName = "emulator";
 
