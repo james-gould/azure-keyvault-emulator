@@ -5,6 +5,14 @@ This module provides TestContainers support for the Azure KeyVault Emulator, ena
 > [!IMPORTANT]
 > On `Windows` you will be prompted to install an SSL certificate to the `CurrentUser Trusted Root CA` store on your **first** run.
 
+## Installation
+
+Simply run the following command in your solution to add the [NuGet Package](https://www.nuget.org/packages/AzureKeyVaultEmulator.TestContainers):
+
+```
+dotnet add package AzureKeyVaultEmulator.TestContainers
+```
+
 ## Features
 
 - Automatic container lifecycle management
