@@ -15,6 +15,7 @@ The emulator does not connect to or update an existing Azure Key Vault, it simpl
 - Full Azure SDK Client support; use `SecretClient`, `KeyClient` or `CertificateClient` as normal.
 - Destroy all secrets between sessions, or keep a persisted database.
 - Works standalone with [Docker](#running-the-emulator-with-docker), easy integration with [.NET Aspire](#running-the-emulator-with-net-aspire).
+- [TestContainers Support.](./src/TestContainers/dotnet/)
 
 You can find [sample applications here](https://github.com/james-gould/azure-keyvault-emulator-samples) or you can [read the full launch blog post here!](https://jamesgould.dev/posts/Azure-Key-Vault-Emulator/)
 
@@ -180,7 +181,6 @@ The Azure Key Vault Emulator is now **stable** and ready for public consumption,
 
 ## Pending
 
-- [ ] TestContainers module. (#158)
 - [ ] Management UI, similar to the Azure Portal UI. (#195)
 
 ## Completed
@@ -194,3 +194,4 @@ The Azure Key Vault Emulator is now **stable** and ready for public consumption,
 - [x] Separate NuGet package for easy usage of the [emulator in client applications](https://github.com/james-gould/azure-keyvault-emulator/tree/development/AzureKeyVaultEmulator.Client).
 - [x] Optional vault data persistence and importing for dev environment distribution. (#196)
 - [x] Automated environment + Docker setup script, and documentation updated to reflect it.
+- [x] TestContainers module. (#158)

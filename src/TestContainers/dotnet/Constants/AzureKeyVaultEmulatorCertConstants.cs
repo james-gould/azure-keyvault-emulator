@@ -19,5 +19,5 @@ internal sealed class AzureKeyVaultEmulatorCertConstants
     public const string Subject = "CN=localhost";
 
     public const string OSXPath = "/Library/Application Support";
-    public const string LinuxPath = "/var/lib";
+    public const string LinuxPath = "/usr/local/";
 }
