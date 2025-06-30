@@ -108,6 +108,20 @@ public class CertificatesController(
         return Ok(result);
     }
 
+    [HttpPatch("{name}")]
+    public async Task<IActionResult> UpdateCertificate(
+        [FromRoute] string name,
+        [FromBody] UpdateCertificateRequest request,
+        [ApiVersion] string apiVersion)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(request);
+
+        var result = await certService.UpdateCertificateAsync(name, request);
+
+        return Ok(result);
+    }
+
     [HttpPatch("{name}/policy")]
     public async Task<IActionResult> UpdateCertificatePolicy(
         [FromRoute] string name,

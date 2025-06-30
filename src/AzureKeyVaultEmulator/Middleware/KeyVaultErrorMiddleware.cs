@@ -2,20 +2,13 @@
 
 namespace AzureKeyVaultEmulator.Middleware
 {
-    public class KeyVaultErrorMiddleware
+    public class KeyVaultErrorMiddleware(RequestDelegate next)
     {
-        private RequestDelegate _next;
-
-        public KeyVaultErrorMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
             {
-                await _next(context);
+                await next(context);
             }
             catch (Exception e)
             {
