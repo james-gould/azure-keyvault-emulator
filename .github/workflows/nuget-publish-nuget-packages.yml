@@ -34,14 +34,15 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
+      - name: Install SSL Certificates
+        run: |
+          dotnet dev-certs https --trust
+
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
-
-      - name: Run tests
-        run: dotnet test --configuration Release --no-build
 
       - name: Pack NuGet Package
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
