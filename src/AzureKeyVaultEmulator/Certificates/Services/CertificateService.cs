@@ -99,6 +99,22 @@ public sealed class CertificateService(
         return policy;
     }
 
+    public async Task<CertificateBundle> UpdateCertificateAsync(string name, UpdateCertificateRequest request)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(request);
+
+        var cert = await context.Certificates.SafeGetAsync(name);
+
+        cert.CertificatePolicy = request.Policy ??= cert.CertificatePolicy;
+        cert.Attributes = request.Attributes ?? cert.Attributes;
+        cert.Tags = request.Tags ??= cert.Tags;
+
+        await context.SaveChangesAsync();
+
+        return cert;
+    }
+
     public async Task<CertificateOperation> GetPendingCertificateAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
