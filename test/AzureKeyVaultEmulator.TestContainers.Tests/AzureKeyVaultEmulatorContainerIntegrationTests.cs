@@ -28,7 +28,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
             await _container.DisposeAsync();
     }
 
-    [Fact]
+    [Fact(Skip = "Requires Docker on GitHub Actions")]
     public void ContainerCanStartAndStopSuccessfully()
     {
         ArgumentNullException.ThrowIfNull(_container);
@@ -41,7 +41,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, port);
     }
 
-    [Fact]
+    [Fact(Skip = "Requires Docker on GitHub Actions")]
     public async Task ContainerCanPersistSecretsCorrectly()
     {
         ArgumentNullException.ThrowIfNull(_container);
@@ -60,7 +60,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(secretValue, fromStore.Value.Value);
     }
 
-    [Fact]
+    [Fact(Skip = "Requires Docker on GitHub Actions")]
     public async Task ContainerCanPersistCertificatesCorrectly()
     {
         ArgumentNullException.ThrowIfNull(_container);
@@ -82,7 +82,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(certName, fromStore.Value.Name);
     }
 
-    [Fact]
+    [Fact(Skip = "Requires Docker on GitHub Actions")]
     public async Task ContainerCanPersistKeysCorrectly()
     {
         ArgumentNullException.ThrowIfNull(_container);
