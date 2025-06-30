@@ -134,7 +134,10 @@ public sealed class CertificateBackingService(
 
     public async Task<CertificateContacts> DeleteCertificateContactsAsync()
     {
-        var contacts = await context.CertificateContacts.Where(x => x.Deleted == false).SingleAsync();
+        var contacts = await context.CertificateContacts.Where(x => x.Deleted == false).FirstOrDefaultAsync();
+
+        if (contacts is null)
+            return new();
 
         contacts.Deleted = true;
 
@@ -145,7 +148,9 @@ public sealed class CertificateBackingService(
 
     public async Task<CertificateContacts> GetCertificateContactsAsync()
     {
-        return await context.CertificateContacts.Where(x => x.Deleted == false).SingleAsync();
+        var contacts = await context.CertificateContacts.Where(x => x.Deleted == false).FirstOrDefaultAsync();
+
+        return contacts ??= new();
     }
 
     private async Task<KeyBundle> CreateBackingKeyAsync(
