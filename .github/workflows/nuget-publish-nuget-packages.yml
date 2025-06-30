@@ -40,6 +40,9 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity quiet
+
       - name: Pack NuGet Package
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
 
