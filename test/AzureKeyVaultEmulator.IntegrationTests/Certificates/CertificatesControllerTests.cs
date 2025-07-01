@@ -255,6 +255,54 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task UpdatingCertificatePropertiesWithVersionWillPersistChange()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await fixture.CreateCertificateAsync(certName);
+
+        var fromStore = await client.GetCertAsync(certName);
+
+        Assert.NotNull(fromStore);
+        Assert.NotNull(fromStore.Properties);
+
+        var updatedProperties = new CertificateProperties(fromStore.Id)
+        {
+            Enabled = false
+        };
+
+        var response = await client.UpdateCertificatePropertiesAsync(updatedProperties);
+
+        Assert.NotNull(response.Value);
+
+        var updatedFromStore = await client.GetCertAsync(certName);
+
+        Assert.Equal(updatedProperties.Enabled, updatedFromStore.Properties.Enabled);
+    }
+
+    [Fact]
+    public async Task UriWIllUpdateCertificatePropertiesVersion()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await fixture.CreateCertificateAsync(certName);
+
+        var fromStore = await client.GetCertAsync(certName);
+
+        Assert.NotNull(fromStore);
+        Assert.NotNull(fromStore.Properties);
+
+        var updatedProperties = new CertificateProperties(fromStore.Id);
+
+        Assert.False(string.IsNullOrEmpty(updatedProperties.Version));
+        Assert.Equal(fromStore.Properties.Version, updatedProperties.Version);
+    }
+
+    [Fact]
     public async Task GetCertificatePolicyWillSucceed()
     {
         var client = await fixture.GetClientAsync();
