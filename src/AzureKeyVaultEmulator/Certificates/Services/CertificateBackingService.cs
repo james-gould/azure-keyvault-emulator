@@ -1,4 +1,5 @@
-﻿using AzureKeyVaultEmulator.Keys.Services;
+﻿using System.Security.Cryptography.X509Certificates;
+using AzureKeyVaultEmulator.Keys.Services;
 using AzureKeyVaultEmulator.Secrets.Services;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
@@ -20,15 +21,20 @@ public sealed class CertificateBackingService(
         return await context.Issuers.SafeGetAsync(name);
     }
 
-    public async Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, CertificatePolicy? policy = null)
+    public async Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, X509Certificate2? certificate, CertificatePolicy? policy = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(certName);
+        ArgumentNullException.ThrowIfNull(certificate);
+
         var keySize = policy?.KeyProperties?.KeySize ?? 2048;
         var keyType = !string.IsNullOrEmpty(policy?.KeyProperties?.JsonWebKeyType) ? policy.KeyProperties.JsonWebKeyType : SupportedKeyTypes.RSA;
 
         var backingKey = await CreateBackingKeyAsync(certName, keySize, keyType);
 
-        var contentType = policy?.SecretProperies?.ContentType ?? "application/unknown";
-        var backingSecret = await CreateBackingSecretAsync(certName, contentType);
+        // Used for an internal check for DownloadCertificate
+        // Should be settable by "create" method I believe, leaving hardcoded for now.
+        var contentType = "application/x-pkcs12"; 
+        var backingSecret = await CreateBackingSecretAsync(certName, contentType, certificate);
 
         return (backingKey, backingSecret);
     }
@@ -161,12 +167,14 @@ public sealed class CertificateBackingService(
         return await keyService.CreateKeyAsync(certName, new CreateKeyModel { KeySize = keySize, KeyType = keyType });
     }
 
-    private async Task<SecretBundle> CreateBackingSecretAsync(string certName, string contentType)
+    private async Task<SecretBundle> CreateBackingSecretAsync(string certName, string contentType, X509Certificate2 certificate)
     {
+        var certificateData = Convert.ToBase64String(certificate.RawData);
+
         return await secretService
             .SetSecretAsync(certName, new SetSecretRequest
             {
-                Value = Guid.NewGuid().Neat(),
+                Value = certificateData,
                 SecretAttributes = new() { ContentType = contentType }
             });
     }
