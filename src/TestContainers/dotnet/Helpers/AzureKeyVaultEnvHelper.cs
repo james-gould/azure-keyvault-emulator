@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace AzureKeyVaultEmulator.TestContainers.Helpers;
 
-internal static class AzureKeyVaultShellHelper
+internal static class AzureKeyVaultEnvHelper
 {
     public static void Bash(string command)
     {

@@ -59,6 +59,9 @@ internal static class AzureKeyVaultEmulatorCertHelper
     /// <returns>The parent directory containing the certificates.</returns>
     internal static string GetConfigurableCertStoragePath(string? baseDir = null)
     {
+        if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
+            return Path.GetTempPath();
+
         if (!string.IsNullOrEmpty(baseDir))
             return baseDir;
 
@@ -263,7 +266,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
         {
             var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
 
-            var isCiRun = AzureKeyVaultShellHelper.IsCiCdEnvironment();
+            var isCiRun = AzureKeyVaultEnvHelper.IsCiCdEnvironment();
 
             if (isCiRun)
             {
@@ -271,7 +274,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
 
                 File.WriteAllText(tmpCrt, pem);
 
-                AzureKeyVaultShellHelper.Bash($"sudo cp {tmpCrt} /usr/local/share/ca-certificates/emulator.crt");
+                AzureKeyVaultEnvHelper.Bash($"sudo cp {tmpCrt} /usr/local/share/ca-certificates/emulator.crt");
             }
             else
             {
@@ -285,7 +288,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
             //throw new InvalidOperationException($"Failed to copy {AzureKeyVaultEmulatorCertConstants.Crt} to {AzureKeyVaultEmulatorCertConstants.LinuxPath}");
         }
 
-        AzureKeyVaultShellHelper.Bash("sudo update-ca-certificates");
+        AzureKeyVaultEnvHelper.Bash("sudo update-ca-certificates");
     }
 
     /// <summary>
