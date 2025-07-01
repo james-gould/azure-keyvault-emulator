@@ -1,7 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using System.Text;
-using System.Diagnostics;
 using System.Net;
 using AzureKeyVaultEmulator.TestContainers.Constants;
 using AzureKeyVaultEmulator.TestContainers.Models;
@@ -59,6 +58,10 @@ internal static class AzureKeyVaultEmulatorCertHelper
     /// <returns>The parent directory containing the certificates.</returns>
     internal static string GetConfigurableCertStoragePath(string? baseDir = null)
     {
+        // Bypass permission issues when the certificates are throwaway/single use.
+        if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
+            return Path.GetTempPath();
+
         if (!string.IsNullOrEmpty(baseDir))
             return baseDir;
 
@@ -191,7 +194,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
         var builder = new StringBuilder();
 
         builder.AppendLine("-----BEGIN CERTIFICATE-----");
-        builder.AppendLine(Convert.ToBase64String(cert.RawData, Base64FormattingOptions.InsertLineBreaks));
+        builder.AppendLine(Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks));
         builder.AppendLine("-----END CERTIFICATE-----");
 
         return builder.ToString();
@@ -229,7 +232,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
         }
         catch (Exception)
         {
-            throw new KeyVaultEmulatorException($"Failed to insert SSL certificates into local Trust Store. To use the Emulator you must install the certificates at {pfxPath} yourself first, then try again.");
+            throw;
+            //throw new KeyVaultEmulatorException($"Failed to insert SSL certificates into local Trust Store. To use the Emulator you must install the certificates at {pfxPath} yourself first, then try again.");
         }
     }
 
@@ -249,16 +253,39 @@ internal static class AzureKeyVaultEmulatorCertHelper
     }
 
     /// <summary>
-    /// Installs the PEM to the Linux /usr/ area as a trusted root CA.
+    /// Installs the PEM to the Linux /usr/local/share/ca-certificates and runs update-ca-certificates
     /// </summary>
     /// <param name="pem">The CRT/PEM to install.</param>
     private static void InstallToLinuxShare(string pem)
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
 
-        var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
+        try
+        {
+            // Need to use /tmp/ during CI/CD to guarantee SSL certs are installed correctly
+            if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
+            {
+                var tmpCrt = $"/tmp/{AzureKeyVaultEmulatorCertConstants.Crt}";
 
-        File.WriteAllText(destination, pem);
+                File.WriteAllText(tmpCrt, pem);
+
+                AzureKeyVaultEnvHelper.Bash($"sudo cp {tmpCrt} /usr/local/share/ca-certificates/emulator.crt");
+            }
+            else
+            {
+                // Otherwise, on a Linux host machine, write directly to usr/local/share/ca-certificates
+                var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
+
+                File.WriteAllText(destination, pem);
+            }
+        }
+        catch(Exception)
+        {
+            // Feels weird but only way to give contextual info to user about why it failed...
+            throw new InvalidOperationException($"Failed to copy {AzureKeyVaultEmulatorCertConstants.Crt} to {AzureKeyVaultEmulatorCertConstants.LinuxPath}");
+        }
+
+        AzureKeyVaultEnvHelper.Bash("sudo update-ca-certificates");
     }
 
     /// <summary>
@@ -270,8 +297,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
     {
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
 
-        Debug.WriteLine("To install on macOS trust store, run:");
-        Debug.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");
+        Console.WriteLine("To install on macOS trust store, run:");
+        Console.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");
     }
 
     /// <summary>
@@ -284,13 +311,13 @@ internal static class AzureKeyVaultEmulatorCertHelper
         if (!string.IsNullOrEmpty(pfx) && File.Exists(pfx))
         {
             File.Delete(pfx);
-            Debug.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
+            Console.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
 
         if (!string.IsNullOrEmpty(pem) && File.Exists(pem))
         {
             File.Delete(pem);
-            Debug.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
+            Console.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
     }
 }
