@@ -17,7 +17,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _container = new AzureKeyVaultEmulatorContainer(Path.GetTempPath());
+        _container = new AzureKeyVaultEmulatorContainer();
 
         await _container.StartAsync();
     }

@@ -284,9 +284,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
         }
         catch(Exception)
         {
-            throw;
             // Feels weird but only way to give contextual info to user about why it failed...
-            //throw new InvalidOperationException($"Failed to copy {AzureKeyVaultEmulatorCertConstants.Crt} to {AzureKeyVaultEmulatorCertConstants.LinuxPath}");
+            throw new InvalidOperationException($"Failed to copy {AzureKeyVaultEmulatorCertConstants.Crt} to {AzureKeyVaultEmulatorCertConstants.LinuxPath}");
         }
 
         AzureKeyVaultEnvHelper.Bash("sudo update-ca-certificates");
