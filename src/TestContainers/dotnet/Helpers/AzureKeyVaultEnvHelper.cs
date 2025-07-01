@@ -34,6 +34,10 @@ internal static class AzureKeyVaultEnvHelper
             throw new KeyVaultEmulatorException($"Command failed: {command}\n{err}");
     }
 
+    /// <summary>
+    /// Detects env vars injected by the vast majority of CI/CD runners.
+    /// </summary>
+    /// <returns></returns>
     public static bool IsCiCdEnvironment()
     {
         var ci = Environment.GetEnvironmentVariable("CI")?.ToLowerInvariant();

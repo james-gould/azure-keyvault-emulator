@@ -59,6 +59,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
     /// <returns>The parent directory containing the certificates.</returns>
     internal static string GetConfigurableCertStoragePath(string? baseDir = null)
     {
+        // Bypass permission issues when the certificates are throwaway/single use.
         if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
             return Path.GetTempPath();
 
