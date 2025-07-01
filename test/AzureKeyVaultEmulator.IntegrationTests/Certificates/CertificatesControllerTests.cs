@@ -497,6 +497,27 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
     }
 
+    [Fact]
+    public async Task DownloadingCertificateWillProvideIdenticalCopy()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var operation = await client.StartCreateCertificateAsync(certName, fixture.BasicPolicy);
+
+        await operation.WaitForCompletionAsync();
+
+        var certFromStore = await client.GetCertAsync(certName);
+
+        Assert.NotNull(certFromStore);
+        Assert.Equal(certName, certFromStore.Name);
+
+        var downloadedCertificate = await client.DownloadCertificateAsync(certName);
+
+        Assert.NotNull(downloadedCertificate.Value);
+    }
+
     [Fact(Skip = @"
         Certificate Operations are currently hardcoded to work in a specific way,
         this functionality requires a refactor of the CertificateOperation class and

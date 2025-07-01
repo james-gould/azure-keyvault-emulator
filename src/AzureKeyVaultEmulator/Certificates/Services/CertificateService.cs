@@ -26,7 +26,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.BuildX509Certificate(name, policy);
 
-        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, policy);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, certificate, policy);
 
         var version = Guid.NewGuid().Neat();
 
@@ -212,7 +212,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.ImportFromBase64(request.Value);
 
-        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, certificate);
 
         var attributes = new CertificateAttributesModel
         {
