@@ -1,7 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using System.Text;
-using System.Diagnostics;
 using System.Net;
 using AzureKeyVaultEmulator.TestContainers.Constants;
 using AzureKeyVaultEmulator.TestContainers.Models;
@@ -261,13 +260,10 @@ internal static class AzureKeyVaultEmulatorCertHelper
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
 
-        Console.WriteLine($"Writing {pem} to usr store");
-
         try
         {
-            var isCiRun = AzureKeyVaultEnvHelper.IsCiCdEnvironment();
-
-            if (isCiRun)
+            // Need to use /tmp/ during CI/CD to guarantee SSL certs are installed correctly
+            if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
             {
                 var tmpCrt = $"/tmp/{AzureKeyVaultEmulatorCertConstants.Crt}";
 
@@ -277,6 +273,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
             }
             else
             {
+                // Otherwise, on a Linux host machine, write directly to usr/local/share/ca-certificates
                 var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
 
                 File.WriteAllText(destination, pem);
@@ -300,8 +297,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
     {
         ArgumentException.ThrowIfNullOrEmpty(pfxPath);
 
-        Debug.WriteLine("To install on macOS trust store, run:");
-        Debug.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");
+        Console.WriteLine("To install on macOS trust store, run:");
+        Console.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");
     }
 
     /// <summary>
@@ -314,13 +311,13 @@ internal static class AzureKeyVaultEmulatorCertHelper
         if (!string.IsNullOrEmpty(pfx) && File.Exists(pfx))
         {
             File.Delete(pfx);
-            Debug.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
+            Console.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
 
         if (!string.IsNullOrEmpty(pem) && File.Exists(pem))
         {
             File.Delete(pem);
-            Debug.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
+            Console.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
     }
 }
