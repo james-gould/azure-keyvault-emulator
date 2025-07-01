@@ -191,7 +191,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
         var builder = new StringBuilder();
 
         builder.AppendLine("-----BEGIN CERTIFICATE-----");
-        builder.AppendLine(Convert.ToBase64String(cert.RawData, Base64FormattingOptions.InsertLineBreaks));
+        builder.AppendLine(Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks));
         builder.AppendLine("-----END CERTIFICATE-----");
 
         return builder.ToString();
@@ -229,7 +229,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
         }
         catch (Exception)
         {
-            throw new KeyVaultEmulatorException($"Failed to insert SSL certificates into local Trust Store. To use the Emulator you must install the certificates at {pfxPath} yourself first, then try again.");
+            throw;
+            //throw new KeyVaultEmulatorException($"Failed to insert SSL certificates into local Trust Store. To use the Emulator you must install the certificates at {pfxPath} yourself first, then try again.");
         }
     }
 
@@ -249,16 +250,42 @@ internal static class AzureKeyVaultEmulatorCertHelper
     }
 
     /// <summary>
-    /// Installs the PEM to the Linux /usr/ area as a trusted root CA.
+    /// Installs the PEM to the Linux /usr/local/share/ca-certificates and runs update-ca-certificates
     /// </summary>
     /// <param name="pem">The CRT/PEM to install.</param>
     private static void InstallToLinuxShare(string pem)
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
 
-        var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
+        Console.WriteLine($"Writing {pem} to usr store");
 
-        File.WriteAllText(destination, pem);
+        try
+        {
+            var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
+
+            var isCiRun = AzureKeyVaultShellHelper.IsCiCdEnvironment();
+
+            if (isCiRun)
+            {
+                var tmpCrt = $"/tmp/{AzureKeyVaultEmulatorCertConstants.Crt}";
+
+                File.WriteAllText(tmpCrt, pem);
+
+                AzureKeyVaultShellHelper.Bash($"sudo cp {tmpCrt} /usr/local/share/ca-certificates/emulator.crt");
+            }
+            else
+            {
+                File.WriteAllText(destination, pem);
+            }
+        }
+        catch(Exception)
+        {
+            throw;
+            // Feels weird but only way to give contextual info to user about why it failed...
+            //throw new InvalidOperationException($"Failed to copy {AzureKeyVaultEmulatorCertConstants.Crt} to {AzureKeyVaultEmulatorCertConstants.LinuxPath}");
+        }
+
+        AzureKeyVaultShellHelper.Bash("sudo update-ca-certificates");
     }
 
     /// <summary>

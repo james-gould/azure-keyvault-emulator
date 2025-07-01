@@ -1,0 +1,28 @@
+name: Run on Any Commit
+
+on:
+  push:
+    branches:
+      - '**'        # Triggers on push to any branch
+  workflow_dispatch:  # Allows manual trigger from the Actions tab
+
+jobs:
+  debug-test-containers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install HTTPS Certificates
+        run: |
+          dotnet dev-certs https --trust
+
+      - name: Run Integration Tests
+        run: |
+          dotnet test --configuration Release
