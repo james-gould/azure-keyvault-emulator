@@ -10,6 +10,7 @@ assignees: ''
 **I'm using**
 - [ ] .NET Aspire
 - [ ] Docker without Aspire
+- [ ] TestContainers
 - [ ] Something else (please elaborate below)
 
 **This happened using...**
