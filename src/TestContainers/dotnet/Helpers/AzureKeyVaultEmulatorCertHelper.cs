@@ -265,8 +265,6 @@ internal static class AzureKeyVaultEmulatorCertHelper
 
         try
         {
-            var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
-
             var isCiRun = AzureKeyVaultEnvHelper.IsCiCdEnvironment();
 
             if (isCiRun)
@@ -279,6 +277,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
             }
             else
             {
+                var destination = $"{AzureKeyVaultEmulatorCertConstants.LinuxPath}/{AzureKeyVaultEmulatorCertConstants.Crt}";
+
                 File.WriteAllText(destination, pem);
             }
         }
