@@ -69,7 +69,7 @@ public class CertificatesController(
     }
 
     /// <summary>
-    /// Might not be needed, can't remember the exact flow. 
+    /// Might not be needed, can't remember the exact flow.
     /// </summary>
     [HttpGet("{name}/completed")]
     public async Task<IActionResult> GetCompletedCertificate(
@@ -108,16 +108,17 @@ public class CertificatesController(
         return Ok(result);
     }
 
-    [HttpPatch("{name}")]
+    [HttpPatch("{name}/{version?}")]
     public async Task<IActionResult> UpdateCertificate(
         [FromRoute] string name,
+        [FromRoute] string? version,
         [FromBody] UpdateCertificateRequest request,
         [ApiVersion] string apiVersion)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(request);
 
-        var result = await certService.UpdateCertificateAsync(name, request);
+        var result = await certService.UpdateCertificateAsync(name, version, request);
 
         return Ok(result);
     }

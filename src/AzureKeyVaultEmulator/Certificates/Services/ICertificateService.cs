@@ -12,7 +12,7 @@ public interface ICertificateService
     Task<ListResult<CertificateVersionItem>> GetCertificateVersionsAsync(string name, int maxResults = 25, int skipCount = 25);
 
     Task<CertificateOperation> GetPendingCertificateAsync(string name);
-    Task<CertificateBundle> UpdateCertificateAsync(string name, UpdateCertificateRequest request);
+    Task<CertificateBundle> UpdateCertificateAsync(string name, string? version, UpdateCertificateRequest request);
     Task<CertificatePolicy> UpdateCertificatePolicyAsync(string name, CertificatePolicy certificatePolicy);
     Task<CertificatePolicy> GetCertificatePolicyAsync(string name);
     Task<IssuerBundle> GetCertificateIssuerAsync(string name);

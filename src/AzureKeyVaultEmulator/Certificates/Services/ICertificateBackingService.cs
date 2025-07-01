@@ -1,4 +1,5 @@
-﻿using AzureKeyVaultEmulator.Shared.Models.Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
+using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 
@@ -6,7 +7,7 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public interface ICertificateBackingService
 {
-    Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, CertificatePolicy? policy = null);
+    Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, X509Certificate2? cert, CertificatePolicy? policy = null);
 
     Task<IssuerBundle> GetIssuerAsync(string name);
     Task<IssuerBundle> CreateIssuerAsync(string name, IssuerBundle bundle);
