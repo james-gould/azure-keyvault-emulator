@@ -26,9 +26,13 @@ jobs:
           dotnet dev-certs https --clean
           dotnet dev-certs https --trust
 
-      - name: Run Integration Tests
+      - name: Run API Integration Tests
         run: |
-          dotnet test
+          dotnet test ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
+
+      - name: Run TestContainers Integration Tests
+        run: |
+          dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
