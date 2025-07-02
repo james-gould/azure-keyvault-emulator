@@ -1,11 +1,6 @@
-name: Build and Push Latest
+name: Manual Deploy Latest Docker Image
 
 on:
-  pull_request:
-    branches:
-      - master
-    types:
-      - closed
   workflow_dispatch:
 
 jobs:
@@ -20,19 +15,6 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
-
-      - name: Install SSL Certificates
-        run: |
-          dotnet dev-certs https --clean
-          dotnet dev-certs https --trust
-
-      - name: Run API Integration Tests
-        run: |
-          dotnet test ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
-
-      - name: Run TestContainers Integration Tests
-        run: |
-          dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
