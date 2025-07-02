@@ -1,4 +1,4 @@
-﻿using AzureKeyVaultEmulator.TestContainers.Exceptions;
+using AzureKeyVaultEmulator.TestContainers.Exceptions;
 using System.Diagnostics;
 
 namespace AzureKeyVaultEmulator.TestContainers.Helpers;
