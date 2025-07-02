@@ -520,8 +520,10 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.NotNull(downloadedCertificate);
 
 #pragma warning disable SYSLIB0028 // Type or member is obsolete
+
         // Surpressed because SDK is still populating this prop.
         Assert.NotNull(downloadedCertificate.PrivateKey);
+
 #pragma warning restore SYSLIB0028 // Type or member is obsolete
     }
 
