@@ -169,7 +169,7 @@ public sealed class CertificateBackingService(
 
     private async Task<SecretBundle> CreateBackingSecretAsync(string certName, string contentType, X509Certificate2 certificate)
     {
-        var certificateData = Convert.ToBase64String(certificate.RawData);
+        var certificateData = Convert.ToBase64String(certificate.Export(X509ContentType.Pfx));
 
         return await secretService
             .SetSecretAsync(certName, new SetSecretRequest
