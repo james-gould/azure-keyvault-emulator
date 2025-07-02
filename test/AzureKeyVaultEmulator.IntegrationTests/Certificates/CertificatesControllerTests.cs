@@ -518,6 +518,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var downloadedCertificate = downloadedCertificateResponse.Value;
 
         Assert.NotNull(downloadedCertificate);
+        Assert.True(downloadedCertificate.HasPrivateKey);
 
 #pragma warning disable SYSLIB0028 // Type or member is obsolete
 
