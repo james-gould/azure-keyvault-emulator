@@ -5,6 +5,13 @@ namespace AzureKeyVaultEmulator.TestContainers.Helpers;
 
 internal static class AzureKeyVaultEnvHelper
 {
+    private static readonly string[] _defaultVars =
+    [
+        "BUILD_BUILDID", // Azure DevOps
+        "CI", // Jekyll, TeamCity, etc
+        "GITHUB_ACTIONS" // Github, obviously.
+    ];
+
     public static void Bash(string command)
     {
         var psi = new ProcessStartInfo
@@ -40,8 +47,6 @@ internal static class AzureKeyVaultEnvHelper
     /// <returns></returns>
     public static bool IsCiCdEnvironment()
     {
-        var ci = Environment.GetEnvironmentVariable("CI")?.ToLowerInvariant();
-        var gh = Environment.GetEnvironmentVariable("GITHUB_ACTIONS");
-        return ci == "true" || gh == "true";
+        return _defaultVars.Any(env => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(env)));
     }
 }
