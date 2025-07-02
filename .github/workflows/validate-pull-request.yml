@@ -30,4 +30,4 @@ jobs:
 
       - name: Run TestContainers Integration Tests
         run: |
-          dotnet test ./test/AzureKeyVaultEmulator.TestContainers/AzureKeyVaultEmulator.TestContainers.csproj
+          dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
