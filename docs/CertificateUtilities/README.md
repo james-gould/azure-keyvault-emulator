@@ -12,7 +12,7 @@ The `AzureKeyVaultEmulator.Aspire.Hosting` library will generate and install the
 The setup process can be fully automated by using the installation script:
 
 ```
-bash <(curl -fsSL https://github.com/james-gould/azure-keyvault-emulator/blob/master/docs/setup.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/james-gould/azure-keyvault-emulator/refs/heads/master/docs/setup.sh)
 ```
 
 > [!IMPORTANT]
