@@ -513,9 +513,19 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.NotNull(certFromStore);
         Assert.Equal(certName, certFromStore.Name);
 
-        var downloadedCertificate = await client.DownloadCertificateAsync(certName);
+        var downloadedCertificateResponse = await client.DownloadCertificateAsync(certName);
 
-        Assert.NotNull(downloadedCertificate.Value);
+        var downloadedCertificate = downloadedCertificateResponse.Value;
+
+        Assert.NotNull(downloadedCertificate);
+        Assert.True(downloadedCertificate.HasPrivateKey);
+
+#pragma warning disable SYSLIB0028 // Type or member is obsolete
+
+        // Surpressed because SDK is still populating this prop.
+        Assert.NotNull(downloadedCertificate.PrivateKey);
+
+#pragma warning restore SYSLIB0028 // Type or member is obsolete
     }
 
     [Fact(Skip = @"
