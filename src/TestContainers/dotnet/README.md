@@ -28,7 +28,7 @@ dotnet add package AzureKeyVaultEmulator.TestContainers
 
 ## SSL Usage
 
-The Azure SDK **requires** a trusted SSL connection to use the official clients. To make this as smooth as possible, the following functionality is turned **on** by default:
+The Azure SDK **requires** a trusted SSL connection to use the official clients. To make this as smooth as possible, the following functionality is turned **on** by default and is **fully automated**:
 
 - Generate the required SSL certificates
 - Install them to the `User` store location as a `Trusted Root CA`
