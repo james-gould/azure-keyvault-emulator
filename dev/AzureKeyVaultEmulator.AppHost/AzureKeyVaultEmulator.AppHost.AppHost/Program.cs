@@ -24,6 +24,7 @@ else
 
     var webApi = builder
         .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
+        .WithReference(keyVault)
         .WaitFor(keyVault);
 }
 

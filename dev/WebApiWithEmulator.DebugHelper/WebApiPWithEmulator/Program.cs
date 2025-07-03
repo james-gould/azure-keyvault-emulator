@@ -14,8 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var vaultUri = builder.Configuration.GetConnectionString(AspireConstants.EmulatorServiceName) ?? "https://localhost:4997/";
-//var vaultUri = "http://localhost:4997/";
+var vaultUri = builder.Configuration.GetConnectionString(AspireConstants.EmulatorServiceName);
 
 builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, certificates: true, keys: true);
 

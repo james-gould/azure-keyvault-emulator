@@ -5,7 +5,6 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-//using System.Net.Sockets;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
@@ -95,6 +94,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     type: ContainerMountType.BindMount,
                     isReadOnly: false))
                 .WithAnnotation(new ContainerLifetimeAnnotation { Lifetime = options.Lifetime })
+                .WithUrl(KeyVaultEmulatorContainerConstants.Endpoint, KeyVaultEmulatorContainerConstants.Endpoint)
                 .WithAnnotation(new EndpointAnnotation(ProtocolType.Tcp)
                 {
                     Port = KeyVaultEmulatorContainerConstants.Port,
