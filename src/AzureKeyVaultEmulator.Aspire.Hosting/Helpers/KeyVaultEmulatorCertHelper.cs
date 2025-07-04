@@ -18,6 +18,10 @@ internal static class KeyVaultEmulatorCertHelper
     /// <returns>The parent directory containing the certificates.</returns>
     internal static string GetConfigurableCertStoragePath(string? baseDir = null)
     {
+        // Bypass permission issues when the certificates are throwaway/single use.
+        if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
+            return Path.GetTempPath();
+
         if (!string.IsNullOrEmpty(baseDir))
             return baseDir;
 
@@ -256,11 +260,13 @@ internal static class KeyVaultEmulatorCertHelper
 
         if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
         {
+            Console.WriteLine($"CI Run detected, writing SSL certificate to temp storage.");
+
             var tmpCrt = $"{Path.GetTempPath()}/{KeyVaultEmulatorCertConstants.Crt}";
 
             File.WriteAllText(tmpCrt, pem);
 
-            AzureKeyVaultEnvHelper.Bash($"sudo cp {tmpCrt} /usr/local/share/ca-certificates/emulator.crt");
+            AzureKeyVaultEnvHelper.Bash($"sudo cp {tmpCrt} {storeLocation}");
         }
         else
         {
