@@ -106,8 +106,25 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     new EnvironmentCallbackAnnotation(ctx => RegisterEnvironmentVariables(ctx, options))
                 );
 
-            builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorContainerConstants.Endpoint);
-            builder.PublishAsConnectionString();
+            builder.ApplicationBuilder.Eventing.Subscribe<ResourceReadyEvent>((resourceEvent, ct) =>
+            {
+                var hasEndpoints = resourceEvent.Resource.TryGetEndpoints(out var endpoints);
+
+                if (!hasEndpoints || endpoints is null)
+                    return Task.CompletedTask;
+
+                var endpoint = endpoints.FirstOrDefault(x => x.Port == KeyVaultEmulatorContainerConstants.Port);
+
+                if (endpoint is null)
+                    return Task.CompletedTask;
+
+                var allocatedEndpoint = endpoint.AllocatedEndpoint?.UriString
+                    ?? throw new KeyVaultEmulatorException("Failed to locate host machine port for allocated Emulator container.");
+
+                builder.Resource.Outputs.Add("vaultUri", allocatedEndpoint);
+
+                return Task.CompletedTask;
+            });
 
             builder.RegisterOptionalLifecycleHandler(options, hostCertificatePath);
 
