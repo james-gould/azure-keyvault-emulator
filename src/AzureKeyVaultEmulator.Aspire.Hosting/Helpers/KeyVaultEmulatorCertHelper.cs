@@ -7,7 +7,7 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using System.Net;
 using AzureKeyVaultEmulator.Aspire.Hosting.Models;
 
-namespace AzureKeyVaultEmulator.Aspire.Hosting;
+namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
 internal static class KeyVaultEmulatorCertHelper
 {
@@ -71,7 +71,7 @@ internal static class KeyVaultEmulatorCertHelper
             TryRemovePreviousCerts(pfxPath, crtPath);
 
         // Then create files and place at {path}
-        var (pfx, pem) = (options.ShouldGenerateCertificates && !certsAlreadyExist)
+        var (pfx, pem) = options.ShouldGenerateCertificates && !certsAlreadyExist
                             ? GenerateAndSaveCert(pfxPath, crtPath)
                             : LoadExistingCertificatesToInstall(pfxPath, crtPath);
 
@@ -240,6 +240,8 @@ internal static class KeyVaultEmulatorCertHelper
 
         store.Open(OpenFlags.ReadWrite);
         store.Add(cert);
+
+        store.Close();
     }
 
     /// <summary>
@@ -250,9 +252,22 @@ internal static class KeyVaultEmulatorCertHelper
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
 
-        var destination = $"{KeyVaultEmulatorCertConstants.LinuxPath}/{KeyVaultEmulatorCertConstants.Crt}";
+        var storeLocation = $"{KeyVaultEmulatorCertConstants.LinuxPath}/{KeyVaultEmulatorCertConstants.Crt}";
 
-        File.WriteAllText(destination, pem);
+        if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
+        {
+            var tmpCrt = $"{Path.GetTempPath()}/{KeyVaultEmulatorCertConstants.Crt}";
+
+            File.WriteAllText(tmpCrt, pem);
+
+            AzureKeyVaultEnvHelper.Bash($"sudo cp {tmpCrt} /usr/local/share/ca-certificates/emulator.crt");
+        }
+        else
+        {
+            File.WriteAllText(storeLocation, pem);
+        }
+
+        AzureKeyVaultEnvHelper.Bash("sudo update-ca-certificates");
     }
 
     /// <summary>
