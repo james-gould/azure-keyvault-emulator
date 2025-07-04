@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
-internal sealed class KeyVaultEmulatorLifecycleService(
+internal sealed class KeyVaultEmulatorLifecycleHelper(
     Func<string> getEndpoint,
     bool forceCleanup,
     string certificatePath,

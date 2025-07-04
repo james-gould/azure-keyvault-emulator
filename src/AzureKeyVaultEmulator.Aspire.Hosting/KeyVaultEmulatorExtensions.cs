@@ -2,6 +2,7 @@
 using Aspire.Hosting.Azure;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
+using AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -171,7 +172,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         }
 
         /// <summary>
-        /// if <see cref="KeyVaultEmulatorOptions.ForceCleanupOnShutdown"/> toggled on, register an instance of <see cref="KeyVaultEmulatorLifecycleService"/>
+        /// if <see cref="KeyVaultEmulatorOptions.ForceCleanupOnShutdown"/> toggled on, register an instance of <see cref="KeyVaultEmulatorLifecycleHelper"/>
         /// </summary>
         /// <param name="builder">The builder being overridden.</param>
         /// <param name="getEndpoint">Provides the dynamic endpoint for the launched container.</param>
@@ -191,7 +192,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             {
                 var lifetime = provider.GetService<IHostApplicationLifetime>();
 
-                return new KeyVaultEmulatorLifecycleService(getEndpoint, options.ForceCleanupOnShutdown, hostMachineCertificatePath, lifetime);
+                return new KeyVaultEmulatorLifecycleHelper(getEndpoint, options.ForceCleanupOnShutdown, hostMachineCertificatePath, lifetime);
             });
         }
 
