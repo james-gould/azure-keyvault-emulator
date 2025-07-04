@@ -106,10 +106,10 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     new EnvironmentCallbackAnnotation(ctx => RegisterEnvironmentVariables(ctx, options))
                 );
 
-            builder.ApplicationBuilder.Eventing.Subscribe<ResourceReadyEvent>((resourceEvent, ct) =>
+            builder.ApplicationBuilder.Eventing.Subscribe<ResourceReadyEvent>(async (resourceEvent, ct) =>
             {
                 if (!resourceEvent.Resource.Name.Equals(builder.Resource.Name, StringComparison.InvariantCultureIgnoreCase))
-                    return Task.CompletedTask;
+                    return;
 
                 var hasEndpoints = resourceEvent.Resource.TryGetEndpoints(out var endpoints);
 
@@ -127,7 +127,9 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                 builder.Resource.Outputs.Add("vaultUri", allocatedEndpoint);
                 builder.WithUrl(allocatedEndpoint, allocatedEndpoint);
 
-                return Task.CompletedTask;
+                // Bodge for container runtime to start
+                // Probably best to create a healthcheck
+                await Task.Delay(2000, ct);
             });
 
             builder.RegisterOptionalLifecycleHandler(options, hostCertificatePath);
