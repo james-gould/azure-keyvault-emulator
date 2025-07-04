@@ -4,6 +4,7 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
@@ -127,12 +128,10 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                 builder.Resource.Outputs.Add("vaultUri", allocatedEndpoint);
                 builder.WithUrl(allocatedEndpoint, allocatedEndpoint);
 
-                // Bodge for container runtime to start
-                // Probably best to create a healthcheck
-                await Task.Delay(2000, ct);
-            });
+                builder.RegisterOptionalLifecycleHandler(allocatedEndpoint, options, hostCertificatePath);
 
-            builder.RegisterOptionalLifecycleHandler(options, hostCertificatePath);
+                await Task.CompletedTask;
+            });
 
             return builder;
         }
@@ -173,10 +172,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// if <see cref="KeyVaultEmulatorOptions.ForceCleanupOnShutdown"/> toggled on, register an instance of <see cref="KeyVaultEmulatorLifecycleService"/>
         /// </summary>
         /// <param name="builder">The builder being overridden.</param>
+        /// <param name="endpoint">The dynamic endpoint for the launched container</param>
         /// <param name="options">The granular options for the Azure Key Vault Emulator.</param>
         /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="GetOrCreateLocalCertificates(KeyVaultEmulatorOptions)"/></param>
         private static void RegisterOptionalLifecycleHandler(
             this IResourceBuilder<AzureKeyVaultResource> builder,
+            string endpoint,
             KeyVaultEmulatorOptions options,
             string hostMachineCertificatePath)
         {
@@ -184,13 +185,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             ArgumentNullException.ThrowIfNull(options);
             ArgumentException.ThrowIfNullOrEmpty(hostMachineCertificatePath);
 
-            if (options.ForceCleanupOnShutdown)
-                builder.ApplicationBuilder.Services.AddHostedService(provider =>
-                {
-                    var lifetime = provider.GetService<IHostApplicationLifetime>();
+            builder.ApplicationBuilder.Services.AddHostedService(provider =>
+            {
+                var lifetime = provider.GetService<IHostApplicationLifetime>();
 
-                    return new KeyVaultEmulatorLifecycleService(hostMachineCertificatePath, lifetime);
-                });
+                return new KeyVaultEmulatorLifecycleService(endpoint, options.ForceCleanupOnShutdown, hostMachineCertificatePath, lifetime);
+            });
         }
 
         /// <summary>
