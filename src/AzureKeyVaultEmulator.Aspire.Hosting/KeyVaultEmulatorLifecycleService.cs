@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
 internal sealed class KeyVaultEmulatorLifecycleService(
-    string endpoint,
+    Func<string> getEndpoint,
     bool forceCleanup,
     string certificatePath,
     IHostApplicationLifetime? lifetime) : IHostedService, IAsyncDisposable
@@ -31,7 +31,7 @@ internal sealed class KeyVaultEmulatorLifecycleService(
     private async Task EnsureContainerStartAsync()
     {
         using var client = new HttpClient();
-        client.BaseAddress = new Uri(endpoint);
+        client.BaseAddress = new Uri(getEndpoint());
 
         for (var i = 1; i <= 5; i++)
         {

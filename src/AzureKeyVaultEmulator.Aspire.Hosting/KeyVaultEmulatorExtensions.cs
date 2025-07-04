@@ -4,13 +4,13 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-//using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     public static class KeyVaultEmulatorExtensions
     {
+        private static string _allocatedEndpoint = string.Empty;
         /// <summary>
         /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
         /// </summary>
@@ -128,10 +128,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                 builder.Resource.Outputs.Add("vaultUri", allocatedEndpoint);
                 builder.WithUrl(allocatedEndpoint, allocatedEndpoint);
 
-                builder.RegisterOptionalLifecycleHandler(allocatedEndpoint, options, hostCertificatePath);
+                _allocatedEndpoint = allocatedEndpoint;
 
                 await Task.CompletedTask;
             });
+
+            builder.RegisterOptionalLifecycleHandler(() => _allocatedEndpoint, options, hostCertificatePath);
 
             return builder;
         }
@@ -172,12 +174,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// if <see cref="KeyVaultEmulatorOptions.ForceCleanupOnShutdown"/> toggled on, register an instance of <see cref="KeyVaultEmulatorLifecycleService"/>
         /// </summary>
         /// <param name="builder">The builder being overridden.</param>
-        /// <param name="endpoint">The dynamic endpoint for the launched container</param>
+        /// <param name="getEndpoint">Provides the dynamic endpoint for the launched container.</param>
         /// <param name="options">The granular options for the Azure Key Vault Emulator.</param>
         /// <param name="hostMachineCertificatePath">The certificate path, provided by <see cref="GetOrCreateLocalCertificates(KeyVaultEmulatorOptions)"/></param>
         private static void RegisterOptionalLifecycleHandler(
             this IResourceBuilder<AzureKeyVaultResource> builder,
-            string endpoint,
+            Func<string> getEndpoint,
             KeyVaultEmulatorOptions options,
             string hostMachineCertificatePath)
         {
@@ -189,7 +191,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             {
                 var lifetime = provider.GetService<IHostApplicationLifetime>();
 
-                return new KeyVaultEmulatorLifecycleService(endpoint, options.ForceCleanupOnShutdown, hostMachineCertificatePath, lifetime);
+                return new KeyVaultEmulatorLifecycleService(getEndpoint, options.ForceCleanupOnShutdown, hostMachineCertificatePath, lifetime);
             });
         }
 
