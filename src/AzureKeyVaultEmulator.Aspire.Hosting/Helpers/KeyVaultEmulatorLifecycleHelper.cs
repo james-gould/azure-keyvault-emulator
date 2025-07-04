@@ -22,7 +22,7 @@ internal sealed class KeyVaultEmulatorLifecycleHelper(
     }
 
     /// <summary>
-    /// <para>Ungodly bodge to force the AppHost to wait for the Emulator to launch and return a JWT from /token.</para>
+    /// <para>Ungodly bodge to force the AppHost to wait for the Emulator to launch and return a HTTP 200 from {baseUrl}/.</para>
     /// <para>Unable to find a way to add a custom health check /within/ the extensions that doesn't require external use.</para>
     /// <para>Hooking into the ResourceReadyEvent seems to change the behaviour and presents a race condition on launch.</para>
     /// </summary>
@@ -35,7 +35,7 @@ internal sealed class KeyVaultEmulatorLifecycleHelper(
 
         for (var i = 1; i <= 5; i++)
         {
-            using var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+            using var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
 
             try
             {
@@ -46,7 +46,7 @@ internal sealed class KeyVaultEmulatorLifecycleHelper(
             }
             catch { }
 
-            await Task.Delay(i * 1000);
+            await Task.Delay(i * 500);
         }
 
         throw new KeyVaultEmulatorException("Failed to ensure healthy Key Vault Emulator container start.");
