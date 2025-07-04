@@ -240,6 +240,8 @@ internal static class KeyVaultEmulatorCertHelper
 
         store.Open(OpenFlags.ReadWrite);
         store.Add(cert);
+
+        store.Close();
     }
 
     /// <summary>

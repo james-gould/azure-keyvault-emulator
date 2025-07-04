@@ -54,6 +54,8 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
             InnerHandler = new HttpClientHandler()
         };
 
+        await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
+
         var endpoint = await _app!.GetConnectionStringAsync(applicationName);
 
         ArgumentNullException.ThrowIfNull(endpoint);
@@ -62,8 +64,6 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
         {
             BaseAddress = new Uri(endpoint)
         };
-
-        await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
 
         return _testingClient;
     }
@@ -77,7 +77,7 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
 
         ArgumentNullException.ThrowIfNull(vaultEndpoint);
 
-        await _notificationService!.WaitForResourceAsync(applicationName).WaitAsync(_waitPeriod);
+        await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
 
         var emulatedBearerToken = await GetBearerTokenAsync();
 

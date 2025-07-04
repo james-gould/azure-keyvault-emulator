@@ -14,7 +14,9 @@ if (integrationTestRun || overrideTestRun)
 {
     var keyVault = builder
         .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
-        .RunAsEmulator();
+        .RunAsEmulator(
+            new KeyVaultEmulatorOptions { Lifetime = ContainerLifetime.Persistent }
+        );
 
     var webApi = builder
         .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
