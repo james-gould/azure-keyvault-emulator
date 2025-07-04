@@ -12,9 +12,14 @@ var persist = EnvUtils.GetFlag(EnvironmentConstants.UsePersistedDataStore);
 
 if (integrationTestRun || overrideTestRun)
 {
-    builder
-        .AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName)
-        .WithEnvironment(EnvironmentConstants.UsePersistedDataStore, persist.ToString());
+    var keyVault = builder
+        .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
+        .RunAsEmulator();
+
+    var webApi = builder
+        .AddProject<Projects.WebApiWithEmulator_DebugHelper>("sampleApi")
+        .WithReference(keyVault)
+        .WaitFor(keyVault);
 }
 else
 {

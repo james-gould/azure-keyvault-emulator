@@ -107,6 +107,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                 );
 
             builder.Resource.Outputs.Add("vaultUri", KeyVaultEmulatorContainerConstants.Endpoint);
+            builder.PublishAsConnectionString();
 
             builder.RegisterOptionalLifecycleHandler(options, hostCertificatePath);
 
