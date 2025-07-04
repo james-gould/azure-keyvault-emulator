@@ -3,22 +3,21 @@
 namespace AzureKeyVaultEmulator.Emulator.Controllers
 {
     [Route("")]
-    public class EmulatorController : Controller
+    public class EmulatorController(ITokenService token) : Controller
     {
-        private ITokenService _token;
-
-        public EmulatorController(ITokenService token)
-        {
-            _token = token;
-        }
-
         [HttpGet("token")]
         [ProducesResponseType<string>(StatusCodes.Status200OK)]
         public IActionResult GenerateStubToken()
         {
-            var jwt = _token.CreateBearerToken();
+            var jwt = token.CreateBearerToken();
 
             return Ok(jwt);
+        }
+
+        [HttpGet("")]
+        public IActionResult Root()
+        {
+            return Ok();
         }
     }
 }

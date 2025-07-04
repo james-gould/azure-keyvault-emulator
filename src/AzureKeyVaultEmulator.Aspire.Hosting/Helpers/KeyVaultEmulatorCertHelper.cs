@@ -7,7 +7,7 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using System.Net;
 using AzureKeyVaultEmulator.Aspire.Hosting.Models;
 
-namespace AzureKeyVaultEmulator.Aspire.Hosting;
+namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
 internal static class KeyVaultEmulatorCertHelper
 {
@@ -18,6 +18,10 @@ internal static class KeyVaultEmulatorCertHelper
     /// <returns>The parent directory containing the certificates.</returns>
     internal static string GetConfigurableCertStoragePath(string? baseDir = null)
     {
+        // Bypass permission issues when the certificates are throwaway/single use.
+        if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
+            return Path.GetTempPath();
+
         if (!string.IsNullOrEmpty(baseDir))
             return baseDir;
 
@@ -71,7 +75,7 @@ internal static class KeyVaultEmulatorCertHelper
             TryRemovePreviousCerts(pfxPath, crtPath);
 
         // Then create files and place at {path}
-        var (pfx, pem) = (options.ShouldGenerateCertificates && !certsAlreadyExist)
+        var (pfx, pem) = options.ShouldGenerateCertificates && !certsAlreadyExist
                             ? GenerateAndSaveCert(pfxPath, crtPath)
                             : LoadExistingCertificatesToInstall(pfxPath, crtPath);
 
@@ -240,6 +244,8 @@ internal static class KeyVaultEmulatorCertHelper
 
         store.Open(OpenFlags.ReadWrite);
         store.Add(cert);
+
+        store.Close();
     }
 
     /// <summary>
@@ -250,9 +256,24 @@ internal static class KeyVaultEmulatorCertHelper
     {
         ArgumentException.ThrowIfNullOrEmpty(pem);
 
-        var destination = $"{KeyVaultEmulatorCertConstants.LinuxPath}/{KeyVaultEmulatorCertConstants.Crt}";
+        var storeLocation = $"{KeyVaultEmulatorCertConstants.LinuxPath}/{KeyVaultEmulatorCertConstants.Crt}";
 
-        File.WriteAllText(destination, pem);
+        if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
+        {
+            Console.WriteLine($"CI Run detected, writing SSL certificate to temp storage.");
+
+            var tmpCrt = $"{Path.GetTempPath()}/{KeyVaultEmulatorCertConstants.Crt}";
+
+            File.WriteAllText(tmpCrt, pem);
+
+            AzureKeyVaultEnvHelper.Bash($"sudo cp {tmpCrt} {storeLocation}");
+        }
+        else
+        {
+            File.WriteAllText(storeLocation, pem);
+        }
+
+        AzureKeyVaultEnvHelper.Bash("sudo update-ca-certificates");
     }
 
     /// <summary>

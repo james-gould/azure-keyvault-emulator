@@ -54,14 +54,16 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
             InnerHandler = new HttpClientHandler()
         };
 
-        var endpoint = _app!.GetEndpoint(applicationName);
+        await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
+
+        var endpoint = await _app!.GetConnectionStringAsync(applicationName);
+
+        ArgumentNullException.ThrowIfNull(endpoint);
 
         _testingClient = new HttpClient(opt)
         {
-            BaseAddress = endpoint
+            BaseAddress = new Uri(endpoint)
         };
-
-        await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
 
         return _testingClient;
     }
@@ -71,15 +73,17 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
         if (_setupModel is not null)
             return _setupModel;
 
-        var vaultEndpoint = _app!.GetEndpoint(applicationName);
+        var vaultEndpoint = await _app!.GetConnectionStringAsync(applicationName);
 
-        await _notificationService!.WaitForResourceAsync(applicationName).WaitAsync(_waitPeriod);
+        ArgumentNullException.ThrowIfNull(vaultEndpoint);
+
+        await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
 
         var emulatedBearerToken = await GetBearerTokenAsync();
 
         var cred = new EmulatedTokenCredential(emulatedBearerToken);
 
-        return _setupModel = new ClientSetupVM(vaultEndpoint, cred);
+        return _setupModel = new ClientSetupVM(new Uri(vaultEndpoint), cred);
     }
 
     public async ValueTask<string> GetBearerTokenAsync()
