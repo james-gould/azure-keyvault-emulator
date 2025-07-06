@@ -204,7 +204,7 @@ var certificateClient = container.GetCertificateClient();
 var secret = await secretClient.SetSecretAsync("mySecretName", "mySecretValue");
 ```
 
-[You can see more examples here for various test frameworks and scenarios](./src/TestContainers/dotnet/EXAMPLES.md)
+[You can see more examples here for various test frameworks and scenarios.](./src/TestContainers/dotnet/EXAMPLES.md)
 
 # Roadmap
 
