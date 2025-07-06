@@ -35,7 +35,7 @@ internal sealed class KeyVaultEmulatorLifecycleHelper(
 
         for (var i = 1; i <= 5; i++)
         {
-            using var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+            using var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
             try
             {
@@ -46,7 +46,7 @@ internal sealed class KeyVaultEmulatorLifecycleHelper(
             }
             catch { }
 
-            await Task.Delay(i * 500);
+            await Task.Delay(i * 1000);
         }
 
         throw new KeyVaultEmulatorException("Failed to ensure healthy Key Vault Emulator container start.");
