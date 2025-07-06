@@ -115,7 +115,7 @@ builder.Services.AddAzureKeyVaultEmulator(vaultUri);
 builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, certificates: false);
 ```
 
-Or if don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`. 
+Or if you don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`. 
 
 Setting up a `SecretClient` for example:
 
@@ -172,8 +172,39 @@ else
     });
 ```
 
-
 </details>
+
+## TestContainers Module
+
+There is a readily available [TestContainers](./src/TestContainers/dotnet/README.md) module too, which fully support CI/CD pipelines. 
+
+The same testing setup can be used in your local environment and CI/CD pipelines, no need to set flags or configuration.
+
+### Basic Usage
+
+```csharp
+using AzureKeyVaultEmulator.TestContainers;
+
+// Create container with certificate directory and persistence
+await using var container = new AzureKeyVaultEmulatorContainer();
+
+// Start the container
+await container.StartAsync();
+
+// Get a AzureSDK KeyClient configured for the container
+var keyClient = container.GetKeyClient();
+
+// Get a AzureSDK SecretClient configured for the container
+var secretClient = container.GetSecretClient();
+
+// Get a AzureSDK CertificateClient configured for the container
+var certificateClient = container.GetCertificateClient();
+
+// Use as normal
+var secret = await secretClient.SetSecretAsync("mySecretName", "mySecretValue");
+```
+
+[You can see more examples here for various test frameworks and scenarios.](./src/TestContainers/dotnet/EXAMPLES.md)
 
 # Roadmap
 
