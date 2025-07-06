@@ -115,7 +115,7 @@ builder.Services.AddAzureKeyVaultEmulator(vaultUri);
 builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, certificates: false);
 ```
 
-Or if don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`. 
+Or if you don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`. 
 
 Setting up a `SecretClient` for example:
 
