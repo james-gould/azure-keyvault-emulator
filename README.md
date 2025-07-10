@@ -1,7 +1,5 @@
 # Azure Key Vault Emulator
 
-<p align="center"><img src="docs/assets/hero.png" height="25%" width="100%"></p>
-
 A fully featured, emulated version of the [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) runnable from your development machine.
 
 In a dev environment, currently, you need to have a real Azure Key Vault resource deployed and potentially being paid for in an active Azure subscription. If you’re like me and work for a fairly large company then the security policies around accessing these resources can be tough to navigate, meaning long delays during onboarding and potentially longer delays caused by multiple developers overwriting each other’s secure values.
