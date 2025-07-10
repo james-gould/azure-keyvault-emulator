@@ -176,7 +176,7 @@ else
 
 ## TestContainers Module
 
-There is a readily available [TestContainers](./src/TestContainers/dotnet/README.md) module too, which fully support CI/CD pipelines. 
+There is a readily available [TestContainers](./src/TestContainers/dotnet/README.md) module too, which fully supports all CI/CD pipelines. 
 
 The same testing setup can be used in your local environment and CI/CD pipelines, no need to set flags or configuration.
 
