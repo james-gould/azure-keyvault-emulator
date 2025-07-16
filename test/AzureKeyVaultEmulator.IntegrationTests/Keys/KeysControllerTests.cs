@@ -37,6 +37,31 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     }
 
     [Fact]
+    public async Task CreatedKeyWillPersistKeyOperations()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var name = fixture.FreshlyGeneratedGuid;
+
+        var operationNames = new List<string> { "encrypt", "decrypt", "sign", "verify", "wrapKey", "unwrapKey", "import" };
+
+        var operations = operationNames.Select(x => new KeyOperation(x));
+
+        var options = new CreateKeyOptions { Enabled = true };
+
+        foreach(var op in operations)
+            options.KeyOperations.Add(op);
+
+        var createOperation = await client.CreateKeyAsync(name, KeyType.Rsa, options);
+
+        var createdKey = createOperation.Value;
+
+        Assert.Equal(name, createdKey.Name);
+        Assert.NotEmpty(createdKey.KeyOperations);
+        Assert.Equivalent(operations, createdKey.KeyOperations);
+    }
+
+    [Fact]
     public async Task GetKeyWithVersionGetsCorrectVersion()
     {
         var client = await fixture.GetClientAsync();
