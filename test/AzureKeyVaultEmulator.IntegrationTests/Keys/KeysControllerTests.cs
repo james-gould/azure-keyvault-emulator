@@ -47,7 +47,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var operations = operationNames.Select(x => new KeyOperation(x));
 
-        var options = new CreateKeyOptions { Enabled = true };
+        var options = new CreateRsaKeyOptions(name) { Enabled = true };
 
         foreach(var op in operations)
             options.KeyOperations.Add(op);
