@@ -39,6 +39,10 @@ jobs:
           dotnet dev-certs https --clean
           dotnet dev-certs https --trust
 
+      - name: Run Wiremock Integration Tests
+        run: |
+          dotnet test ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj
+
       - name: Run API Integration Tests
         run: |
           dotnet test ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
@@ -46,10 +50,6 @@ jobs:
       - name: Run TestContainers Integration Tests
         run: |
           dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
-
-      - name: Run Wiremock Integration Tests
-        run: |
-          dotnet test ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj
 
       - name: Restore dependencies
         run: dotnet restore
