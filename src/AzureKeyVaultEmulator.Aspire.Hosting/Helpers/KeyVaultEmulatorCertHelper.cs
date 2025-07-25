@@ -332,14 +332,14 @@ internal static class KeyVaultEmulatorCertHelper
         if(!pathBase.EndsWith('/'))
             pathBase += "/";
 
-        var certBase = "emulator";
+        var certPassword = "emulator";
 
         var pemTmpPath = $"{pathBase}{KeyVaultEmulatorCertConstants.Pem}";
         var pfxTmpPath = $"{pathBase}{KeyVaultEmulatorCertConstants.Pfx}";
 
         // Should probably be checking environment/OSPlatform here to switch between Bash or DOS.
         // Requires WSL on Windows, which is a requirement for Docker/containers though.
-        AzureKeyVaultEnvHelper.Bash($"dotnet dev-certs https -ep {pemTmpPath} -p {certBase} --format PEM");
-        AzureKeyVaultEnvHelper.Bash($"dotnet dev-certs https -ep {pfxTmpPath} -p {certBase}");
+        AzureKeyVaultEnvHelper.Bash($"dotnet dev-certs https -ep {pemTmpPath} -p {certPassword} --format PEM");
+        AzureKeyVaultEnvHelper.Bash($"dotnet dev-certs https -ep {pfxTmpPath} -p {certPassword}");
     }
 }
