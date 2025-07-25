@@ -49,7 +49,7 @@ jobs:
 
       - name: Run Wiremock Integration Tests
         run: |
-          dotnet test ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj'
+          dotnet test ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj
 
       - name: Restore dependencies
         run: dotnet restore
