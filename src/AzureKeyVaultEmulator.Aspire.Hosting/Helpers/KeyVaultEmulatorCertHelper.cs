@@ -44,7 +44,7 @@ internal static class KeyVaultEmulatorCertHelper
         if (!certsAlreadyExist && options.ShouldGenerateCertificates)
             TryRemovePreviousCerts(pfxPath, crtPath);
 
-        if (options.UseDotnetDevCerts)
+        if (options.UseDotnetDevCerts && options.ShouldGenerateCertificates)
         {
             // dev-certs command will install automatically to User store
             options.LoadCertificatesIntoTrustStore = false;
