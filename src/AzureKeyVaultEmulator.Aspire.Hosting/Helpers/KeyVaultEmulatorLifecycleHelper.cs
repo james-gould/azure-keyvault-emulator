@@ -44,7 +44,11 @@ internal sealed class KeyVaultEmulatorLifecycleHelper(
                 if (response.IsSuccessStatusCode)
                     return;
             }
-            catch { }
+            catch(Exception e)
+            {
+                Console.WriteLine($"Container threw when starting: {e?.Message}");
+                Console.WriteLine($"Inner: {e?.InnerException?.Message}");
+            }
 
             await Task.Delay(i * 1000);
         }
