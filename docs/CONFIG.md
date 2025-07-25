@@ -46,6 +46,7 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
 | `LoadCertificatesIntoTrustStore` | `bool`          | `true`      | Attempts to install generated certs into the OS trust store. Requires admin rights. |
 | `ForceCleanupOnShutdown`     | `bool`               | `false`     | Tries to delete certificates at `LocalCertificatePath` on shutdown. Unstable and not reliable. |
 | `Lifetime`                   | `ContainerLifetime`  | `Session`   | Controls container behavior on shutdown:<br>• `Session`: Destroys container<br>• `Persistent`: Stops container without destroying it.<br><br>This will not remove the certificates from your host machine. |
+| `UseDotnetDevCerts` | `bool` | `false` | Instructs the hosting runtime to generate and install SSL certificates via `dotnet dev-certs`. Useful if you have 3rd party dependencies which utilise/require the ASP.NET Core dev-cert. |
 
 
 
@@ -62,6 +63,7 @@ With `User Secrets` you can create a configuration section with the following op
     "ShouldGenerateCertificates": false,
     "Lifetime": "Persistent",
     "ForceCleanupOnShutdown": false,
+    "UseDotnetDevCerts": false
   }
 }
 ```
@@ -70,7 +72,7 @@ which then can be used like:
 
 ```cs
 var keyVault = builder
-    .AddAzureKeyVault("myLocalKeyVault)
+    .AddAzureKeyVault("myLocalKeyVault")
     .RunAsEmulator(configSectionName: "KeyVaultEmulator");
 ```
 
@@ -89,11 +91,14 @@ Or you can pass in the same values directly as an `object`:
         LoadCertificatesIntoTrustStore = false,
         ShouldGenerateCertificates = false,
         Lifetime = ContainerLifetime.Persistent,
-        ForceCleanupOnShutdown = false
+        ForceCleanupOnShutdown = false,
+        UseDotnetDevCerts = false
     });
 ```
 
 If you run into SSL Connection issues, ie `UntrustedRoot`, your configuration is incorrect or the certificates in your specified directory aren't installed on your machine.
+
+If your configuration is the default and you're still experiencing SSL issues, 3rd party dependencies may be causing a certificate clash; set `UseDotnetDevCerts = true` and try again. [Wiremock.Net is known to cause this issue](https://github.com/james-gould/azure-keyvault-emulator/issues/293) and can be resolved with the `dev-cert` option.
 
 ## Local Docker
 
@@ -132,6 +137,10 @@ Yes. It's no different than the `SSL` constraints of developing `ASP.NET Core` a
 > I'm using Linux and the SSL is still untrusted?
 
 Please exit your IDE/terminal running your application, run `sudo update-ca-certificates` and restart the container; subsequent uses of the Emulator will now be trusted.
+
+> My setup is the default options and SSL is Untrusted (Aspire only)
+
+Set the option `UseDotnetDevCerts = true` and re-run your application/pipeline. 3rd party dependencies that enforce the usage of the `dotnet dev-certs` certificate are [known](https://github.com/james-gould/azure-keyvault-emulator/issues/293) to cause this issue.
 
 > I'm using Persist but my `emulator.db` is split into 3 files. Why?
 

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using Microsoft.Extensions.Hosting;
@@ -35,7 +35,7 @@ internal sealed class KeyVaultEmulatorLifecycleHelper(
 
         for (var i = 1; i <= 5; i++)
         {
-            using var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+            using var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
             try
             {
@@ -44,9 +44,13 @@ internal sealed class KeyVaultEmulatorLifecycleHelper(
                 if (response.IsSuccessStatusCode)
                     return;
             }
-            catch { }
+            catch(Exception e)
+            {
+                Console.WriteLine($"Container threw when starting: {e?.Message}");
+                Console.WriteLine($"Inner: {e?.InnerException?.Message}");
+            }
 
-            await Task.Delay(i * 500);
+            await Task.Delay(i * 1000);
         }
 
         throw new KeyVaultEmulatorException("Failed to ensure healthy Key Vault Emulator container start.");

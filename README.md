@@ -1,7 +1,5 @@
 # Azure Key Vault Emulator
 
-<p align="center"><img src="docs/assets/hero.png" height="25%" width="100%"></p>
-
 A fully featured, emulated version of the [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault) runnable from your development machine.
 
 In a dev environment, currently, you need to have a real Azure Key Vault resource deployed and potentially being paid for in an active Azure subscription. If you’re like me and work for a fairly large company then the security policies around accessing these resources can be tough to navigate, meaning long delays during onboarding and potentially longer delays caused by multiple developers overwriting each other’s secure values.
@@ -15,7 +13,8 @@ The emulator does not connect to or update an existing Azure Key Vault, it simpl
 - Full Azure SDK Client support; use `SecretClient`, `KeyClient` or `CertificateClient` as normal.
 - Destroy all secrets between sessions, or keep a persisted database.
 - Works standalone with [Docker](#running-the-emulator-with-docker), easy integration with [.NET Aspire](#running-the-emulator-with-net-aspire).
-- [TestContainers Support.](./src/TestContainers/dotnet/)
+- [TestContainers Module](./src/TestContainers/dotnet/).
+- Fully supported in all CI/CD pipelines and DevOps platforms.
 
 You can find [sample applications here](https://github.com/james-gould/azure-keyvault-emulator-samples) or you can [read the full launch blog post here!](https://jamesgould.dev/posts/Azure-Key-Vault-Emulator/)
 
@@ -32,7 +31,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/james-gould/azure-keyvault-e
 ```
 
 > [!IMPORTANT]
-> If you're using **Windows**, use `Git Bash` to execute the setup script.
+> If you're using **Windows**, use `Git Bash` or `wsl` to execute the setup script.
 
 Alternatively you can download a copy of [setup.sh](docs/setup.sh) and run it locally, or read the [long form, manual set up docs.](docs/CONFIG.md#local-docker)
 
@@ -115,7 +114,7 @@ builder.Services.AddAzureKeyVaultEmulator(vaultUri);
 builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, certificates: false);
 ```
 
-Or if don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`. 
+Or if you don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`. 
 
 Setting up a `SecretClient` for example:
 
@@ -172,8 +171,39 @@ else
     });
 ```
 
-
 </details>
+
+## TestContainers Module
+
+There is a readily available [TestContainers](./src/TestContainers/dotnet/README.md) module too, which fully supports all CI/CD pipelines. 
+
+The same testing setup can be used in your local environment and CI/CD pipelines, no need to set flags or configuration.
+
+### Basic Usage
+
+```csharp
+using AzureKeyVaultEmulator.TestContainers;
+
+// Create container with certificate directory and persistence
+await using var container = new AzureKeyVaultEmulatorContainer();
+
+// Start the container
+await container.StartAsync();
+
+// Get a AzureSDK KeyClient configured for the container
+var keyClient = container.GetKeyClient();
+
+// Get a AzureSDK SecretClient configured for the container
+var secretClient = container.GetSecretClient();
+
+// Get a AzureSDK CertificateClient configured for the container
+var certificateClient = container.GetCertificateClient();
+
+// Use as normal
+var secret = await secretClient.SetSecretAsync("mySecretName", "mySecretValue");
+```
+
+[You can see more examples here for various test frameworks and scenarios.](./src/TestContainers/dotnet/EXAMPLES.md)
 
 # Roadmap
 

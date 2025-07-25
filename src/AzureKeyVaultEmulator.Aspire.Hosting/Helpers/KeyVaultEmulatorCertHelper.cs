@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using System.Text;
 using System.Diagnostics;
@@ -11,6 +11,58 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
 internal static class KeyVaultEmulatorCertHelper
 {
+    /// <summary>
+    /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
+    /// </summary>
+    /// <param name="options">The granular options for configuring the Azure Key Vault Emulator.</param>
+    /// <returns>The base directory containing certificates.</returns>
+    internal static CertificateLoaderVM ValidateOrGenerateCertificate(KeyVaultEmulatorOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (!string.IsNullOrEmpty(options.LocalCertificatePath) && !Directory.Exists(options.LocalCertificatePath))
+            Directory.CreateDirectory(options.LocalCertificatePath);
+
+        var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
+
+        if (!Directory.Exists(certPath))
+            Directory.CreateDirectory(certPath);
+
+        var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
+        var crtPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Crt);
+
+        var certsAlreadyExist = File.Exists(pfxPath) && File.Exists(crtPath);
+
+        // Both required certs exist so noop.
+        // Will also require a cert check for expiration
+        // Out of scope for now
+        if (certsAlreadyExist && !options.LoadCertificatesIntoTrustStore)
+            return new(certPath);
+
+        // One has been deleted, try to remove them both and regenerate.
+        // Only if users allow us to conduct IO on the certificates for the Emulator.
+        if (!certsAlreadyExist && options.ShouldGenerateCertificates)
+            TryRemovePreviousCerts(pfxPath, crtPath);
+
+        if (options.UseDotnetDevCerts && options.ShouldGenerateCertificates)
+        {
+            // dev-certs command will install automatically to User store
+            options.LoadCertificatesIntoTrustStore = false;
+            options.LocalCertificatePath = certPath;
+
+            InstallViaDotnetDevCerts(certPath);
+
+            return new(certPath);
+        }
+
+        // Create files and place at {path}.
+        var (pfx, pem) = options.ShouldGenerateCertificates && !certsAlreadyExist
+                            ? GenerateAndSaveCert(pfxPath, crtPath)
+                            : LoadExistingCertificatesToInstall(pfxPath, crtPath);
+
+        return new(certPath) { Pfx = pfx, pem = pem };
+    }
+
     /// <summary>
     /// <para>Gets the path where the certificates are stored on the host machine.</para>
     /// <para>This is then used with the -v arg in Docker to mount the directory as a volume.</para>
@@ -39,47 +91,6 @@ internal static class KeyVaultEmulatorCertHelper
             KeyVaultEmulatorCertConstants.HostParentDirectory,
             KeyVaultEmulatorCertConstants.HostChildDirectory
         );
-    }
-
-    /// <summary>
-    /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>
-    /// </summary>
-    /// <param name="options">The granular options for configuring the Azure Key Vault Emulator.</param>
-    /// <returns>The base directory containing certificates.</returns>
-    internal static CertificateLoaderVM ValidateOrGenerateCertificate(KeyVaultEmulatorOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        if (!string.IsNullOrEmpty(options.LocalCertificatePath) && !Directory.Exists(options.LocalCertificatePath))
-            Directory.CreateDirectory(options.LocalCertificatePath);
-
-        var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
-
-        if(!Directory.Exists(certPath))
-            Directory.CreateDirectory(certPath);
-
-        var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
-        var crtPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Crt);
-
-        var certsAlreadyExist = File.Exists(pfxPath) && File.Exists(crtPath);
-
-        // Both required certs exist so noop.
-        // Will also require a cert check for expiration
-        // Out of scope for now
-        if (certsAlreadyExist && !options.LoadCertificatesIntoTrustStore)
-            return new(certPath);
-
-        // One has been deleted, try to remove them both and regenerate.
-        // Only if users allow us to conduct IO on the certificates for the Emulator.
-        if(!certsAlreadyExist && options.ShouldGenerateCertificates)
-            TryRemovePreviousCerts(pfxPath, crtPath);
-
-        // Then create files and place at {path}
-        var (pfx, pem) = options.ShouldGenerateCertificates && !certsAlreadyExist
-                            ? GenerateAndSaveCert(pfxPath, crtPath)
-                            : LoadExistingCertificatesToInstall(pfxPath, crtPath);
-
-        return new(certPath) { Pfx = pfx, pem = pem };
     }
 
     /// <summary>
@@ -307,5 +318,28 @@ internal static class KeyVaultEmulatorCertHelper
             File.Delete(pem);
             Debug.WriteLine($"Found previous {KeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
+    }
+
+    /// <summary>
+    /// <para>Installs and exports the required certificates using the dotnet dev-certs command.</para>
+    /// <para>Useful for scenarios where the ASP.NET Core dev-cert is needed for an additional dependency, such as Wiremock.NET.</para>
+    /// </summary>
+    /// <param name="pathBase">The path to export the certificates to.</param>
+    private static void InstallViaDotnetDevCerts(string pathBase)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(pathBase);
+
+        if (!pathBase.EndsWith(Path.DirectorySeparatorChar))
+            pathBase += Path.DirectorySeparatorChar;
+
+        var certPassword = "emulator";
+
+        var pemTmpPath = $"{pathBase}{KeyVaultEmulatorCertConstants.Pem}";
+        var pfxTmpPath = $"{pathBase}{KeyVaultEmulatorCertConstants.Pfx}";
+
+        // Should probably be checking environment/OSPlatform here to switch between Bash or DOS.
+        // Requires WSL on Windows, which is a requirement for Docker/containers though.
+        AzureKeyVaultEnvHelper.Bash($"dotnet dev-certs https -ep {pemTmpPath} -p {certPassword} --format PEM");
+        AzureKeyVaultEnvHelper.Bash($"dotnet dev-certs https -ep {pfxTmpPath} -p {certPassword}");
     }
 }

@@ -25,7 +25,6 @@ public sealed class KeyVaultEmulatorOptions
 
     /// <summary>
     /// <para>Determines if the Emulator should attempt to load the certificates into the host machine's trust store.</para>
-    /// <para>Warning: this requires Administration rights.</para>
     /// <para>Unused if the certificates are already present, removing the administration privilege requirement.</para>
     /// </summary>
     public bool LoadCertificatesIntoTrustStore { get; set; } = true;
@@ -39,6 +38,13 @@ public sealed class KeyVaultEmulatorOptions
     /// <para>The PFX password MUST be "emulator" - all lowercase without the double quotes. This limitation is being looked into.</para>
     /// </summary>
     public bool ShouldGenerateCertificates { get; set; } = true;
+
+    /// <summary>
+    /// <para>Instructs the AzureKeyVaultEmulator.Aspire.Hosting runtime to create and install certificates using the dotnet dev-certs command instead of OpenSSL.</para>
+    /// <para>If you experience issues with mocking tools that enforce SSL, this option may resolve them.</para>
+    /// <see href="https://github.com/james-gould/azure-keyvault-emulator/issues/293"/>
+    /// </summary>
+    public bool UseDotnetDevCerts { get; set; } = false;
 
     /// <summary>
     /// <para>Cleans up the generated SSL certificates on application shutdown.</para>
