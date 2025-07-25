@@ -3,13 +3,18 @@ using AzureKeyVaultEmulator.Shared.Constants.Orchestration;
 using WireMock.Server;
 
 var wiremockFlag = args.FirstOrDefault(x => x.Contains(AspireConstants.Wiremock, StringComparison.InvariantCultureIgnoreCase));
+var isWiremockTestRunning = !string.IsNullOrEmpty(wiremockFlag);
 
 var builder = DistributedApplication.CreateBuilder();
 
 var keyVault = builder
     .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
     .RunAsEmulator(
-    //new KeyVaultEmulatorOptions { Lifetime = ContainerLifetime.Persistent }
+        new KeyVaultEmulatorOptions
+        {
+            UseDotnetDevCerts = isWiremockTestRunning
+            //Lifetime = ContainerLifetime.Persistent
+        }
     );
 
 var webApi = builder
