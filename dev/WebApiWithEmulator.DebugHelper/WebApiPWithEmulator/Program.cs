@@ -18,7 +18,7 @@ var vaultUri = builder.Configuration.GetConnectionString(AspireConstants.Emulato
 
 builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, certificates: true, keys: true);
 
-var wiremock = Environment.GetEnvironmentVariable("wiremock");
+var wiremock = Environment.GetEnvironmentVariable(AspireConstants.Wiremock);
 
 if (!string.IsNullOrEmpty(wiremock))
 {
@@ -45,7 +45,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet(WiremockConstants.EndpointName, async ([FromServices] IHttpClientFactory httpClientFactory) =>
+app.MapGet(WiremockConstants.EndpointPath, async ([FromServices] IHttpClientFactory httpClientFactory) =>
 {
     try
     {

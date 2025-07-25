@@ -12,7 +12,7 @@ var keyVault = builder
     .RunAsEmulator(
         new KeyVaultEmulatorOptions
         {
-            UseDotnetDevCerts = isWiremockTestRunning
+            //UseDotnetDevCerts = isWiremockTestRunning
             //Lifetime = ContainerLifetime.Persistent
         }
     );
@@ -22,13 +22,13 @@ var webApi = builder
     .WithReference(keyVault)
     .WaitFor(keyVault);
 
-if (string.IsNullOrEmpty(wiremockFlag))
+if (isWiremockTestRunning)
 {
     var wiremockServer = WireMockServer
         .Start(useSSL: true);
 
     wiremockServer.Given(WireMock.RequestBuilders.Request.Create()
-        .WithPath(WiremockConstants.EndpointName)
+        .WithPath(WiremockConstants.EndpointPath)
         .UsingGet())
         .RespondWith(WireMock.ResponseBuilders.Response.Create()
         .WithStatusCode(200)
