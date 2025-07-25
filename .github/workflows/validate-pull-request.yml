@@ -31,3 +31,7 @@ jobs:
       - name: Run TestContainers Integration Tests
         run: |
           dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
+
+      - name: Run Wiremock Integration Tests
+        run: |
+          dotnet test ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj

@@ -4,7 +4,7 @@ using Asp.Versioning.Http;
 using Aspire.Hosting;
 using Azure.Core;
 using Azure.Core.Pipeline;
-using AzureKeyVaultEmulator.Shared.Constants;
+using AzureKeyVaultEmulator.Shared.Constants.Orchestration;
 using AzureKeyVaultEmulator.Shared.Utilities;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;

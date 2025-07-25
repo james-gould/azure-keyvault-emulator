@@ -10,6 +10,7 @@ public sealed class KeyVaultEmulatorCertConstants
     // PFX is referenced in the Dockerfile, update both is this changes.
     public const string Pfx = $"{_rootName}.pfx";
     public const string Crt = $"{_rootName}.crt";
+    public const string Pem = $"{_rootName}.pem";
 
     // This is also referenced in the Dockerfile, update both if this changes.
     public const string Pword = _rootName;
