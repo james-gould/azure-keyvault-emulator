@@ -22,7 +22,7 @@ var wiremock = Environment.GetEnvironmentVariable("wiremock");
 
 if (!string.IsNullOrEmpty(wiremock))
 {
-    builder.Services.AddHttpClient("test", (sp, client) =>
+    builder.Services.AddHttpClient(WiremockConstants.HttpClientName, (sp, client) =>
     {
         client.BaseAddress = new Uri(wiremock);
     });
@@ -45,13 +45,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/test", async ([FromServices] IHttpClientFactory httpClientFactory) =>
+app.MapGet(WiremockConstants.EndpointName, async ([FromServices] IHttpClientFactory httpClientFactory) =>
 {
     try
     {
-        var client = httpClientFactory.CreateClient("test");
+        var client = httpClientFactory.CreateClient(WiremockConstants.HttpClientName);
 
-        var response = await client.GetAsync("test");
+        var response = await client.GetAsync(WiremockConstants.EndpointName);
 
         var content = await response.Content.ReadAsStringAsync();
 
