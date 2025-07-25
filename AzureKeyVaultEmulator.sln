@@ -29,7 +29,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.TestC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.TestContainers.Tests", "test\AzureKeyVaultEmulator.TestContainers.Tests\AzureKeyVaultEmulator.TestContainers.Tests.csproj", "{CDEB06F2-3EA5-4DED-8113-E732EFBC800B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Wiremock.IntegrationTests", "AzureKeyVaultEmulator.Wiremock.IntegrationTests\AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj", "{FF15C174-6F00-4C77-AAE5-B98ACC68C17E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultEmulator.Wiremock.IntegrationTests", "test\AzureKeyVaultEmulator.Wiremock.IntegrationTests\AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj", "{FF15C174-6F00-4C77-AAE5-B98ACC68C17E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
