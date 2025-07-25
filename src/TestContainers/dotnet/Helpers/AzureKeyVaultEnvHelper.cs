@@ -8,7 +8,7 @@ internal static class AzureKeyVaultEnvHelper
     private static readonly string[] _defaultVars =
     [
         "BUILD_BUILDID", // Azure DevOps
-        "CI", // Jekyll, TeamCity, etc
+        "CI", // Jenkins, TeamCity, etc
         "GITHUB_ACTIONS" // Github, obviously.
     ];
 
