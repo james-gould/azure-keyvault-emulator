@@ -329,8 +329,8 @@ internal static class KeyVaultEmulatorCertHelper
     {
         ArgumentException.ThrowIfNullOrEmpty(pathBase);
 
-        if(!pathBase.EndsWith('/'))
-            pathBase += "/";
+        if (!pathBase.EndsWith(Path.DirectorySeparatorChar))
+            pathBase += Path.DirectorySeparatorChar;
 
         var certPassword = "emulator";
 
