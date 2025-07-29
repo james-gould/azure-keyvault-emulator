@@ -12,12 +12,21 @@ internal static class AzureKeyVaultEnvHelper
         "GITHUB_ACTIONS" // Github, obviously.
     ];
 
+    /// <summary>
+    /// Typically used to run commands with `sudo`
+    /// </summary>
+    /// <param name="command"></param>
     public static void Bash(string command)
+    {
+        Exec("/bin/bash", $"-c \"{command}\"");
+    }
+
+    public static void Exec(string executable, string arguments)
     {
         var psi = new ProcessStartInfo
         {
-            FileName = "/bin/bash",
-            Arguments = $"-c \"{command}\"",
+            FileName = executable,
+            Arguments = arguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -38,7 +47,7 @@ internal static class AzureKeyVaultEnvHelper
             Console.WriteLine(err);
 
         if (proc?.ExitCode != 0)
-            throw new KeyVaultEmulatorException($"Command failed: {command}\n{err}");
+            throw new KeyVaultEmulatorException($"Command failed: {executable} {arguments}\n{err}");
     }
 
     /// <summary>
