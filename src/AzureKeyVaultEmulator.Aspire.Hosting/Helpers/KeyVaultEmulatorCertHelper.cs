@@ -341,5 +341,6 @@ internal static class KeyVaultEmulatorCertHelper
         // Requires WSL on Windows, which is a requirement for Docker/containers though.
         AzureKeyVaultEnvHelper.Exec("dotnet", $"dev-certs https -ep {pemTmpPath} -p {certPassword} --format PEM");
         AzureKeyVaultEnvHelper.Exec("dotnet", $"dev-certs https -ep {pfxTmpPath} -p {certPassword}");
+
     }
 }
