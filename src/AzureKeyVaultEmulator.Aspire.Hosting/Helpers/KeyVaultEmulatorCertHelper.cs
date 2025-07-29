@@ -339,6 +339,5 @@ internal static class KeyVaultEmulatorCertHelper
 
         AzureKeyVaultEnvHelper.Exec("dotnet", $"dev-certs https -ep {pemTmpPath} -p {KeyVaultEmulatorCertConstants.Pword} --format PEM");
         AzureKeyVaultEnvHelper.Exec("dotnet", $"dev-certs https -ep {pfxTmpPath} -p {KeyVaultEmulatorCertConstants.Pword}");
-
     }
 }
