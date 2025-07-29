@@ -6,6 +6,7 @@ public sealed class KeyVaultEmulatorCertConstants
 
     public const string HostParentDirectory = "keyvaultemulator";
     public const string HostChildDirectory = "certs";
+    public const string HostDotnetDevCertsChildDirectory = "dotnet-dev-certs";
 
     // PFX is referenced in the Dockerfile, update both is this changes.
     public const string Pfx = $"{_rootName}.pfx";
