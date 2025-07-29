@@ -23,7 +23,7 @@ internal static class KeyVaultEmulatorCertHelper
         if (!string.IsNullOrEmpty(options.LocalCertificatePath) && !Directory.Exists(options.LocalCertificatePath))
             Directory.CreateDirectory(options.LocalCertificatePath);
 
-        var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath);
+        var certPath = GetConfigurableCertStoragePath(options.LocalCertificatePath, options.UseDotnetDevCerts);
 
         if (!Directory.Exists(certPath))
             Directory.CreateDirectory(certPath);
@@ -31,6 +31,8 @@ internal static class KeyVaultEmulatorCertHelper
         var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
         var crtPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Crt);
 
+        // The certs may expire, the expiration date in the crt should be validated,
+        // when close to expiration (1 day before end??), certificates should be regenerated.
         var certsAlreadyExist = File.Exists(pfxPath) && File.Exists(crtPath);
 
         // Both required certs exist so noop.
@@ -68,7 +70,7 @@ internal static class KeyVaultEmulatorCertHelper
     /// <para>This is then used with the -v arg in Docker to mount the directory as a volume.</para>
     /// </summary>
     /// <returns>The parent directory containing the certificates.</returns>
-    internal static string GetConfigurableCertStoragePath(string? baseDir = null)
+    internal static string GetConfigurableCertStoragePath(string? baseDir, bool isDotnetDevCerts)
     {
         // Bypass permission issues when the certificates are throwaway/single use.
         if (AzureKeyVaultEnvHelper.IsCiCdEnvironment())
@@ -89,7 +91,7 @@ internal static class KeyVaultEmulatorCertHelper
         return Path.Combine(
             baseDir,
             KeyVaultEmulatorCertConstants.HostParentDirectory,
-            KeyVaultEmulatorCertConstants.HostChildDirectory
+            isDotnetDevCerts ? KeyVaultEmulatorCertConstants.HostDotnetDevCertsChildDirectory : KeyVaultEmulatorCertConstants.HostChildDirectory
         );
     }
 
@@ -332,15 +334,11 @@ internal static class KeyVaultEmulatorCertHelper
         if (!pathBase.EndsWith(Path.DirectorySeparatorChar))
             pathBase += Path.DirectorySeparatorChar;
 
-        var certPassword = "emulator";
-
         var pemTmpPath = $"{pathBase}{KeyVaultEmulatorCertConstants.Pem}";
         var pfxTmpPath = $"{pathBase}{KeyVaultEmulatorCertConstants.Pfx}";
 
-        // Should probably be checking environment/OSPlatform here to switch between Bash or DOS.
-        // Requires WSL on Windows, which is a requirement for Docker/containers though.
-        AzureKeyVaultEnvHelper.Exec("dotnet", $"dev-certs https -ep {pemTmpPath} -p {certPassword} --format PEM");
-        AzureKeyVaultEnvHelper.Exec("dotnet", $"dev-certs https -ep {pfxTmpPath} -p {certPassword}");
+        AzureKeyVaultEnvHelper.Exec("dotnet", $"dev-certs https -ep {pemTmpPath} -p {KeyVaultEmulatorCertConstants.Pword} --format PEM");
+        AzureKeyVaultEnvHelper.Exec("dotnet", $"dev-certs https -ep {pfxTmpPath} -p {KeyVaultEmulatorCertConstants.Pword}");
 
     }
 }
