@@ -12,7 +12,7 @@ var keyVault = builder
     .RunAsEmulator(
         new KeyVaultEmulatorOptions
         {
-            UseDotnetDevCerts = (isWiremockTestRunning && OperatingSystem.IsLinux())
+            UseDotnetDevCerts = isWiremockTestRunning
             //Lifetime = ContainerLifetime.Persistent
         }
     );
