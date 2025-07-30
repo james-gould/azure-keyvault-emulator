@@ -126,6 +126,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                 var allocatedEndpoint = endpoint.AllocatedEndpoint?.UriString
                     ?? throw new KeyVaultEmulatorException("Failed to locate host machine port for allocated Emulator container.");
 
+                builder.Resource.Outputs.Clear();
+
                 builder.Resource.Outputs.Add("vaultUri", allocatedEndpoint);
                 builder.WithUrl(allocatedEndpoint, allocatedEndpoint);
 
@@ -135,6 +137,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             });
 
             builder.RegisterOptionalLifecycleHandler(() => _allocatedEndpoint, options, hostCertificatePath);
+
+            builder.Resource.Outputs.Add("vaultUri", "https://localhost:4998");
 
             return builder;
         }
