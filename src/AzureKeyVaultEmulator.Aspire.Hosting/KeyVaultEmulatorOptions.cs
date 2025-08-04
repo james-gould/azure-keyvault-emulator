@@ -51,6 +51,7 @@ public sealed class KeyVaultEmulatorOptions
     /// <para>If you do not set a value for <see cref="LocalCertificatePath"/>, the default local user directory will be used for your OS.</para>
     /// <para>Default: <see langword="false"/></para>
     /// </summary>
+    [Obsolete("This option will be removed in future releases, please remove your usage.")]
     public bool ForceCleanupOnShutdown { get; set; } = false;
 
     /// <summary>
