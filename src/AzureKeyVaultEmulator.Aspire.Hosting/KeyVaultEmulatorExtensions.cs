@@ -92,10 +92,14 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");
                     })
-                    .OnResourceEndpointsAllocated((emulator, resourceEvent, ct) =>
+                    .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
                     {
-                        var t = emulator.GetEndpoints();
                         var endpoint = emulator.GetEndpoint("https");
+
+                        if (string.IsNullOrEmpty(endpoint.Url))
+                            throw new InvalidOperationException($"Failed to find endpoint URL for {nameof(AzureKeyVaultEmulatorResource)}");
+
+                        builder.Resource.Outputs.Clear();
 
                         builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
 
@@ -110,18 +114,6 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             eventing.Subscribe<BeforeResourceStartedEvent>(builder.Resource, async (resourceEvent, ct) =>
             {
                 await eventing.PublishAsync(new BeforeResourceStartedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
-            });
-
-            eventing.Subscribe<ResourceEndpointsAllocatedEvent>(builder.Resource, async (resourceEvent, ct) =>
-            {
-                await eventing.PublishAsync(new ResourceEndpointsAllocatedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
-            });
-
-            keyVaultResourceBuilder.ApplicationBuilder.Eventing.Subscribe<ResourceEndpointsAllocatedEvent>((resource, ct) =>
-            {
-                var t = resource.Resource.TryGetEndpoints(out var endpointCollection);
-
-                return Task.CompletedTask;
             });
 
             // Something has to be set before the endpoint is available to ensure the Bicep validation passes
