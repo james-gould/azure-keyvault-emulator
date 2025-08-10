@@ -95,7 +95,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, options.Persist.ToString());
                     })
-                    .OnResourceEndpointsAllocated((emulator, resourceEvent, ct) =>
+                    .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
                     {
                         var endpoint = emulator.GetEndpoint("https");
 
@@ -113,11 +113,6 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             eventing.Subscribe<BeforeResourceStartedEvent>(builder.Resource, async (resourceEvent, ct) =>
             {
                 await eventing.PublishAsync(new BeforeResourceStartedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
-            });
-
-            eventing.Subscribe<ResourceEndpointsAllocatedEvent>(builder.Resource, async (resourceEvent, ct) =>
-            {
-                await eventing.PublishAsync(new ResourceEndpointsAllocatedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
             });
 
             return builder;
