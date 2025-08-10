@@ -94,6 +94,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     })
                     .OnResourceEndpointsAllocated((emulator, resourceEvent, ct) =>
                     {
+                        var t = emulator.GetEndpoints();
                         var endpoint = emulator.GetEndpoint("https");
 
                         builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
