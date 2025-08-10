@@ -92,20 +92,28 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");
                     })
-                    //.WithHttpHealthCheck("/token")
+                    .OnResourceEndpointsAllocated((emulator, resourceEvent, ct) =>
+                    {
+                        var endpoint = emulator.GetEndpoint("https");
+
+                        builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
+
+                        return Task.CompletedTask;
+                    })
+                    .WithHttpHealthCheck("/token")
                     .WithAnnotation(new EmulatorResourceAnnotation());
 
-            builder.ApplicationBuilder.Eventing.Subscribe<ResourceEndpointsAllocatedEvent>
-                (builder.Resource, (resourceEvent, ct) =>
+            // We need to forward events from the real Azure Key Vault resource to the emulator resource
+            var eventing = builder.ApplicationBuilder.Eventing;
+
+            eventing.Subscribe<BeforeResourceStartedEvent>(builder.Resource, async (resourceEvent, ct) =>
             {
-                var endpoint = keyVaultResourceBuilder.GetEndpoint("https");
+                await eventing.PublishAsync(new BeforeResourceStartedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
+            });
 
-                builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
-
-                // Currently isnt being used
-                keyVaultResourceBuilder.WithHttpHealthCheck("/token");
-
-                return Task.CompletedTask;
+            eventing.Subscribe<ResourceEndpointsAllocatedEvent>(builder.Resource, async (resourceEvent, ct) =>
+            {
+                await eventing.PublishAsync(new ResourceEndpointsAllocatedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
             });
 
             // Something has to be set before the endpoint is available to ensure the Bicep validation passes
