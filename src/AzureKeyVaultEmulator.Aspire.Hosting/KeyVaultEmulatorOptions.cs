@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography.X509Certificates;
+using Aspire.Hosting.ApplicationModel;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
