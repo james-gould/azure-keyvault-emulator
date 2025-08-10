@@ -95,18 +95,29 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, options.Persist.ToString());
                     })
+                    .OnResourceEndpointsAllocated((emulator, resourceEvent, ct) =>
+                    {
+                        var endpoint = emulator.GetEndpoint("https");
+
+                        // The endpoint should be allocated by then
+                        builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
+
+                        return Task.CompletedTask;
+                    })
                     .WithHttpHealthCheck("/token")
                     .WithAnnotation(new EmulatorResourceAnnotation());
 
-            builder.ApplicationBuilder.Eventing.Subscribe<ResourceEndpointsAllocatedEvent>(builder.Resource, (resourceEvent, ct) =>
+            // We need to forward events from the real Azure Key Vault resource to the emulator resource
+            var eventing = builder.ApplicationBuilder.Eventing;
+
+            eventing.Subscribe<BeforeResourceStartedEvent>(builder.Resource, async (resourceEvent, ct) =>
             {
-                // Put the endpoint into the resource outputs so it can be used by the application.
-                var endpoint = keyVaultResourceBuilder.GetEndpoint("https");
+                await eventing.PublishAsync(new BeforeResourceStartedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
+            });
 
-                // The endpoint should be allocated by then
-                builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
-
-                return Task.CompletedTask;
+            eventing.Subscribe<ResourceEndpointsAllocatedEvent>(builder.Resource, async (resourceEvent, ct) =>
+            {
+                await eventing.PublishAsync(new ResourceEndpointsAllocatedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
             });
 
             return builder;
