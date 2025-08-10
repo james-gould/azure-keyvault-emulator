@@ -1,6 +1,10 @@
-﻿using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
+﻿using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Azure;
+using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
+using Microsoft.Extensions.Configuration;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
