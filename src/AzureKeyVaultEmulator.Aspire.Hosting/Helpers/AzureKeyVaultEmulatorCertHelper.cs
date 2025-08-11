@@ -9,7 +9,7 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Models;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
-internal static class KeyVaultEmulatorCertHelper
+internal static class AzureKeyVaultEmulatorCertHelper
 {
     /// <summary>
     /// <para>Generates, trusts and stores a self signed certificate for the subject "localhost".</para>

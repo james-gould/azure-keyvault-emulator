@@ -3,6 +3,7 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
@@ -92,7 +93,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");
                     })
-                    .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
+                    .OnBeforeResourceStarted(async (emulator, resourceEvent, ct) =>
                     {
                         var endpoint = emulator.GetEndpoint("https");
 
@@ -103,7 +104,9 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 
                         builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
 
-                        return Task.CompletedTask;
+                        var secrets = resourceEvent.ExtractSecrets();
+
+                        await MapSecretsToEmulatorAsync(endpoint.Url, secrets);
                     })
                     .WithHttpHealthCheck("/token")
                     .WithAnnotation(new EmulatorResourceAnnotation());
@@ -132,10 +135,10 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         {
             ArgumentNullException.ThrowIfNull(options);
 
-            var certs = KeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options);
+            var certs = AzureKeyVaultEmulatorCertHelper.ValidateOrGenerateCertificate(options);
 
             if (options.LoadCertificatesIntoTrustStore)
-                KeyVaultEmulatorCertHelper.TryWriteToStore(options, certs.Pfx, certs.LocalCertificatePath, certs.pem);
+                AzureKeyVaultEmulatorCertHelper.TryWriteToStore(options, certs.Pfx, certs.LocalCertificatePath, certs.pem);
 
             return certs.LocalCertificatePath;
         }
@@ -167,9 +170,32 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             return options ?? new();
         }
 
+        private static IEnumerable<AzureKeyVaultSecretResource> ExtractSecrets(this BeforeResourceStartedEvent resourceEvent)
+        {
+            var model = resourceEvent.Services.GetRequiredService<DistributedApplicationModel>();
+
+            return model.Resources.OfType<AzureKeyVaultSecretResource>() ?? [];
+        }
+
+        private static async ValueTask MapSecretsToEmulatorAsync(string vaultUri, IEnumerable<AzureKeyVaultSecretResource> secrets)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(vaultUri);
+
+            if (!secrets.Any())
+                return;
+
+            var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri);
+
+            var tasks = secrets.Select(s => client.SetSecretAsync(s.SecretName, $"{s.Value}"));
+
+            await Task.WhenAll(tasks);
+        }
+
         private class AzureKeyVaultEmulatorResource(AzureKeyVaultResource resource) : ContainerResource(resource.Name)
         {
             public override ResourceAnnotationCollection Annotations => resource.Annotations;
+
+            internal List<AzureKeyVaultSecretResource> Secrets { get; } = [];
         }
     }
 }
