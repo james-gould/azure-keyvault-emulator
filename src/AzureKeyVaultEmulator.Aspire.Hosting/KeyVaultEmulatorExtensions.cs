@@ -1,4 +1,5 @@
 ﻿using Aspire.Hosting.Azure;
+using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
@@ -93,7 +94,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");
                     })
-                    .OnBeforeResourceStarted(async (emulator, resourceEvent, ct) =>
+                    .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
                     {
                         var endpoint = emulator.GetEndpoint("https");
 
@@ -104,9 +105,15 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 
                         builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
 
+                        emulator.VaultUri = endpoint.Url;
+
+                        return Task.CompletedTask;
+                    })
+                    .OnResourceReady(async (emulatedResource, resourceEvent, ct) =>
+                    {
                         var secrets = resourceEvent.ExtractSecrets();
 
-                        await MapSecretsToEmulatorAsync(endpoint.Url, secrets);
+                        await MapSecretsToEmulatorAsync(emulatedResource.VaultUri, secrets);
                     })
                     .WithHttpHealthCheck("/token")
                     .WithAnnotation(new EmulatorResourceAnnotation());
@@ -117,6 +124,11 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             eventing.Subscribe<BeforeResourceStartedEvent>(builder.Resource, async (resourceEvent, ct) =>
             {
                 await eventing.PublishAsync(new BeforeResourceStartedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
+            });
+
+            eventing.Subscribe<ResourceReadyEvent>(builder.Resource, async (resourceEvent, ct) =>
+            {
+                await eventing.PublishAsync(new ResourceReadyEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
             });
 
             // Something has to be set before the endpoint is available to ensure the Bicep validation passes.
@@ -170,14 +182,18 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             return options ?? new();
         }
 
-        private static IEnumerable<AzureKeyVaultSecretResource> ExtractSecrets(this BeforeResourceStartedEvent resourceEvent)
+        private static IEnumerable<AzureKeyVaultSecretResource> ExtractSecrets(this ResourceReadyEvent resourceEvent)
         {
             var model = resourceEvent.Services.GetRequiredService<DistributedApplicationModel>();
 
-            return model.Resources.OfType<AzureKeyVaultSecretResource>() ?? [];
+            var secrets = model.Resources.OfType<AzureKeyVaultSecretResource>() ?? [];
+
+            return secrets;
         }
 
-        private static async ValueTask MapSecretsToEmulatorAsync(string vaultUri, IEnumerable<AzureKeyVaultSecretResource> secrets)
+        private static async ValueTask MapSecretsToEmulatorAsync(
+            string vaultUri,
+            IEnumerable<AzureKeyVaultSecretResource> secrets)
         {
             ArgumentException.ThrowIfNullOrEmpty(vaultUri);
 
@@ -186,16 +202,27 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 
             var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri);
 
-            var tasks = secrets.Select(s => client.SetSecretAsync(s.SecretName, $"{s.Value}"));
+            var tasks = secrets.Select(s => SetSecretAsync(client, s));
 
             await Task.WhenAll(tasks);
+        }
+
+        private static async Task SetSecretAsync(SecretClient client, AzureKeyVaultSecretResource secretResource)
+        {
+            var param = secretResource.Value as ParameterResource
+                ?? throw new ArgumentNullException(nameof(secretResource));
+
+            var value = await param.GetValueAsync(default);
+
+            await client.SetSecretAsync(secretResource.SecretName, value);
         }
 
         private class AzureKeyVaultEmulatorResource(AzureKeyVaultResource resource) : ContainerResource(resource.Name)
         {
             public override ResourceAnnotationCollection Annotations => resource.Annotations;
 
-            internal List<AzureKeyVaultSecretResource> Secrets { get; } = [];
+            internal string VaultUri { get; set; } = string.Empty;
+
         }
     }
 }
