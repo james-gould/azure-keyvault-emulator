@@ -186,9 +186,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         {
             var model = resourceEvent.Services.GetRequiredService<DistributedApplicationModel>();
 
-            var secrets = model.Resources.OfType<AzureKeyVaultSecretResource>() ?? [];
-
-            return secrets;
+            return model.Resources.OfType<AzureKeyVaultSecretResource>() ?? [];
         }
 
         private static async ValueTask MapSecretsToEmulatorAsync(
@@ -210,7 +208,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         private static async Task SetSecretAsync(SecretClient client, AzureKeyVaultSecretResource secretResource)
         {
             var param = secretResource.Value as ParameterResource
-                ?? throw new ArgumentNullException(nameof(secretResource));
+                ?? throw new KeyVaultEmulatorException($"Failed to cast secret {secretResource.Name} to {typeof(ParameterResource)}");
 
             var value = await param.GetValueAsync(default);
 
