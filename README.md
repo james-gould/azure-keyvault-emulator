@@ -38,7 +38,7 @@ Alternatively you can download a copy of [setup.sh](docs/setup.sh) and run it lo
 The script is interactive and will create the necessary SSL certificates, install them to your `User` trust store and provide the commands to run the container. Once configured, you can start the Emulator with:
 
 ```
-docker run -d -p 4997:4997 -v {/host/path/to/certs}:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest
+docker run -d -p {4997}:4997 -v {/host/path/to/certs}:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest
 ```
 
 A break down of the command:
@@ -46,7 +46,7 @@ A break down of the command:
 | Command | Description | Optional? |
 | ------- | ----------- | --------- |
 | `-d`    | Runs the container in `detatched` mode. | ✅ |
-| `-p 4997:4997`    | Specifies the port to run on. The host port (first `4997`) is configurable, but must map to container port `4997` (second `4997`). | ✅ |
+| `-p {4997}:4997`    | Specifies the port to run on. The host port (first `{4997}`) is configurable, but must map to container port `4997` (second `4997`). | ✅ |
 | `-v {/host/path/to/certs}:/certs` | Binds the directory containing the SSL `PFX` and `CRT` files, required for the Azure SDK. | ❌ |
 | `-e Persist=true` | Instructs the emulator to create an `SQLite` database, written to your mounted volume/directory alongside the certificate files. | ✅ |
 | `jamesgoulddev/azure-keyvault-emulator:latest` | The container image name and tag. Always use `latest`. | ❌ |
