@@ -16,7 +16,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/james-gould/azure-keyvault-e
 ```
 
 > [!IMPORTANT]
-> If you're using **Windows**, use `Git Bash` to execute the setup script.
+> If you're using **Windows**, use `Git Bash` or `wsl -u root` to execute the setup script.
 
 ## Creating valid certificates
 

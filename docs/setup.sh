@@ -211,9 +211,10 @@ case "$certGenOptionSelected" in
   3)
     echo -e "Installation completed, you can run the Emulator using the following command:\n"
 
-    echo -e "docker run -d -p 4997:4997 -v $certSource:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest\n"
+    echo -e "docker run -d -p host-port:4997 -v $certSource:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest\n"
 
     echo -e "If you want to opt out of using a database, and destroy all data between sessions, omit -e Persist=true."
+    echo -e "Note: The host port can be set to any available port, but must map to container port 4997."
     ;;
   *)
     echo ""

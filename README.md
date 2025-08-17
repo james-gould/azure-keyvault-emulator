@@ -31,14 +31,14 @@ bash <(curl -fsSL https://raw.githubusercontent.com/james-gould/azure-keyvault-e
 ```
 
 > [!IMPORTANT]
-> If you're using **Windows**, use `Git Bash` or `wsl` to execute the setup script.
+> If you're using **Windows**, use `wsl -u root` to execute the setup script.
 
 Alternatively you can download a copy of [setup.sh](docs/setup.sh) and run it locally, or read the [long form, manual set up docs.](docs/CONFIG.md#local-docker)
 
 The script is interactive and will create the necessary SSL certificates, install them to your `User` trust store and provide the commands to run the container. Once configured, you can start the Emulator with:
 
 ```
-docker run -d -p 4997:4997 -v {/host/path/to/certs}:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest
+docker run -d -p {host-port}:4997 -v {/host/path/to/certs}:/certs -e Persist=true jamesgoulddev/azure-keyvault-emulator:latest
 ```
 
 A break down of the command:
@@ -46,7 +46,7 @@ A break down of the command:
 | Command | Description | Optional? |
 | ------- | ----------- | --------- |
 | `-d`    | Runs the container in `detatched` mode. | ✅ |
-| `-p 4997: 4997`    | Specifies the port to run on. Note `4997` is required, it is **not** configurable currently. | ✅ |
+| `-p {4997}:4997`    | Specifies the port to run on. The host port is configurable, but must map to container port `4997`. | ✅ |
 | `-v {/host/path/to/certs}:/certs` | Binds the directory containing the SSL `PFX` and `CRT` files, required for the Azure SDK. | ❌ |
 | `-e Persist=true` | Instructs the emulator to create an `SQLite` database, written to your mounted volume/directory alongside the certificate files. | ✅ |
 | `jamesgoulddev/azure-keyvault-emulator:latest` | The container image name and tag. Always use `latest`. | ❌ |
