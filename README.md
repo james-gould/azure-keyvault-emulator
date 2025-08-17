@@ -31,7 +31,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/james-gould/azure-keyvault-e
 ```
 
 > [!IMPORTANT]
-> If you're using **Windows**, use `Git Bash` or `wsl -u root` to execute the setup script.
+> If you're using **Windows**, use `wsl -u root` to execute the setup script.
 
 Alternatively you can download a copy of [setup.sh](docs/setup.sh) and run it locally, or read the [long form, manual set up docs.](docs/CONFIG.md#local-docker)
 
