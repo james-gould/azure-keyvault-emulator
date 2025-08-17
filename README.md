@@ -46,7 +46,7 @@ A break down of the command:
 | Command | Description | Optional? |
 | ------- | ----------- | --------- |
 | `-d`    | Runs the container in `detatched` mode. | ✅ |
-| `-p {4997}:4997`    | Specifies the port to run on. The host port is configurable, but must map to container port `4997`. | ✅ |
+| `-p {host-port}:4997`    | Specifies the port to run on. The host port is configurable, but must map to container port `4997`. | ✅ |
 | `-v {/host/path/to/certs}:/certs` | Binds the directory containing the SSL `PFX` and `CRT` files, required for the Azure SDK. | ❌ |
 | `-e Persist=true` | Instructs the emulator to create an `SQLite` database, written to your mounted volume/directory alongside the certificate files. | ✅ |
 | `jamesgoulddev/azure-keyvault-emulator:latest` | The container image name and tag. Always use `latest`. | ❌ |
