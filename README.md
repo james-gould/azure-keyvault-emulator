@@ -209,7 +209,7 @@ var secret = await secretClient.SetSecretAsync("mySecretName", "mySecretValue");
 
 The Azure Key Vault Emulator is now **stable** and ready for public consumption, however maintenance and enhancement work will continue to ensure the longevity of the project. Below you can find previous and upcoming additions to the project, if you'd like to see something added please raise a [feature request.](https://github.com/james-gould/azure-keyvault-emulator/issues/new?template=feature_request.md)
 
-Updates to the Azure Key Vault Emulator API will follow releases [announced by Microsoft here](https://learn.microsoft.com/en-us/azure/key-vault/general/versions).
+Updates to the Azure Key Vault Emulator API will follow releases [announced by Microsoft here](https://learn.microsoft.com/en-us/azure/key-vault/general/whats-new).
 
 ## Pending
 
