@@ -135,6 +135,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             // Will *not* resolve correctly, but when the host machine endpoint is available it will override this and resolve.
             builder.Resource.Outputs.Add("vaultUri", "https://localhost:7994");
 
+            builder.Resource.Outputs.Add("vaultUri", "https://localhost:4998");
+
             return builder;
         }
 
