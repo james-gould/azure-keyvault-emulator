@@ -8,7 +8,7 @@
         public const string Image = "jamesgoulddev/azure-keyvault-emulator";
         public const int Port = 4997;
 
-        public const string Tag = "latest";
+        public const string Tag = "2.5.4"; // Update this tag to the latest version of the Key Vault Emulator image
     }
 
     internal partial class KeyVaultEmulatorContainerConstants
