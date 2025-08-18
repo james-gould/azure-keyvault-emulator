@@ -13,13 +13,9 @@ var keyVault = builder
         new KeyVaultEmulatorOptions
         {
             UseDotnetDevCerts = isWiremockTestRunning,
-            Lifetime = ContainerLifetime.Persistent
+            //Lifetime = ContainerLifetime.Persistent
         }
     );
-
-//var param = builder.AddParameter("Secret");
-
-//keyVault.AddSecret("testingSecret", param);
 
 var webApi = builder
     .AddProject<Projects.WebApiWithEmulator_DebugHelper>(AspireConstants.DebugHelper)
