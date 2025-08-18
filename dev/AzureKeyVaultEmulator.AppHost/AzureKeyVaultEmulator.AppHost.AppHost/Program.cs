@@ -17,9 +17,9 @@ var keyVault = builder
         }
     );
 
-var param = builder.AddParameter("Secret");
+//var param = builder.AddParameter("Secret");
 
-keyVault.AddSecret("testingSecret", param);
+//keyVault.AddSecret("testingSecret", param);
 
 var webApi = builder
     .AddProject<Projects.WebApiWithEmulator_DebugHelper>(AspireConstants.DebugHelper)
