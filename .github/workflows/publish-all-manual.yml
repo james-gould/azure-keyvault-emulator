@@ -40,20 +40,14 @@ jobs:
           dotnet dev-certs https --clean
           dotnet dev-certs https --trust
 
-      - name: Run Tests
-        run: dotnet test --configuration Release --no-build --no-restore
+      - name: Run Wiremock Integration Tests
+        run: dotnet test ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj --no-build --configuration Release
 
-      # - name: Run Wiremock Integration Tests
-      #   run: |
-      #     dotnet test --no-build ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj
+      - name: Run API Integration Tests
+        run: dotnet test ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj --no-build --configuration Release
 
-      # - name: Run API Integration Tests
-      #   run: |
-      #     dotnet test --no-build ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
-
-      # - name: Run TestContainers Integration Tests
-      #   run: |
-      #     dotnet test --no-build ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
+      - name: Run TestContainers Integration Tests
+        run: dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj --no-build --configuration Release
 
       - name: Pack NuGet Package
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
@@ -65,10 +59,8 @@ jobs:
         run: |
           docker build -t jamesgoulddev/azure-keyvault-emulator:latest -t jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }} .
 
-      - name: Push Versioned Docker Image
-        run: |
-          docker push jamesgoulddev/azure-keyvault-emulator:Latest
+      - name: Push Latest Docker Image
+        run: docker push jamesgoulddev/azure-keyvault-emulator:latest
 
       - name: Push Versioned Docker Image
-        run: |
-          docker push jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }}          
+        run: docker push jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }}
