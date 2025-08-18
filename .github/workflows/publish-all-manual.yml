@@ -1,4 +1,4 @@
-name: Publish NuGet Package - Client
+name: Publish NuGet Packages and Docker Images
 
 on:
   workflow_dispatch:
