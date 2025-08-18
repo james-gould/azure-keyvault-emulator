@@ -12,8 +12,8 @@ var keyVault = builder
     .RunAsEmulator(
         new KeyVaultEmulatorOptions
         {
-            UseDotnetDevCerts = isWiremockTestRunning
-            //Lifetime = ContainerLifetime.Persistent
+            UseDotnetDevCerts = isWiremockTestRunning,
+            Lifetime = ContainerLifetime.Persistent
         }
     );
 
