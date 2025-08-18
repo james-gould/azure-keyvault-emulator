@@ -40,17 +40,20 @@ jobs:
           dotnet dev-certs https --clean
           dotnet dev-certs https --trust
 
-      - name: Run Wiremock Integration Tests
-        run: |
-          dotnet test --no-build ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj
+      - name: Run Tests
+        run: dotnet test --configuration Release --no-build --no-restore
 
-      - name: Run API Integration Tests
-        run: |
-          dotnet test --no-build ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
+      # - name: Run Wiremock Integration Tests
+      #   run: |
+      #     dotnet test --no-build ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj
 
-      - name: Run TestContainers Integration Tests
-        run: |
-          dotnet test --no-build ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
+      # - name: Run API Integration Tests
+      #   run: |
+      #     dotnet test --no-build ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
+
+      # - name: Run TestContainers Integration Tests
+      #   run: |
+      #     dotnet test --no-build ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
 
       - name: Pack NuGet Package
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
