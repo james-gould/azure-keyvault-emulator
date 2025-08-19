@@ -8,7 +8,7 @@ internal partial class AzureKeyVaultEmulatorContainerConstants
     public const string Image = "jamesgoulddev/azure-keyvault-emulator";
     public const int Port = 4997;
 
-    public const string Tag = "2.5.5";
+    public const string Tag = "latest";
 }
 
 internal partial class AzureKeyVaultEmulatorContainerConstants
