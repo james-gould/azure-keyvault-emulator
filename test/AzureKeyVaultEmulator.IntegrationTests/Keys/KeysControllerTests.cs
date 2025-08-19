@@ -37,6 +37,20 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     }
 
     [Fact]
+    public async Task CreatedKeyWillHaveAttributesSet()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var key = await fixture.CreateKeyAsync(keyName);
+
+        Assert.NotNull(key);
+        Assert.NotNull(key.Properties.RecoveryLevel);
+        Assert.NotNull(key.Properties.RecoverableDays);
+    }
+
+    [Fact]
     public async Task GetKeyWithVersionGetsCorrectVersion()
     {
         var client = await fixture.GetClientAsync();

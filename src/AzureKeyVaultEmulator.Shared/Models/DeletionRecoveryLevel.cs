@@ -2,7 +2,8 @@
 {
     public enum DeletionRecoveryLevel
     {
-        Purgable,
-
+        Purgeable,
+        Recoverable,
+        CustomizedRecoverable
     }
 }

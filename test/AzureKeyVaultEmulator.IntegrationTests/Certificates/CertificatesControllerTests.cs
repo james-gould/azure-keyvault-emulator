@@ -80,6 +80,20 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task CreatingCertificateWillSetAttributes()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        Assert.NotNull(cert);
+        Assert.NotNull(cert.Properties.RecoveryLevel);
+        Assert.NotNull(cert.Properties.RecoverableDays);
+    }
+
+    [Fact]
     public async Task CreatingCertificateWithOrganisationWillPersist()
     {
         var client = await fixture.GetClientAsync();

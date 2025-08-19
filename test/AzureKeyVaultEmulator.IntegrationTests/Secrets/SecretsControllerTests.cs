@@ -42,6 +42,20 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         }
 
         [Fact]
+        public async Task SecretWillHaveAttributesSet()
+        {
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var secretValue = fixture.FreshlyGeneratedGuid;
+
+            var secret = await fixture.CreateSecretAsync(secretName, secretValue);
+
+            Assert.NotNull(secret);
+            Assert.NotNull(secret.Properties.RecoveryLevel);
+            Assert.NotNull(secret.Properties.RecoverableDays);
+        }
+
+        [Fact]
         public async Task GetSecretAfterDeletingProvidesKeyVaultErrorTest()
         {
             var client = await fixture.GetClientAsync();

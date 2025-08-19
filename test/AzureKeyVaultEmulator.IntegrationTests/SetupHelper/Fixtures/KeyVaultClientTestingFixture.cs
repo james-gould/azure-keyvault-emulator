@@ -34,7 +34,9 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>(["--test"], (x, y) => x.DisableDashboard = true);
+            .CreateAsync<Projects.AzureKeyVaultEmulator_AppHost>(
+                [$"--{AspireConstants.IntegrationTest}"], (x, y) => x.DisableDashboard = true
+            );
 
         _app = await builder.BuildAsync();
 
@@ -56,13 +58,15 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
 
         await _notificationService!.WaitForResourceHealthyAsync(applicationName).WaitAsync(_waitPeriod);
 
-        var endpoint = await _app!.GetConnectionStringAsync(applicationName);
+        //var endpoint = await _app!.GetConnectionStringAsync(applicationName);
+        var endpoint = _app!.GetEndpoint(applicationName);
 
         ArgumentNullException.ThrowIfNull(endpoint);
 
         _testingClient = new HttpClient(opt)
         {
-            BaseAddress = new Uri(endpoint)
+            //BaseAddress = new Uri(endpoint)
+            BaseAddress = endpoint
         };
 
         return _testingClient;
@@ -73,7 +77,8 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
         if (_setupModel is not null)
             return _setupModel;
 
-        var vaultEndpoint = await _app!.GetConnectionStringAsync(applicationName);
+        //var vaultEndpoint = await _app!.GetConnectionStringAsync(applicationName);
+        var vaultEndpoint = _app!.GetEndpoint(applicationName);
 
         ArgumentNullException.ThrowIfNull(vaultEndpoint);
 
@@ -83,7 +88,7 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
 
         var cred = new EmulatedTokenCredential(emulatedBearerToken);
 
-        return _setupModel = new ClientSetupVM(new Uri(vaultEndpoint), cred);
+        return _setupModel = new ClientSetupVM(vaultEndpoint, cred);
     }
 
     public async ValueTask<string> GetBearerTokenAsync()
