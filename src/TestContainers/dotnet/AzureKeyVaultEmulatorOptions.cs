@@ -43,6 +43,13 @@ public sealed class AzureKeyVaultEmulatorOptions
     public bool ForceCleanupOnShutdown { get; set; } = false;
 
     /// <summary>
+    /// <para>Allows overriding the Docker image tag used for the container.</para>
+    /// <para>If null or empty, the default tag from constants will be used.</para>
+    /// <para>Useful for testing with specific versions or using "latest" for repository releases.</para>
+    /// </summary>
+    public string? Tag { get; set; }
+
+    /// <summary>
     /// Used to internally validate the configuration of the emulator before performing any IO.
     /// </summary>
     internal bool IsValidCustomisable

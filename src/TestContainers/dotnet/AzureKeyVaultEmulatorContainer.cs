@@ -24,13 +24,15 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     /// <param name="persist">Whether to enable data persistence.</param>
     /// <param name="generateCertificates">Whether to automatically generate SSL certificates if they don't exist.</param>
     /// <param name="forceCleanupCertificates">Uninstall the SSL certificates for the container on shutdown.</param>
+    /// <param name="tag">Optional Docker image tag to override the default. Useful for testing with specific versions or "latest" for repository releases.</param>
     public AzureKeyVaultEmulatorContainer(
         string? certificatesDirectory = null,
         bool persist = false,
         bool generateCertificates = true,
-        bool forceCleanupCertificates = false)
+        bool forceCleanupCertificates = false,
+        string? tag = null)
     // This feels horrendous. Must be a better way to do this...
-    : this(new AzureKeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates }) { }
+    : this(new AzureKeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates, Tag = tag }) { }
 
     public AzureKeyVaultEmulatorContainer(AzureKeyVaultEmulatorOptions options)
     {
@@ -44,7 +46,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
             AzureKeyVaultEmulatorCertHelper.TryWriteToStore(_options, _loadedCertificates.Pfx, _loadedCertificates.LocalCertificatePath, _loadedCertificates.pem);
 
         _container = new ContainerBuilder()
-            .WithImage($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{AzureKeyVaultEmulatorContainerConstants.Tag}")
+            .WithImage($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{_options.Tag ?? AzureKeyVaultEmulatorContainerConstants.Tag}")
             .WithPortBinding(AzureKeyVaultEmulatorContainerConstants.Port, false)
             .WithBindMount(_options.LocalCertificatePath, AzureKeyVaultEmulatorCertConstants.CertMountTarget)
             .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.PersistData, $"{_options.Persist}")
