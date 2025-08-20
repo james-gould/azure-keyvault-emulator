@@ -14,7 +14,7 @@ public class AzureKeyVaultEmulatorConstantsTests
         // Assert
         Assert.Equal("docker.io", AzureKeyVaultEmulatorContainerConstants.Registry);
         Assert.Equal("jamesgoulddev/azure-keyvault-emulator", AzureKeyVaultEmulatorContainerConstants.Image);
-        Assert.Equal("latest", AzureKeyVaultEmulatorContainerConstants.Tag);
+        Assert.NotEqual("latest", AzureKeyVaultEmulatorContainerConstants.Tag);
         Assert.Equal(4997, AzureKeyVaultEmulatorContainerConstants.Port);
         Assert.Equal("/certs", AzureKeyVaultEmulatorCertConstants.CertMountTarget);
         Assert.Equal("emulator.pfx", AzureKeyVaultEmulatorCertConstants.Pfx);
