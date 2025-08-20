@@ -185,5 +185,51 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             await Assert.RequestFailsAsync(() => client.GetSecretAsync(secret.Name));
         }
+
+        [Fact]
+        public async Task DeletedKeyWillBeMissedInAllKeys()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretNameToDelete = fixture.FreshlyGeneratedGuid;
+            var secretNamesToKeep = fixture.FreshlyGeneratedGuid;
+
+            var secretValue = fixture.FreshlyGeneratedGuid;
+
+            var min = 1;
+            var max = 3;
+
+            var createdCount = await RequestSetup.CreateMultiple(min, max, x => fixture.CreateSecretAsync(secretNamesToKeep, secretValue));
+
+            var key = await fixture.CreateSecretAsync(secretNameToDelete, secretValue);
+
+            Assert.NotNull(key);
+            Assert.Equal(secretNameToDelete, key.Name);
+
+            var deletedSecretOp = await client.StartDeleteSecretAsync(secretNameToDelete);
+
+            await deletedSecretOp.WaitForCompletionAsync();
+
+            var inDeletedStore = await client.GetDeletedSecretAsync(secretNameToDelete);
+
+            Assert.NotNull(inDeletedStore.Value);
+            Assert.Equal(secretNameToDelete, inDeletedStore.Value.Name);
+
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretNameToDelete));
+
+            var allUndeletedSecrets = client.GetPropertiesOfSecretsAsync();
+
+            var existingCount = 0;
+
+            await foreach (var existingSecret in allUndeletedSecrets)
+            {
+                Assert.NotEqual(secretNameToDelete, existingSecret.Name);
+
+                if(existingSecret.Name.Equals(secretNamesToKeep, StringComparison.InvariantCultureIgnoreCase))
+                    existingCount++;
+            }
+
+            Assert.Equal(createdCount, existingCount);
+        }
     }
 }

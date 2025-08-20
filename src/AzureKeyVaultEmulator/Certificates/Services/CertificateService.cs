@@ -188,7 +188,7 @@ public sealed class CertificateService(
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
-        var allItems = await context.Certificates.ToListAsync();
+        var allItems = await context.Certificates.Where(x => !x.Deleted).ToListAsync();
 
         if (allItems.Count == 0)
             return new();

@@ -518,4 +518,47 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         Assert.Equal(unwrappedKey, unwrapResult.Key);
     }
+
+    [Fact]
+    public async Task DeletedKeyWillBeMissedInAllKeys()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyNameToDelete = fixture.FreshlyGeneratedGuid;
+        var keyNamesToKeep = fixture.FreshlyGeneratedGuid;
+        var min = 1;
+        var max = 3;
+
+        var createdCount = await RequestSetup.CreateMultiple(min, max, x => fixture.CreateKeyAsync(keyNamesToKeep));
+
+        var key = await fixture.CreateKeyAsync(keyNameToDelete);
+
+        Assert.NotNull(key);
+        Assert.Equal(keyNameToDelete, key.Name);
+
+        var deletedkeyOp = await client.StartDeleteKeyAsync(keyNameToDelete);
+
+        await deletedkeyOp.WaitForCompletionAsync();
+
+        var inDeletedStore = await client.GetDeletedKeyAsync(keyNameToDelete);
+
+        Assert.NotNull(inDeletedStore.Value);
+        Assert.Equal(keyNameToDelete, inDeletedStore.Value.Name);
+
+        await Assert.RequestFailsAsync(() => client.GetKeyAsync(keyNameToDelete));
+
+        var allUndeletedKeys = client.GetPropertiesOfKeysAsync();
+
+        var existingCount = 0;
+
+        await foreach (var existingKey in allUndeletedKeys)
+        {
+            Assert.NotEqual(keyNameToDelete, existingKey.Name);
+
+            if(existingKey.Name.Equals(keyNamesToKeep, StringComparison.InvariantCultureIgnoreCase))
+                existingCount++;
+        }
+
+        Assert.Equal(createdCount, existingCount);
+    }
 }
