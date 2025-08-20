@@ -542,6 +542,49 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 #pragma warning restore SYSLIB0028 // Type or member is obsolete
     }
 
+    [Fact]
+    public async Task DeletedCertificateWillBeMissedInAllCertificates()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certNameToDelete = fixture.FreshlyGeneratedGuid;
+        var certNamesToKeep = fixture.FreshlyGeneratedGuid;
+        var min = 1;
+        var max = 3;
+
+        var createdCount = await RequestSetup.CreateMultiple(min, max, x => fixture.CreateCertificateAsync(certNamesToKeep));
+
+        var cert = await fixture.CreateCertificateAsync(certNameToDelete);
+
+        Assert.NotNull(cert);
+        Assert.Equal(certNameToDelete, cert.Name);
+
+        var deletedCertOp = await client.StartDeleteCertificateAsync(certNameToDelete);
+
+        await deletedCertOp.WaitForCompletionAsync();
+
+        var inDeletedStore = await client.GetDeletedCertificateAsync(certNameToDelete);
+
+        Assert.NotNull(inDeletedStore.Value);
+        Assert.Equal(certNameToDelete, inDeletedStore.Value.Name);
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certNameToDelete));
+
+        var allUndeletedCerts = client.GetPropertiesOfCertificatesAsync();
+
+        var existingCount = 0;
+
+        await foreach(var existingCert in allUndeletedCerts)
+        {
+            Assert.NotEqual(certNameToDelete, existingCert.Name);
+
+            if(existingCert.Name.Equals(certNamesToKeep, StringComparison.InvariantCultureIgnoreCase))
+                existingCount++;
+        }
+
+        Assert.Equal(createdCount, existingCount);
+    }
+
     [Fact(Skip = @"
         Certificate Operations are currently hardcoded to work in a specific way,
         this functionality requires a refactor of the CertificateOperation class and
