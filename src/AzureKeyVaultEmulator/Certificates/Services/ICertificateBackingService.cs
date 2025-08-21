@@ -7,7 +7,7 @@ namespace AzureKeyVaultEmulator.Certificates.Services;
 
 public interface ICertificateBackingService
 {
-    Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, X509Certificate2? cert, CertificatePolicy? policy = null);
+    Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(string certName, X509Certificate2? cert, string? password = null, CertificatePolicy? policy = null, X509ContentType contentType = X509ContentType.Pfx);
 
     Task<IssuerBundle> GetIssuerAsync(string name);
     Task<IssuerBundle> CreateIssuerAsync(string name, IssuerBundle bundle);

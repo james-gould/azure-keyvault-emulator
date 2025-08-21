@@ -1,4 +1,5 @@
-﻿using AzureKeyVaultEmulator.Certificates.Factories;
+﻿using System.Security.Cryptography.X509Certificates;
+using AzureKeyVaultEmulator.Certificates.Factories;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
@@ -26,7 +27,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.BuildX509Certificate(name, policy);
 
-        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, certificate, policy);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, certificate, policy: policy);
 
         var version = Guid.NewGuid().Neat();
 
@@ -210,9 +211,14 @@ public sealed class CertificateService(
 
         var version = Guid.NewGuid().Neat();
 
-        var certificate = X509CertificateFactory.ImportFromBase64(request.Value);
+        var bytes = Convert.FromBase64String(request.Value);
 
-        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, certificate);
+        var certificate = X509CertificateFactory.ImportFromBase64(bytes, request.Password);
+
+        var contentType = X509Certificate2.GetCertContentType(bytes);
+
+        var (backingKey, backingSecret) = await backingService
+            .GetBackingComponentsAsync(name, certificate, request.Password, request.Policy, contentType);
 
         var attributes = new CertificateAttributesModel
         {
@@ -237,7 +243,7 @@ public sealed class CertificateService(
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.SecretIdentifier.ToString(),
             KeyId = backingKey.Key.KeyIdentifier,
-
+            
             FullCertificate = certificate
         };
 
