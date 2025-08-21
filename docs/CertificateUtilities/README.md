@@ -36,7 +36,7 @@ You can generate self-signed SSL certificates with `openssl`, a free utility tha
 If you're on Windows and `openssl` isn't on your `PATH`:
 
 - Navigate to `C:\Program Files\Git\usr\bin` and verify that `openssl.exe` is present. 
-    - Your local install directory may be different, but the `openssl.exe` will be under `user\bin\`
+    - Your local install directory may be different, but the `openssl.exe` will be under `usr\bin\`
 - Edit your environment variables and add the folder path to your `PATH` variable.
 - Restart your terminal.
 
