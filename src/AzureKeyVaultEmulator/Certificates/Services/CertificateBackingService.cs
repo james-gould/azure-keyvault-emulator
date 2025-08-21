@@ -178,11 +178,13 @@ public sealed class CertificateBackingService(
     {
         var certificateData = Convert.ToBase64String(certificate.Export(contentType, certificatePassword));
 
+        var parsedContentType = contentType.ParseContentType();
+
         return await secretService
             .SetSecretAsync(certName, new SetSecretRequest
             {
                 Value = certificateData,
-                SecretAttributes = new() { ContentType = contentType.ParseContentType() }
+                SecretAttributes = new() { ContentType = parsedContentType }
             });
     }
 }

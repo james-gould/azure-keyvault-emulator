@@ -238,7 +238,7 @@ public sealed class CertificateService(
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            CertificatePolicy = UpdateNullablePolicy(request.Policy, certIdentifier, attributes),
+            CertificatePolicy = UpdateNullablePolicy(request.Policy, certIdentifier, attributes, backingSecret, backingKey),
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.SecretIdentifier.ToString(),
@@ -388,7 +388,9 @@ public sealed class CertificateService(
     private static CertificatePolicy UpdateNullablePolicy(
         CertificatePolicy? policy,
         string identifier,
-        CertificateAttributesModel attributes)
+        CertificateAttributesModel attributes,
+        SecretBundle? secret = null,
+        KeyBundle? key = null)
     {
         var issuer = policy?.Issuer ?? new();
         policy ??= new();
@@ -398,6 +400,20 @@ public sealed class CertificateService(
 
         policy.Issuer = issuer;
         policy.IssuerId = issuer.PersistedId;
+
+        if(secret is not null)
+            policy.SecretProperies = new() { ContentType = secret.Attributes.ContentType };
+
+        if(key is not null)
+        {
+            policy.KeyProperties = new()
+            {
+                JsonWebKeyType = key.Key.KeyType,
+                KeySize = key.Key.GetKeySize(),
+                ReuseKey = true,
+                JsonWebKeyCurveName = key.Key.KeyCurve ?? string.Empty
+            };
+        }
 
         return policy;
     }
