@@ -43,7 +43,7 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
 | `Persist`                    | `bool`               | `false`     | Persist the key vault data in an `emulator.db` file between sessions. |
 | `LocalCertificatePath`       | `string`             | `""`        | Path to SSL certificates. If unset, defaults to user's local directory (e.g., `C:/Users/Name/keyvaultemulator/certs` on Windows). |
 | `ShouldGenerateCertificates` | `bool`               | `true`      | Whether to auto-generate SSL certificates. |
-| `LoadCertificatesIntoTrustStore` | `bool`          | `true`      | Attempts to install generated certs into the OS trust store. Installs to `User | Trusted Root CA` |
+| `LoadCertificatesIntoTrustStore` | `bool`          | `true`      | Attempts to install generated certs into the OS trust store. Installs to `User Trusted Root CA` |
 | `ForceCleanupOnShutdown`     | `bool`               | `false`     | Tries to delete certificates at `LocalCertificatePath` on shutdown. Unstable and marked `Obselete` pending removal. |
 | `Lifetime`                   | `ContainerLifetime`  | `Session`   | Controls container behavior on shutdown:<br>• `Session`: Destroys container<br>• `Persistent`: Stops container without destroying it.<br><br>This will not remove the certificates from your host machine. |
 | `UseDotnetDevCerts` | `bool` | `false` | Instructs the hosting runtime to generate and install SSL certificates via `dotnet dev-certs`. Useful if you have 3rd party dependencies which utilise/require the ASP.NET Core dev-cert. |
