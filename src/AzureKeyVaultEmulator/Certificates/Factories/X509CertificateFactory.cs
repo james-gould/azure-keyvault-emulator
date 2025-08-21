@@ -61,12 +61,39 @@ public static class X509CertificateFactory
         return baseCert;
     }
 
-    public static X509Certificate2 ImportFromBase64(string certificateBase64)
+    public static X509Certificate2 ImportFromBase64(byte[] rawCert, string? password = null)
     {
-        ArgumentException.ThrowIfNullOrEmpty(certificateBase64);
+        ArgumentNullException.ThrowIfNull(rawCert);
 
-        return X509CertificateLoader.LoadCertificate(Convert.FromBase64String(certificateBase64));
+        if (rawCert.Length == 0)
+            throw new InvalidOperationException($"Cannot import empty certificate bytes");
+
+        try
+        {
+            // PFX
+            return X509CertificateLoader.LoadCertificate(rawCert);
+        }
+        catch { }
+
+        // Failure might happen due to password being required, now we should validate it's not null and use it.
+        ArgumentNullException.ThrowIfNull(password);
+
+        try
+        {
+            return X509CertificateLoader.LoadPkcs12(rawCert, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet);
+        }
+        catch { }
+
+        throw new InvalidOperationException($"Failed to import certificate due to incompatible type.");
     }
+
+    public static string ParseContentType(this X509ContentType contentType) => contentType switch
+    {
+        X509ContentType.Pfx => "application/x-pkcs12",
+        X509ContentType.Cert => "application/x-pem-file",
+
+        _ => throw new InvalidOperationException($"Certificate content type {contentType} is not supported.")
+    };
 
     private static X509Extension? BuildSubjectAlternativeName(this CertificatePolicy? policy)
     {

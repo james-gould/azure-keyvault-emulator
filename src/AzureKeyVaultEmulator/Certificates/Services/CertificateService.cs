@@ -1,4 +1,5 @@
-﻿using AzureKeyVaultEmulator.Certificates.Factories;
+﻿using System.Security.Cryptography.X509Certificates;
+using AzureKeyVaultEmulator.Certificates.Factories;
 using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
@@ -26,7 +27,7 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.BuildX509Certificate(name, policy);
 
-        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, certificate, policy);
+        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, certificate, policy: policy);
 
         var version = Guid.NewGuid().Neat();
 
@@ -210,9 +211,14 @@ public sealed class CertificateService(
 
         var version = Guid.NewGuid().Neat();
 
-        var certificate = X509CertificateFactory.ImportFromBase64(request.Value);
+        var bytes = Convert.FromBase64String(request.Value);
 
-        var (backingKey, backingSecret) = await backingService.GetBackingComponentsAsync(name, certificate);
+        var certificate = X509CertificateFactory.ImportFromBase64(bytes, request.Password);
+
+        var contentType = X509Certificate2.GetCertContentType(bytes);
+
+        var (backingKey, backingSecret) = await backingService
+            .GetBackingComponentsAsync(name, certificate, request.Password, request.Policy, contentType);
 
         var attributes = new CertificateAttributesModel
         {
@@ -232,12 +238,12 @@ public sealed class CertificateService(
             Attributes = attributes,
             CertificateName = name,
             VaultUri = new Uri(AuthConstants.EmulatorUri),
-            CertificatePolicy = UpdateNullablePolicy(request.Policy, certIdentifier, attributes),
+            CertificatePolicy = UpdateNullablePolicy(request.Policy, certIdentifier, attributes, backingSecret, backingKey),
             X509Thumbprint = certificate.Thumbprint,
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.SecretIdentifier.ToString(),
             KeyId = backingKey.Key.KeyIdentifier,
-
+            
             FullCertificate = certificate
         };
 
@@ -382,7 +388,9 @@ public sealed class CertificateService(
     private static CertificatePolicy UpdateNullablePolicy(
         CertificatePolicy? policy,
         string identifier,
-        CertificateAttributesModel attributes)
+        CertificateAttributesModel attributes,
+        SecretBundle? secret = null,
+        KeyBundle? key = null)
     {
         var issuer = policy?.Issuer ?? new();
         policy ??= new();
@@ -392,6 +400,20 @@ public sealed class CertificateService(
 
         policy.Issuer = issuer;
         policy.IssuerId = issuer.PersistedId;
+
+        if(secret is not null)
+            policy.SecretProperies = new() { ContentType = secret.Attributes.ContentType };
+
+        if(key is not null)
+        {
+            policy.KeyProperties = new()
+            {
+                JsonWebKeyType = key.Key.KeyType,
+                KeySize = key.Key.GetKeySize(),
+                ReuseKey = true,
+                JsonWebKeyCurveName = key.Key.KeyCurve ?? string.Empty
+            };
+        }
 
         return policy;
     }
