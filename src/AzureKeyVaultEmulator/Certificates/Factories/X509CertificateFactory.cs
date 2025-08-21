@@ -90,7 +90,7 @@ public static class X509CertificateFactory
     public static string ParseContentType(this X509ContentType contentType) => contentType switch
     {
         X509ContentType.Pfx => "application/x-pkcs12",
-        X509ContentType.Pkcs7 => "application/x-pem-file",
+        X509ContentType.Cert => "application/x-pem-file",
 
         _ => throw new InvalidOperationException($"Certificate content type {contentType} is not supported.")
     };

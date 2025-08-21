@@ -42,11 +42,68 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
 
         var x509 = CreateCertificate(certName);
 
-        var exportedFromRaw = x509.Export(X509ContentType.Pkcs12, certPwd);
+        var exportedToRaw = x509.Export(X509ContentType.Pkcs12, certPwd);
 
-        var options = new ImportCertificateOptions(certName, exportedFromRaw)
+        var options = new ImportCertificateOptions(certName, exportedToRaw)
         {
             Password = certPwd,
+        };
+
+        var importResponse = await client.ImportCertificateAsync(options);
+
+        var importedCertificate = importResponse.Value;
+
+        Assert.NotNull(importedCertificate);
+        Assert.Equal(certName, importedCertificate.Name);
+        Assert.Equal(expectedContentType, importedCertificate.Policy.ContentType);
+    }
+
+    [Fact]
+    public async Task ImportingPemCertificateWillSucceed()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var certPwd = fixture.FreshlyGeneratedGuid;
+
+        var x509 = CreateCertificate(certName);
+
+        var pem = x509.ExportCertificatePem();
+
+        var exportedToRaw = Encoding.UTF8.GetBytes(pem);
+
+        var options = new ImportCertificateOptions(certName, exportedToRaw)
+        {
+            Password = certPwd
+        };
+
+        var importResponse = await client.ImportCertificateAsync(options);
+
+        var importedCertificate = importResponse.Value;
+
+        Assert.NotNull(importedCertificate);
+        Assert.Equal(certName, importedCertificate.Name);
+    }
+
+    [Fact]
+    public async Task ImportingPemCertificateWillCorrectContentType()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var certPwd = fixture.FreshlyGeneratedGuid;
+
+        var expectedContentType = "application/x-pem-file";
+
+        var x509 = CreateCertificate(certName);
+
+        var pem = x509.ExportCertificatePem();
+
+        var exportedToRaw = Encoding.UTF8.GetBytes(pem);
+
+        var options = new ImportCertificateOptions(certName, exportedToRaw)
+        {
+            Password = certPwd
         };
 
         var importResponse = await client.ImportCertificateAsync(options);
