@@ -4,6 +4,7 @@ using AzureKeyVaultEmulator.TestContainers.Constants;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure;
+using System.Runtime.InteropServices;
 
 namespace AzureKeyVaultEmulator.TestContainers.Tests;
 
@@ -17,7 +18,12 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _container = new AzureKeyVaultEmulatorContainer(Path.GetTempPath(), tag: "latest");
+        var tag = "latest";
+
+        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            tag += "-arm";
+
+        _container = new AzureKeyVaultEmulatorContainer(Path.GetTempPath(), tag: tag);
 
         await _container.StartAsync();
     }
