@@ -1,4 +1,4 @@
-name: Publish NuGet Packages and Docker Images
+name: Publish ARM Docker Images
 
 on:
   workflow_dispatch:
@@ -42,19 +42,6 @@ jobs:
 
       - name: Run TestContainers Integration Tests
         run: dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Dotnet Build
-        run: dotnet build --configuration Release --no-restore        
-
-      - name: Pack NuGet Package
-        run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
-
-      - name: Publish to NuGet
-        run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
-
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
