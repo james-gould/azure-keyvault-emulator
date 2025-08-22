@@ -14,13 +14,6 @@ internal partial class AzureKeyVaultEmulatorContainerConstants
 
 internal partial class AzureKeyVaultEmulatorContainerConstants
 {
-    // Connection related
-
-    public const string Endpoint = "https://localhost:4997";
-}
-
-internal partial class AzureKeyVaultEmulatorContainerConstants
-{
     // Environment Variables
 
     public const string PersistData = "Persist";

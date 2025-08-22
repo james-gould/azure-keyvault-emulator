@@ -15,13 +15,6 @@
 
     internal partial class KeyVaultEmulatorContainerConstants
     {
-        // Connection related
-
-        public const string Endpoint = "https://localhost:4997";
-    }
-
-    internal partial class KeyVaultEmulatorContainerConstants
-    {
         // Environment Variables
 
         public const string PersistData = "Persist";
