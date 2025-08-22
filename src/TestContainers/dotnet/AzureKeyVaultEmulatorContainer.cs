@@ -45,8 +45,10 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
         if (_options.LoadCertificatesIntoTrustStore)
             AzureKeyVaultEmulatorCertHelper.TryWriteToStore(_options, _loadedCertificates.Pfx, _loadedCertificates.LocalCertificatePath, _loadedCertificates.pem);
 
+        var containerTag = AzureKeyVaultEnvHelper.GetContainerTag();
+
         _container = new ContainerBuilder()
-            .WithImage($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{_options.Tag ?? AzureKeyVaultEmulatorContainerConstants.Tag}")
+            .WithImage($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{_options.Tag ?? containerTag}")
             .WithPortBinding(AzureKeyVaultEmulatorContainerConstants.Port, false)
             .WithBindMount(_options.LocalCertificatePath, AzureKeyVaultEmulatorCertConstants.CertMountTarget)
             .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.PersistData, $"{_options.Persist}")

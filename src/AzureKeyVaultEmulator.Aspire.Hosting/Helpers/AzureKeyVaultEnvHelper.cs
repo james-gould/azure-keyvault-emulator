@@ -1,5 +1,6 @@
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
@@ -55,7 +56,15 @@ internal static class AzureKeyVaultEnvHelper
     /// </summary>
     /// <returns></returns>
     public static bool IsCiCdEnvironment()
-    {
-        return _defaultVars.Any(env => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(env)));
-    }
+        => _defaultVars.Any(env => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(env)));
+
+    /// <summary>
+    /// <para>Determines the appropriate container tag based off the current process architecture.</para>
+    /// <para>linx/arm64/v8 images are built alongside amd64 images, see issue #338</para>
+    /// </summary>
+    /// <returns>The container tag to use for the Emulator.</returns>
+    public static string GetContainerTag()
+        => RuntimeInformation.ProcessArchitecture == Architecture.Arm64
+                ? KeyVaultEmulatorContainerConstants.ArmTag
+                : KeyVaultEmulatorContainerConstants.Tag;
 }
