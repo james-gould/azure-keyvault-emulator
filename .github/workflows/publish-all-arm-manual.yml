@@ -5,7 +5,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - name: Checkout repository
@@ -65,10 +65,10 @@ jobs:
           
       - name: Build Docker Image
         run: |
-          docker build -t jamesgoulddev/azure-keyvault-emulator:latest -t jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }} .
+          docker build --platform linux/arm64/v8 -t jamesgoulddev/azure-keyvault-emulator:latest-arm -t jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }}-arm .
 
-      - name: Push Latest Docker Image
-        run: docker push jamesgoulddev/azure-keyvault-emulator:latest
+      - name: Push Latest Docker Image (ARM64)
+        run: docker push jamesgoulddev/azure-keyvault-emulator:latest-arm
 
-      - name: Push Versioned Docker Image
-        run: docker push jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }}
+      - name: Push Versioned Docker Image (ARM64)
+        run: docker push jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }}-arm
