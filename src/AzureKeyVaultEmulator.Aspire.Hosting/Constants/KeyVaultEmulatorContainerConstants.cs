@@ -8,7 +8,7 @@
         public const string Image = "jamesgoulddev/azure-keyvault-emulator";
         public const int Port = 4997;
 
-        public const string Tag = "2.5.7";
+        public const string Tag = "2.5.8";
         public static string ArmTag => $"{Tag}-arm";
 
     }
