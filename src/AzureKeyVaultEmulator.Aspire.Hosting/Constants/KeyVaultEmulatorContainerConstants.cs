@@ -8,15 +8,9 @@
         public const string Image = "jamesgoulddev/azure-keyvault-emulator";
         public const int Port = 4997;
 
-        public const string Tag = "2.5.7";
+        public const string Tag = "2.5.8";
+        public static string ArmTag => $"{Tag}-arm";
 
-    }
-
-    internal partial class KeyVaultEmulatorContainerConstants
-    {
-        // Connection related
-
-        public const string Endpoint = "https://localhost:4997";
     }
 
     internal partial class KeyVaultEmulatorContainerConstants

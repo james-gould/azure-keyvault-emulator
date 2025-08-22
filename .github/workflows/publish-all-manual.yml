@@ -67,8 +67,18 @@ jobs:
         run: |
           docker build -t jamesgoulddev/azure-keyvault-emulator:latest -t jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }} .
 
+      - name: Build Docker Image
+        run: |
+          docker build --platform linux/arm64/v8 -t jamesgoulddev/azure-keyvault-emulator:latest-arm -t jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }}-arm .
+
       - name: Push Latest Docker Image
         run: docker push jamesgoulddev/azure-keyvault-emulator:latest
 
       - name: Push Versioned Docker Image
         run: docker push jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }}
+
+      - name: Push Latest Docker Image (ARM64)
+        run: docker push jamesgoulddev/azure-keyvault-emulator:latest-arm
+
+      - name: Push Versioned Docker Image (ARM64)
+        run: docker push jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }}-arm
