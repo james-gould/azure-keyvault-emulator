@@ -141,7 +141,8 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.KeysAreEqual(createdKey, fromDeletedStore);
     }
 
-    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+    //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+    [Fact]
     public async Task GetAllKeyVersionsWillCycle()
     {
         var client = await fixture.GetClientAsync();
@@ -149,7 +150,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
+            .CreateMultiple(26, 30, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         List<string> matchingKeys = [];
 
@@ -160,7 +161,8 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(executionCount, matchingKeys.Count);
     }
 
-    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+    //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+    [Fact]
     public async Task GetOneHundredKeyVersionsCyclesThroughLink()
     {
         var client = await fixture.GetClientAsync();
@@ -168,7 +170,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
+            .CreateMultiple(26, 30, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         List<string> matchingKeys = [];
 

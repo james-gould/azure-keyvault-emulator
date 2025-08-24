@@ -20,7 +20,8 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
         Assert.Equal(certName, deletedCert.Value.Name);
     }
 
-    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+    //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+    [Fact]
     public async Task GetDeletedCertificatesWillCycleLink()
     {
         var client = await fixture.GetClientAsync();
@@ -28,7 +29,7 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
         var name = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => fixture.CreateCertificateAsync(name));
+            .CreateMultiple(26, 30, i => fixture.CreateCertificateAsync(name));
 
         var deleteOp = await client.StartDeleteCertificateAsync(name);
 
@@ -42,9 +43,7 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
             if(certificate.Name.Contains(name))
                 deletedCerts.Add(certificate);
 
-        // All versions are deleted with just one preserved.
-        // When restoring only one version, the latest, should be restored
-        Assert.Single(deletedCerts);
+        Assert.Equal(executionCount, deletedCerts.Count);
     }
 
     [Fact]

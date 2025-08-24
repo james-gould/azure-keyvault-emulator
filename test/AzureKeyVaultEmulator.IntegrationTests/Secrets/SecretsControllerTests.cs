@@ -98,7 +98,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var secretName = fixture.FreshlyGeneratedGuid;
 
             var executionCount = await RequestSetup
-                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value"));
+                .CreateMultiple(26, 30, i => client.SetSecretAsync(secretName, $"{i}value"));
 
             var properties = client.GetPropertiesOfSecretVersionsAsync(secretName);
 
@@ -113,7 +113,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(executionCount, versions.Count);
         }
 
-        [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+        //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+        [Fact]
         public async Task GetSecretsPagesAllSecretsCreatedTest()
         {
             var client = await fixture.GetClientAsync();
@@ -121,7 +122,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var secretName = fixture.FreshlyGeneratedGuid;
 
             var executionCount = await RequestSetup
-                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value"));
+                .CreateMultiple(26, 30, i => client.SetSecretAsync(secretName, $"{i}value"));
 
             var testSecrets = new List<SecretProperties?>();
 

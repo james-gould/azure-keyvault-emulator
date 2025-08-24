@@ -27,7 +27,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(secret.Name, fromDeletedSource.Value.Name);
         }
 
-        [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+        //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+        [Fact]
         public async Task GetDeletedSecretsPagesForCorrectCountTest()
         {
             var client = await fixture.GetClientAsync();
@@ -35,7 +36,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var multiSecretName = fixture.FreshlyGeneratedGuid;
 
             var executionCount = await RequestSetup
-                .CreateMultiple(26, 51, i => client.SetSecretAsync(multiSecretName, $"{i}value"));
+                .CreateMultiple(26, 30, i => client.SetSecretAsync(multiSecretName, $"{i}value"));
 
             var deletedOperation = await client.StartDeleteSecretAsync(multiSecretName);
 

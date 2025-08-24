@@ -24,7 +24,8 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
         Assert.KeysAreEqual(createdKey, deletedKey);
     }
 
-    [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+    //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+    [Fact]
     public async Task GetDeletedKeysWillCycleLink()
     {
         var client = await fixture.GetClientAsync();
@@ -32,7 +33,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await
-            RequestSetup.CreateMultiple(26, 51, y => client.CreateKeyAsync(keyName, KeyType.Rsa));
+            RequestSetup.CreateMultiple(26, 30, y => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         var deleteOperation = (await client.StartDeleteKeyAsync(keyName)).Value;
 

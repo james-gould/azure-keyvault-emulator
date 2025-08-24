@@ -130,7 +130,6 @@ public abstract class KeyVaultClientTestingFixture<TClient> : IAsyncLifetime
         if (_app is not null)
             await _app.DisposeAsync().ConfigureAwait(false);
 
-        if (_testingClient is not null)
-            _testingClient.Dispose();
+        _testingClient?.Dispose();
     }
 }

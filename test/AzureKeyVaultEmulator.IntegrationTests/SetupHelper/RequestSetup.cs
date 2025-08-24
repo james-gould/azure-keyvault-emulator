@@ -29,8 +29,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper
         }
 
         public static async Task<int> CreateMultiple<T>(
-    int lower, int upper,
-    Func<int, Task<T>> execution)
+            int lower, int upper,
+            Func<int, Task<T>> execution)
         {
             var executionCount = Random.Shared.Next(lower, upper);
 

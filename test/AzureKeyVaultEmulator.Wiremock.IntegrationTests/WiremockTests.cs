@@ -5,12 +5,16 @@ namespace AzureKeyVaultEmulator.Wiremock.IntegrationTests;
 
 public class WiremockTests(WiremockFixture fixture) : IClassFixture<WiremockFixture>
 {
+    private static TimeSpan _timeout = TimeSpan.FromSeconds(5);
+
     [Fact]
     public async Task WireMockEndpointReturnsCorrectly()
     {
+        var tokenSource = new CancellationTokenSource(_timeout);
+
         var httpClient = await fixture.GetHttpClient(AspireConstants.DebugHelper);
 
-        var response = await httpClient.GetAsync(WiremockConstants.EndpointName);
+        var response = await httpClient.GetAsync(WiremockConstants.EndpointName, tokenSource.Token);
         var content = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -20,9 +24,11 @@ public class WiremockTests(WiremockFixture fixture) : IClassFixture<WiremockFixt
     [Fact]
     public async Task CertificateCreationEndpointEstablishesSSLCorrectly()
     {
+        var tokenSource = new CancellationTokenSource(_timeout);
+
         var httpClient = await fixture.GetHttpClient(AspireConstants.DebugHelper);
 
-        var response = await httpClient.GetAsync("/");
+        var response = await httpClient.GetAsync("/", tokenSource.Token);
 
         var content = await response.Content.ReadAsStringAsync();
 
