@@ -23,7 +23,7 @@ var keyVault = builder
 
 var webApi = builder
     .AddProject<Projects.WebApiWithEmulator_DebugHelper>(AspireConstants.DebugHelper)
-    //.WithEnvironment($"ConnectionStrings__{AspireConstants.EmulatorServiceName}", keyVault.GetEndpoint("https"))
+    .WithEnvironment($"ConnectionStrings__{AspireConstants.EmulatorServiceName}", keyVault.GetEndpoint("https"))
     .WithReference(keyVault)
     .WaitFor(keyVault);
 
