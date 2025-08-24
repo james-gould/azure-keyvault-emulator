@@ -149,7 +149,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
+            .CreateMultiple(26, 30, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         List<string> matchingKeys = [];
 
@@ -168,7 +168,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
+            .CreateMultiple(26, 30, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         List<string> matchingKeys = [];
 

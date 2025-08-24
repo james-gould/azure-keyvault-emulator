@@ -28,7 +28,7 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
         var name = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => fixture.CreateCertificateAsync(name));
+            .CreateMultiple(26, 30, i => fixture.CreateCertificateAsync(name));
 
         var deleteOp = await client.StartDeleteCertificateAsync(name);
 

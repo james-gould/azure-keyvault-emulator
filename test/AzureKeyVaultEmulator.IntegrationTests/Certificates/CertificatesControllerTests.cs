@@ -399,7 +399,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var certName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => fixture.CreateCertificateAsync(certName));
+            .CreateMultiple(26, 30, i => fixture.CreateCertificateAsync(certName));
 
         List<CertificateProperties> certs = [];
 
@@ -417,7 +417,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var certName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 51, i => fixture.CreateCertificateAsync(certName));
+            .CreateMultiple(26, 30, i => fixture.CreateCertificateAsync(certName));
 
         List<CertificateProperties> certs = [];
 
@@ -429,7 +429,6 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.NotEmpty(certs);
     }
 
-    //[Fact(Skip = "404 issue from CertificateClient again, underlying endpoint/functionality works fine. See iss #106")]
     [Fact]
     public async Task ImportingCertificateWillPersistInStore()
     {

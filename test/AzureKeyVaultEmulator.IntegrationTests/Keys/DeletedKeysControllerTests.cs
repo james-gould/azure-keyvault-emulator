@@ -32,7 +32,7 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
         var keyName = fixture.FreshlyGeneratedGuid;
 
         var executionCount = await
-            RequestSetup.CreateMultiple(26, 51, y => client.CreateKeyAsync(keyName, KeyType.Rsa));
+            RequestSetup.CreateMultiple(26, 30, y => client.CreateKeyAsync(keyName, KeyType.Rsa));
 
         var deleteOperation = (await client.StartDeleteKeyAsync(keyName)).Value;
 

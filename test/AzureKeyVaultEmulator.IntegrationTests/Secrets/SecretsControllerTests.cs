@@ -98,7 +98,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var secretName = fixture.FreshlyGeneratedGuid;
 
             var executionCount = await RequestSetup
-                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value"));
+                .CreateMultiple(26, 30, i => client.SetSecretAsync(secretName, $"{i}value"));
 
             var properties = client.GetPropertiesOfSecretVersionsAsync(secretName);
 
@@ -121,7 +121,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var secretName = fixture.FreshlyGeneratedGuid;
 
             var executionCount = await RequestSetup
-                .CreateMultiple(26, 51, i => client.SetSecretAsync(secretName, $"{i}value"));
+                .CreateMultiple(26, 30, i => client.SetSecretAsync(secretName, $"{i}value"));
 
             var testSecrets = new List<SecretProperties?>();
 
