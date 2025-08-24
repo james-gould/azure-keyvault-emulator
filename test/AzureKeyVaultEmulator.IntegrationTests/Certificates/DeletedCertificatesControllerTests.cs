@@ -43,9 +43,7 @@ public class DeletedCertificatesControllerTests(CertificatesTestingFixture fixtu
             if(certificate.Name.Contains(name))
                 deletedCerts.Add(certificate);
 
-        // All versions are deleted with just one preserved.
-        // When restoring only one version, the latest, should be restored
-        Assert.Single(deletedCerts);
+        Assert.Equal(executionCount, deletedCerts.Count);
     }
 
     [Fact]
