@@ -27,7 +27,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(secret.Name, fromDeletedSource.Value.Name);
         }
 
-        [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+        //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+        [Fact]
         public async Task GetDeletedSecretsPagesForCorrectCountTest()
         {
             var client = await fixture.GetClientAsync();

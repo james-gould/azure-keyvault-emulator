@@ -113,7 +113,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(executionCount, versions.Count);
         }
 
-        [Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+        //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
+        [Fact]
         public async Task GetSecretsPagesAllSecretsCreatedTest()
         {
             var client = await fixture.GetClientAsync();
