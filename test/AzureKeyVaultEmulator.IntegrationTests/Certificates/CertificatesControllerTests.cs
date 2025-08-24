@@ -391,7 +391,6 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.CertificatesAreEqual(cert, restoredCert);
     }
 
-    //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
     [Fact]
     public async Task GetCertificateVersionsListWillCycleLink()
     {
@@ -410,7 +409,6 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.Equal(executionCount, certs.Count);
     }
 
-    //[Fact(Skip = "Cyclical tests randomly failing on Github, issue #145")]
     [Fact]
     public async Task GetCertificatesListWillCycleLink()
     {
