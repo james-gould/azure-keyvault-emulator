@@ -1,4 +1,4 @@
-# Azure KeyVault Emulator TestContainers Module
+# Azure Key Vault Emulator TestContainers Module
 
 This module provides TestContainers support for the Azure KeyVault Emulator, enabling easy integration testing with automatic container lifecycle management.
 
