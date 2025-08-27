@@ -79,11 +79,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
         if (!string.IsNullOrEmpty(baseDir))
             return baseDir;
 
-        if (OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
             baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-        else if (OperatingSystem.IsMacOS())
-            baseDir = KeyVaultEmulatorCertConstants.OSXPath;
 
         else
             baseDir = KeyVaultEmulatorCertConstants.LinuxPath;
