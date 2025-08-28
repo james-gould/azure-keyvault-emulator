@@ -39,7 +39,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return response;
         }
 
-        public async Task<SecretAttributesModel> UpdateSecretAsync(string name, string version, UpdateSecretRequest request)
+        public async Task<UpdateSecretRequest> UpdateSecretAsync(string name, string version, UpdateSecretRequest request)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -53,7 +53,12 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             await context.SaveChangesAsync();
 
-            return secret.Attributes;
+            return new UpdateSecretRequest
+            {
+                Tags = secret.Tags,
+                ContentType = secret.ContentType,
+                Attributes = secret.Attributes
+            };
         }
 
         public async Task<DeletedSecretBundle> DeleteSecretAsync(string name, string version = "")
