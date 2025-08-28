@@ -39,15 +39,15 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return response;
         }
 
-        public async Task<SecretAttributesModel> UpdateSecretAsync(string name, string version, SecretAttributesModel attributes)
+        public async Task<SecretAttributesModel> UpdateSecretAsync(string name, string version, UpdateSecretRequest request)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
             var secret = await context.Secrets.SafeGetAsync(name, version);
 
-            if (!string.IsNullOrEmpty(attributes.ContentType))
-                secret.Attributes.ContentType = attributes.ContentType;
+            if (!string.IsNullOrEmpty(request.ContentType))
+                secret.ContentType = request.ContentType;
 
             secret.Attributes.Update();
 

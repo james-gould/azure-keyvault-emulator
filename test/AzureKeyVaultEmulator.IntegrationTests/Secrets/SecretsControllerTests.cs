@@ -231,5 +231,49 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(createdCount, existingCount);
         }
+
+        [Fact]
+        public async Task CreatingUpdatingAndDeletePurgingSecretWillFlowCorrectly()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+            var secretValue = fixture.FreshlyGeneratedGuid;
+
+            var createdSecret = await fixture.CreateSecretAsync(secretName, secretValue);
+
+            Assert.Equal(createdSecret.Name, secretName);
+            Assert.Equal(createdSecret.Value, secretValue);
+
+            var contentType = "application/text";
+
+            createdSecret.Properties.ContentType = contentType;
+
+            await client.UpdateSecretPropertiesAsync(createdSecret.Properties);
+
+            var updatedSecretResponse = await client.GetSecretAsync(secretName);
+
+            var updatedSecret = updatedSecretResponse.Value;
+
+            Assert.Equal(contentType, updatedSecret.Properties.ContentType);
+
+            var deleteOperation = await client.StartDeleteSecretAsync(secretName);
+
+            await deleteOperation.WaitForCompletionAsync();
+
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
+
+            var deletedSecretResponse = await client.GetDeletedSecretAsync(secretName);
+
+            var deletedSecret = deletedSecretResponse.Value;
+
+            Assert.Equal(deletedSecret.Name, secretName);
+            Assert.Equal(deletedSecret.Value, secretValue);
+
+            await client.PurgeDeletedSecretAsync(secretName);
+
+            await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
+        }
     }
 }

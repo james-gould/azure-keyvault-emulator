@@ -182,7 +182,8 @@ public sealed class CertificateBackingService(
             .SetSecretAsync(certName, new SetSecretRequest
             {
                 Value = certificateData,
-                SecretAttributes = new() { ContentType = contentType.ParseContentType() }
+                ContentType = contentType.ParseContentType(),
+                SecretAttributes = new()
             });
     }
 }
