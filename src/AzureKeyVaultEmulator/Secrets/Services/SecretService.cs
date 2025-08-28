@@ -29,6 +29,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 SecretIdentifier = secretUri,
                 Value = secret.Value,
                 Attributes = secret.SecretAttributes,
+                ContentType = secret.ContentType,
                 Tags = secret.Tags
             };
 
