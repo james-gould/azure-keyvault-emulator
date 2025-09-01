@@ -62,9 +62,9 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [FromRoute] string name,
             [FromRoute] string version,
             [ApiVersion] string apiVersion,
-            [FromBody] SecretAttributesModel attributes)
+            [FromBody] UpdateSecretRequest request)
         {
-            var updated = await secretService.UpdateSecretAsync(name, version, attributes);
+            var updated = await secretService.UpdateSecretAsync(name, version, request);
 
             return Ok(updated);
         }

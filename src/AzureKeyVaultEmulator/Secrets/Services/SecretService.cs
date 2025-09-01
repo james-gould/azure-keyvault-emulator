@@ -29,6 +29,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 SecretIdentifier = secretUri,
                 Value = secret.Value,
                 Attributes = secret.SecretAttributes,
+                ContentType = secret.ContentType,
                 Tags = secret.Tags
             };
 
@@ -39,21 +40,26 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return response;
         }
 
-        public async Task<SecretAttributesModel> UpdateSecretAsync(string name, string version, SecretAttributesModel attributes)
+        public async Task<UpdateSecretRequest> UpdateSecretAsync(string name, string version, UpdateSecretRequest request)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
             var secret = await context.Secrets.SafeGetAsync(name, version);
 
-            if (!string.IsNullOrEmpty(attributes.ContentType))
-                secret.Attributes.ContentType = attributes.ContentType;
+            if (!string.IsNullOrEmpty(request.ContentType))
+                secret.ContentType = request.ContentType;
 
             secret.Attributes.Update();
 
             await context.SaveChangesAsync();
 
-            return secret.Attributes;
+            return new UpdateSecretRequest
+            {
+                Tags = secret.Tags,
+                ContentType = secret.ContentType,
+                Attributes = secret.Attributes
+            };
         }
 
         public async Task<DeletedSecretBundle> DeleteSecretAsync(string name, string version = "")

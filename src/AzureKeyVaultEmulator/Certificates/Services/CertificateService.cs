@@ -402,7 +402,7 @@ public sealed class CertificateService(
         policy.IssuerId = issuer.PersistedId;
 
         if(secret is not null)
-            policy.SecretProperies = new() { ContentType = secret.Attributes.ContentType };
+            policy.SecretProperies = new() { ContentType = secret.ContentType };
 
         if(key is not null)
         {
