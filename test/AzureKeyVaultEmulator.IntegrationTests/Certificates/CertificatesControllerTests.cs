@@ -161,6 +161,37 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task CreatingCertificateWithKeyUsageWillPersist()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
+
+        var issuerName = "Self";
+        var subject = "CN=keyvault-emulator.com, O=Key Vault Emulator Ltd";
+
+        var policy = new CertificatePolicy(issuerName, subject);
+
+        var digitalSignatureKeyUsage = CertificateKeyUsage.DigitalSignature;
+        policy.KeyUsage.Add(digitalSignatureKeyUsage);
+
+        var operation = await client.StartCreateCertificateAsync(
+                    certName,
+                    policy
+        );
+
+        await operation.WaitForCompletionAsync();
+
+        Assert.True(operation.HasCompleted);
+
+        var certFromStore = await client.GetCertAsync(certName);
+        var keyUsageFromCert = Assert.Single(certFromStore.Policy.KeyUsage);
+        Assert.Equal(digitalSignatureKeyUsage, keyUsageFromCert);
+    }
+
+    [Fact]
     public async Task GetCertificateByVersionWillSucceed()
     {
         var client = await fixture.GetClientAsync();
