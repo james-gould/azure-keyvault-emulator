@@ -1,32 +1,12 @@
 using AzureKeyVaultEmulator.AppHost;
-//using AzureKeyVaultEmulator.Aspire.Hosting;
 using AzureKeyVaultEmulator.Shared.Constants.Orchestration;
 using WireMock.Server;
 
 var isWiremockTestRunning = args.GetFlag(AspireConstants.Wiremock);
-var isIntegrationTestRun = args.GetFlag(AspireConstants.IntegrationTest);
 
 var builder = DistributedApplication.CreateBuilder();
 
-//var keyVault = builder
-//    .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
-//    .RunAsEmulator(
-//        new KeyVaultEmulatorOptions
-//        {
-//            UseDotnetDevCerts = isWiremockTestRunning,
-//            //Lifetime = ContainerLifetime.Persistent
-//        }
-//    );
-
-var keyVault = builder
-                .AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName);
-
-var webApi = builder
-    .AddProject<Projects.WebApiWithEmulator_DebugHelper>(AspireConstants.DebugHelper)
-    .WithEnvironment($"ConnectionStrings__{AspireConstants.EmulatorServiceName}", keyVault.GetEndpoint("https"))
-    .WithReference(keyVault)
-    .WaitFor(keyVault);
-
+var keyVault = builder.AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName);
 if (isWiremockTestRunning)
 {
     var wiremockServer = WireMockServer
@@ -35,9 +15,17 @@ if (isWiremockTestRunning)
     wiremockServer.Given(WireMock.RequestBuilders.Request.Create()
         .WithPath(WiremockConstants.EndpointPath)
         .UsingGet())
-        .RespondWith(WireMock.ResponseBuilders.Response.Create()
-        .WithStatusCode(200)
-        .WithBody(WiremockConstants.ConnectivityResponse));
+        .RespondWith(
+             WireMock.ResponseBuilders.Response.Create()
+            .WithStatusCode(200)
+            .WithBody(WiremockConstants.ConnectivityResponse)
+        );
+
+    var webApi = builder
+        .AddProject<Projects.WebApiWithEmulator_DebugHelper>(AspireConstants.DebugHelper)
+        .WithEnvironment($"ConnectionStrings__{AspireConstants.EmulatorServiceName}", keyVault.GetEndpoint("https"))
+        .WithReference(keyVault)
+        .WaitFor(keyVault);
 
     webApi.WithEnvironment(AspireConstants.Wiremock, wiremockServer.Url);
 }
