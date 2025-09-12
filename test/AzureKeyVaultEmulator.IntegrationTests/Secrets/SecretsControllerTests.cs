@@ -275,5 +275,33 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
             await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
         }
+
+        [Fact]
+        public async Task OverridingAndDeletingSecretWillRemoveAllVersions()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+            var initialSecretValue = fixture.FreshlyGeneratedGuid;
+            var overrideSecretValue = fixture.FreshlyGeneratedGuid;
+
+            await client.SetSecretAsync(secretName, initialSecretValue);
+
+            var initialResponse = await client.GetSecretAsync(secretName);
+
+            var initialSecret = initialResponse.Value;
+
+            Assert.Equal(secretName, initialSecret.Name);
+            Assert.Equal(initialSecretValue, initialSecret.Value);
+
+            await client.SetSecretAsync(secretName, overrideSecretValue);
+
+            var overrideResponse = await client.GetSecretAsync(secretName);
+
+            var overrideSecret = overrideResponse.Value;
+
+            Assert.Equal(secretName, overrideSecret.Name);
+            Assert.Equal(overrideSecretValue, overrideSecret.Value);
+        }
     }
 }
