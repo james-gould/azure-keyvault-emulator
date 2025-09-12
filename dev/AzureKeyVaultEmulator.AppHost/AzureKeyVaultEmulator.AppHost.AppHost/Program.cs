@@ -7,6 +7,7 @@ var isWiremockTestRunning = args.GetFlag(AspireConstants.Wiremock);
 var builder = DistributedApplication.CreateBuilder();
 
 var keyVault = builder.AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName);
+
 if (isWiremockTestRunning)
 {
     var wiremockServer = WireMockServer
