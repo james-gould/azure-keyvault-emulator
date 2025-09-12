@@ -177,16 +177,14 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var digitalSignatureKeyUsage = CertificateKeyUsage.DigitalSignature;
         policy.KeyUsage.Add(digitalSignatureKeyUsage);
 
-        var operation = await client.StartCreateCertificateAsync(
-                    certName,
-                    policy
-        );
+        var operation = await client.StartCreateCertificateAsync(certName, policy);
 
         await operation.WaitForCompletionAsync();
 
         Assert.True(operation.HasCompleted);
 
         var certFromStore = await client.GetCertAsync(certName);
+
         var keyUsageFromCert = Assert.Single(certFromStore.Policy.KeyUsage);
         Assert.Equal(digitalSignatureKeyUsage, keyUsageFromCert);
     }
