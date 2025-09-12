@@ -24,15 +24,15 @@ public sealed class X509CertificateProperties : IPersistedItem
         set => BackingEnhancedUsage = JsonSerializer.Serialize(value);
     }
 
-    [JsonPropertyName("emulator_keyUsage")]
-    public string BackingKeyUsage { get; set; } = "[]";
-
     [JsonPropertyName("key_usage")]
+    public IEnumerable<string> BackingKeyUsage { get; set; } = [];
+
+    [JsonIgnore]
     [NotMapped]
     public IEnumerable<CertificateKeyUsage> KeyUsage
     {
-        get => JsonSerializer.Deserialize<IEnumerable<CertificateKeyUsage>>(BackingKeyUsage) ?? [];
-        set => BackingKeyUsage = JsonSerializer.Serialize(value);
+        get => BackingKeyUsage.Select(keyUsage => new CertificateKeyUsage(keyUsage));
+        set => BackingKeyUsage = value.Select(keyUsage => keyUsage.ToString());
     }
 
     [JsonPropertyName("sans")]
