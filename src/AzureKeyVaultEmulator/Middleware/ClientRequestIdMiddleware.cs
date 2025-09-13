@@ -14,8 +14,8 @@
             var clientRequestId = context.Request.Headers["x-ms-client-request-id"].FirstOrDefault();
             var returnHeaderFlag = context.Request.Headers["x-ms-return-client-request-id"].FirstOrDefault();
 
-            if (!string.IsNullOrEmpty(clientRequestId) &&
-                string.Equals(returnHeaderFlag, "true", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(clientRequestId) && !string.IsNullOrEmpty(returnHeaderFlag) &&
+                returnHeaderFlag.Equals("true", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.OnStarting(() =>
                 {
