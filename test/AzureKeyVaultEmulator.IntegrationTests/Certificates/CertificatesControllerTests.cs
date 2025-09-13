@@ -169,24 +169,51 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
 
-        var issuerName = "Self";
-        var subject = "CN=keyvault-emulator.com, O=Key Vault Emulator Ltd";
-
-        var policy = new CertificatePolicy(issuerName, subject);
+        var policy = fixture.BasicPolicy;
 
         var digitalSignatureKeyUsage = CertificateKeyUsage.DigitalSignature;
+
         policy.KeyUsage.Add(digitalSignatureKeyUsage);
 
         var operation = await client.StartCreateCertificateAsync(certName, policy);
 
         await operation.WaitForCompletionAsync();
 
-        Assert.True(operation.HasCompleted);
-
         var certFromStore = await client.GetCertAsync(certName);
 
         var keyUsageFromCert = Assert.Single(certFromStore.Policy.KeyUsage);
+
         Assert.Equal(digitalSignatureKeyUsage, keyUsageFromCert);
+        Assert.Equal(digitalSignatureKeyUsage, certFromStore.Policy.KeyUsage.FirstOrDefault());
+    }
+
+    [Fact]
+    public async Task CreateCertificateWithMultipleKeyUsageWillPersist()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
+
+        var policy = fixture.BasicPolicy;
+
+        var usages = new List<CertificateKeyUsage>()
+        {
+            CertificateKeyUsage.DataEncipherment, CertificateKeyUsage.KeyEncipherment, CertificateKeyUsage.NonRepudiation,
+            CertificateKeyUsage.CrlSign, CertificateKeyUsage.KeyAgreement, CertificateKeyUsage.KeyCertSign
+        };
+
+        foreach(var usage in usages)
+            policy.KeyUsage.Add(usage);
+
+        var operation = await client.StartCreateCertificateAsync(certName, policy);
+
+        await operation.WaitForCompletionAsync();
+
+        var certFromStore = await client.GetCertAsync(certName);
+
+        Assert.Equal(usages, certFromStore.Policy.KeyUsage);
     }
 
     [Fact]

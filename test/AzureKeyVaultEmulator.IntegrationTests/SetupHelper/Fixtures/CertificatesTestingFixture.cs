@@ -6,7 +6,9 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
 {
     private CertificateClient? _certClient;
 
-    public CertificatePolicy BasicPolicy = CertificatePolicy.Default;
+#pragma warning disable CA1822 // Mark members as static, instance data is required in tests
+    public CertificatePolicy BasicPolicy => CertificatePolicy.Default;
+#pragma warning restore CA1822 // Mark members as static, instance data is required in tests
 
     public AdministratorContact DefaultAdminContact = new()
     {
