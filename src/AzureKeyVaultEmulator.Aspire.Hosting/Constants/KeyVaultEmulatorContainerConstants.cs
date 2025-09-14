@@ -1,22 +1,21 @@
-﻿namespace AzureKeyVaultEmulator.Aspire.Hosting
+﻿namespace AzureKeyVaultEmulator.Aspire.Hosting;
+
+internal partial class KeyVaultEmulatorContainerConstants
 {
-    internal partial class KeyVaultEmulatorContainerConstants
-    {
-        // Image
+    // Image
 
-        public const string Registry = "docker.io";
-        public const string Image = "jamesgoulddev/azure-keyvault-emulator";
-        public const int Port = 4997;
+    public const string Registry = "docker.io";
+    public const string Image = "jamesgoulddev/azure-keyvault-emulator";
+    public const int Port = 4997;
 
-        public const string Tag = "2.5.9";
-        public static string ArmTag => $"{Tag}-arm";
+    public const string Tag = "2.5.9";
+    public static string ArmTag => $"{Tag}-arm";
 
-    }
+}
 
-    internal partial class KeyVaultEmulatorContainerConstants
-    {
-        // Environment Variables
+internal partial class KeyVaultEmulatorContainerConstants
+{
+    // Environment Variables
 
-        public const string PersistData = "Persist";
-    }
+    public const string PersistData = "Persist";
 }
