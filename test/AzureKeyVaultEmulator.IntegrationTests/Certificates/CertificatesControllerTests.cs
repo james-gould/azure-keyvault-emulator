@@ -171,8 +171,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var issuerName = "Self";
         var subject = "CN=keyvault-emulator.com, O=Key Vault Emulator Ltd";
+        var enabled = false;
 
-        var policy = new CertificatePolicy(issuerName, subject);
+        var policy = new CertificatePolicy(issuerName, subject) { Enabled = enabled };
 
         var digitalSignatureKeyUsage = CertificateKeyUsage.DigitalSignature;
         policy.KeyUsage.Add(digitalSignatureKeyUsage);
@@ -184,6 +185,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.True(operation.HasCompleted);
 
         var certFromStore = await client.GetCertAsync(certName);
+        Assert.Equal(enabled, certFromStore.Policy.Enabled);
 
         var keyUsageFromCert = Assert.Single(certFromStore.Policy.KeyUsage);
         Assert.Equal(digitalSignatureKeyUsage, keyUsageFromCert);
