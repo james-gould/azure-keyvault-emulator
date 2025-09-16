@@ -23,7 +23,7 @@ public class CertificatesController(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = await certService.CreateCertificateAsync(name, request.Attributes, request.CertificatePolicy, request.Tags);
+        var result = await certService.CreateCertificateAsync(name, request.CertificatePolicy.CertificateAttributes, request.CertificatePolicy, request.Tags);
 
         return Accepted(result);
     }
