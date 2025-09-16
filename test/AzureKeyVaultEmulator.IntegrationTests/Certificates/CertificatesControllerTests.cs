@@ -169,11 +169,10 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
 
-        var issuerName = "Self";
-        var subject = "CN=keyvault-emulator.com, O=Key Vault Emulator Ltd";
         var enabled = false;
 
-        var policy = new CertificatePolicy(issuerName, subject) { Enabled = enabled };
+        var policy = fixture.BasicPolicy;
+        policy.Enabled = enabled;
 
         var digitalSignatureKeyUsage = CertificateKeyUsage.DigitalSignature;
         policy.KeyUsage.Add(digitalSignatureKeyUsage);
