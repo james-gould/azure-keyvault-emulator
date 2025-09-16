@@ -183,6 +183,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
     {
         var builder = new SubjectAlternativeNameBuilder();
 
+        builder.AddDnsName("host.docker.internal");
         builder.AddDnsName("localhost");
         builder.AddIpAddress(IPAddress.Parse("127.0.0.1"));
 
