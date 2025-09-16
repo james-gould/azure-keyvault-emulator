@@ -52,9 +52,18 @@ jobs:
       - name: Pack NuGet Package
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
 
-      - name: Publish to NuGet
-        run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+      - name: Login to NuGet (keyless)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
 
+      - name: Publish to NuGet
+        run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --skip-duplicate
+          
+      - name: Build Docker Image
+        run: |
+          docker build -t jamesgoulddev/azure-keyvault-emulator:latest -t jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }} .
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -62,10 +71,6 @@ jobs:
           registry: ${{ secrets.REGISTRY }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          
-      - name: Build Docker Image
-        run: |
-          docker build -t jamesgoulddev/azure-keyvault-emulator:latest -t jamesgoulddev/azure-keyvault-emulator:${{ env.VERSION }} .
 
       - name: Push Latest Docker Image
         run: docker push jamesgoulddev/azure-keyvault-emulator:latest
