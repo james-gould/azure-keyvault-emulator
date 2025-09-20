@@ -50,7 +50,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
 
         // Then create files and place at {path}
         var (pfx, pem) = options.ShouldGenerateCertificates && !certsAlreadyExist
-                            ? GenerateAndSaveCert(pfxPath, crtPath)
+                            ? GenerateAndExportCert(pfxPath, crtPath)
                             : LoadExistingCertificatesToInstall(pfxPath, crtPath);
 
         return new CertificateLoaderVM(certPath) { Pfx = pfx, pem = pem };
@@ -124,7 +124,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
     /// <param name="pfxPath">The path to write the PFX to.</param>
     /// <param name="pemPath">The path to write the PEM to.</param>
     /// <returns>A complete <see cref="X509Certificate2"/> and associated PEM from the RawData.</returns>
-    private static (X509Certificate2 pfx, string pem) GenerateAndSaveCert(string pfxPath, string pemPath)
+    private static (X509Certificate2 pfx, string pem) GenerateAndExportCert(string pfxPath, string pemPath)
     {
         if (string.IsNullOrEmpty(pfxPath))
             throw new ArgumentException("Value cannot be null or empty.", nameof(pfxPath));
@@ -246,6 +246,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
 
         store.Open(OpenFlags.ReadWrite);
         store.Add(cert);
+
+        store.Close();
     }
 
     /// <summary>
