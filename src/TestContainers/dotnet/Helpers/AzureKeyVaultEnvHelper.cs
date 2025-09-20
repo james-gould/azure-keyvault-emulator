@@ -1,18 +1,20 @@
+using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using AzureKeyVaultEmulator.TestContainers.Constants;
 using AzureKeyVaultEmulator.TestContainers.Exceptions;
 
-namespace AzureKeyVaultEmulator.TestContainers.Helpers;
-
-internal static class AzureKeyVaultEnvHelper
+namespace AzureKeyVaultEmulator.TestContainers.Helpers
 {
-    private static readonly string[] _defaultVars =
-    [
-        "BUILD_BUILDID", // Azure DevOps
-        "CI", // Jenkins, TeamCity, etc
-        "GITHUB_ACTIONS" // Github, obviously.
-    ];
+    internal static class AzureKeyVaultEnvHelper
+    {
+        private static readonly string[] _defaultVars = new string[]
+        {
+            "BUILD_BUILDID", // Azure DevOps
+            "CI", // Jenkins, TeamCity, etc
+            "GITHUB_ACTIONS" // Github, obviously.
+        };
 
     public static void Bash(string command)
     {
@@ -59,4 +61,5 @@ internal static class AzureKeyVaultEnvHelper
         => RuntimeInformation.ProcessArchitecture == Architecture.Arm64
                 ? AzureKeyVaultEmulatorContainerConstants.ArmTag
                 : AzureKeyVaultEmulatorContainerConstants.Tag;
+    }
 }

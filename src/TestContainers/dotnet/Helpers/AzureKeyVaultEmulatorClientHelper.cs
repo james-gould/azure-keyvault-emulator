@@ -1,9 +1,11 @@
-﻿using Azure.Security.KeyVault.Certificates;
+using System;
+using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.TestContainers.Models;
 
-namespace AzureKeyVaultEmulator.TestContainers.Helpers;
+namespace AzureKeyVaultEmulator.TestContainers.Helpers
+{
 
 public static class AzureKeyVaultEmulatorClientHelper
 {
@@ -14,7 +16,8 @@ public static class AzureKeyVaultEmulatorClientHelper
     /// <returns>A configured <see cref="SecretClient"/>.</returns>
     public static SecretClient GetSecretClient(this AzureKeyVaultEmulatorContainer container)
     {
-        ArgumentNullException.ThrowIfNull(container);
+        if (container == null)
+            throw new ArgumentNullException(nameof(container));
 
         var vaultEndpoint = container.GetConnectionString();
 
@@ -34,7 +37,8 @@ public static class AzureKeyVaultEmulatorClientHelper
     /// <returns>A configured <see cref="KeyClient"/>.</returns>
     public static KeyClient GetKeyClient(this AzureKeyVaultEmulatorContainer container)
     {
-        ArgumentNullException.ThrowIfNull(container);
+        if (container == null)
+            throw new ArgumentNullException(nameof(container));
 
         var vaultEndpoint = container.GetConnectionString();
 
@@ -54,7 +58,8 @@ public static class AzureKeyVaultEmulatorClientHelper
     /// <returns>A configured <see cref="CertificateClient"/>.</returns>
     public static CertificateClient GetCertificateClient(this AzureKeyVaultEmulatorContainer container)
     {
-        ArgumentNullException.ThrowIfNull(container);
+        if (container == null)
+            throw new ArgumentNullException(nameof(container));
 
         var vaultEndpoint = container.GetConnectionString();
 
@@ -66,4 +71,5 @@ public static class AzureKeyVaultEmulatorClientHelper
 
         return new CertificateClient(uri, credential, new CertificateClientOptions { DisableChallengeResourceVerification = true });
     }
+}
 }

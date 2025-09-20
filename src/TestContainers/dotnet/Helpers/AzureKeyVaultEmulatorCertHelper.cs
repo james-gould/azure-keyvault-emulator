@@ -1,12 +1,18 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using System.Security.Cryptography;
-using System.Text;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using AzureKeyVaultEmulator.TestContainers.Constants;
 using AzureKeyVaultEmulator.TestContainers.Models;
 using AzureKeyVaultEmulator.TestContainers.Exceptions;
 
-namespace AzureKeyVaultEmulator.TestContainers.Helpers;
+namespace AzureKeyVaultEmulator.TestContainers.Helpers
+{
 
 internal static class AzureKeyVaultEmulatorCertHelper
 {
@@ -17,7 +23,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
     /// <returns>The base directory containing certificates.</returns>
     internal static CertificateLoaderVM ValidateOrGenerateCertificate(AzureKeyVaultEmulatorOptions options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
 
         if (!string.IsNullOrEmpty(options.LocalCertificatePath) && !Directory.Exists(options.LocalCertificatePath))
             Directory.CreateDirectory(options.LocalCertificatePath);
@@ -36,7 +43,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
         // Will also require a cert check for expiration
         // Out of scope for now
         if (certsAlreadyExist && !options.LoadCertificatesIntoTrustStore)
-            return new(certPath);
+            return new CertificateLoaderVM(certPath);
 
         // One has been deleted, try to remove them both and regenerate.
         // Only if users allow us to conduct IO on the certificates for the Emulator.
@@ -48,7 +55,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
                             ? GenerateAndSaveCert(pfxPath, crtPath)
                             : LoadExistingCertificatesToInstall(pfxPath, crtPath);
 
-        return new(certPath) { Pfx = pfx, pem = pem };
+        return new CertificateLoaderVM(certPath) { Pfx = pfx, pem = pem };
     }
 
     /// <summary>
@@ -65,7 +72,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
         if (!string.IsNullOrEmpty(baseDir))
             return baseDir;
 
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         else
@@ -154,7 +161,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
         var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
 
         // Setting FriendlyName is only supported on Windows for some reason.
-        if (OperatingSystem.IsWindows())
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             cert.FriendlyName = "Azure Key Vault Emulator";
 
         var pfxBytes = cert.Export(X509ContentType.Pfx, AzureKeyVaultEmulatorCertConstants.Pword);
@@ -219,13 +226,13 @@ internal static class AzureKeyVaultEmulatorCertHelper
 
         try
         {
-            if (OperatingSystem.IsWindows())
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 InstallToWindowsTrustStore(pfx);
 
-            else if (OperatingSystem.IsLinux())
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 InstallToLinuxShare(pem);
 
-            else if (OperatingSystem.IsMacOS())
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 PromptMacUser(pfxPath);
         }
         catch (Exception)
@@ -318,4 +325,5 @@ internal static class AzureKeyVaultEmulatorCertHelper
             Console.WriteLine($"Found previous {AzureKeyVaultEmulatorCertConstants.HostParentDirectory} PFX and deleted it.");
         }
     }
+}
 }
