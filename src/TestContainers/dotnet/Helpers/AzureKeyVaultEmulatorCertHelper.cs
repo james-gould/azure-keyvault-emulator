@@ -1,7 +1,5 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -96,7 +94,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
         string pfxPath,
         string? pemPath = null)
     {
-        ArgumentNullException.ThrowIfNull(pfxPath);
+        if (pfxPath == null)
+            throw new ArgumentNullException(nameof(pfxPath));
 
         if (!File.Exists(pfxPath))
             throw new KeyVaultEmulatorException($"PFX not found at path: {pfxPath}");
@@ -105,24 +104,13 @@ internal static class AzureKeyVaultEmulatorCertHelper
 
         try
         {
-
-#if NET9_0_OR_GREATER
-            var pfx = X509CertificateLoader.LoadPkcs12FromFile(pfxPath, KeyVaultEmulatorCertConstants.Pword);
-            var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
-
-            if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
-                throw new KeyVaultEmulatorException("CRT is required for a Linux host machine but was missing at path: {pfxPath}.");
-
-            return (pfx, pem);
-#elif NET8_0
             var pfx = new X509Certificate2(pfxPath, AzureKeyVaultEmulatorCertConstants.Pword);
             var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
 
-            if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && string.IsNullOrEmpty(pem))
                 throw new KeyVaultEmulatorException("PEM/CRT is required for a Linux host machine but was missing.");
 
             return (pfx, pem);
-#endif
         }
         catch (Exception)
         {
@@ -138,8 +126,10 @@ internal static class AzureKeyVaultEmulatorCertHelper
     /// <returns>A complete <see cref="X509Certificate2"/> and associated PEM from the RawData.</returns>
     private static (X509Certificate2 pfx, string pem) GenerateAndSaveCert(string pfxPath, string pemPath)
     {
-        ArgumentException.ThrowIfNullOrEmpty(pfxPath);
-        ArgumentException.ThrowIfNullOrEmpty(pemPath);
+        if (string.IsNullOrEmpty(pfxPath))
+            throw new ArgumentException("Value cannot be null or empty.", nameof(pfxPath));
+        if (string.IsNullOrEmpty(pemPath))
+            throw new ArgumentException("Value cannot be null or empty.", nameof(pemPath));
 
         var subject = new X500DistinguishedName(AzureKeyVaultEmulatorCertConstants.Subject);
         using var rsa = RSA.Create();
@@ -219,7 +209,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
         string pfxPath,
         string pem)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
 
         if (!options.LoadCertificatesIntoTrustStore)
             return;
@@ -263,7 +254,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
     /// <param name="pem">The CRT/PEM to install.</param>
     private static void InstallToLinuxShare(string pem)
     {
-        ArgumentException.ThrowIfNullOrEmpty(pem);
+        if (string.IsNullOrEmpty(pem))
+            throw new ArgumentException("Value cannot be null or empty.", nameof(pem));
 
         try
         {
@@ -300,7 +292,8 @@ internal static class AzureKeyVaultEmulatorCertHelper
     /// <param name="pfxPath">The path to the PFX to install.</param>
     private static void PromptMacUser(string pfxPath)
     {
-        ArgumentException.ThrowIfNullOrEmpty(pfxPath);
+        if (string.IsNullOrEmpty(pfxPath))
+            throw new ArgumentException("Value cannot be null or empty.", nameof(pfxPath));
 
         Console.WriteLine("To install on macOS trust store, run:");
         Console.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");

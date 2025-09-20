@@ -24,7 +24,7 @@ dotnet add package AzureKeyVaultEmulator.TestContainers
 ## Requirements
 
 - Docker (or supporting container framework) installed and running
-- .NET 8.0 or later
+- .NET Standard 2.1 compatible framework (.NET Core 3.1+, .NET 5+, .NET Framework 4.6.1+)
 
 ## SSL Usage
 
