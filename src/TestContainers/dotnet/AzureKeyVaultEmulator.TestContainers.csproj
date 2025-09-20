@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <LangVersion>8.0</LangVersion>
 
     <Title>Azure Key Vault Emulator TestContainers Module</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -22,12 +22,14 @@
     <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.8.0" />
     <PackageReference Include="Azure.Security.KeyVault.Keys" Version="4.8.0" />
     <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
-    <PackageReference Include="Testcontainers" Version="4.6.0" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageReference Include="Testcontainers" Version="3.9.0" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
-    <InternalsVisibleTo Include="AzureKeyVaultEmulator.TestContainers.Tests"/>
+    <InternalsVisibleTo Include="AzureKeyVaultEmulator.TestContainers.Tests" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
-﻿using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography.X509Certificates;
 
-namespace AzureKeyVaultEmulator.TestContainers;
+namespace AzureKeyVaultEmulator.TestContainers
+{
 
 /// <summary>
 /// Allows for granular configuration of the Azure Key Vault Emulator.
@@ -68,4 +69,5 @@ public sealed class AzureKeyVaultEmulatorOptions
     /// Used to carry the CRT through the generation and installation lifetime. Not passed as an option.
     /// </summary>
     internal string? CRT { get; set; }
+}
 }
