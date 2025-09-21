@@ -291,7 +291,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(initialValue, initialSecret.Value);
 
             // Ensure underpinning unix time is 100% different
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var overrideSecret = await fixture.CreateSecretAsync(secretName, overrideValue);
 
