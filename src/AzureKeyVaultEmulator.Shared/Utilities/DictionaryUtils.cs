@@ -27,6 +27,24 @@ public static class DictionaryUtils
         return value;
     }
 
+    /// <summary>
+    /// Retrieves an entity from the <see cref="DbSet{TEntity}"/> by name, version, and deleted status,
+    /// ordering results by the <c>Updated</c> property of the entity's attributes in descending order.
+    /// </summary>
+    /// <typeparam name="TEntity">
+    /// The entity type, which must implement <see cref="INamedItem"/>, <see cref="IDeletable"/>, and <see cref="IAttributedModel{TAttributes}"/>.
+    /// </typeparam>
+    /// <typeparam name="TAttributes">
+    /// The type of the attributes associated with the entity, which must inherit from <see cref="AttributeBase"/>.
+    /// </typeparam>
+    /// <param name="set">The <see cref="DbSet{TEntity}"/> to query.</param>
+    /// <param name="name">The name of the entity to retrieve.</param>
+    /// <param name="version">The version of the entity to retrieve. If empty, retrieves any version.</param>
+    /// <param name="deleted">Whether to retrieve deleted entities.</param>
+    /// <returns>
+    /// The most recently updated entity matching the specified criteria, or throws <see cref="MissingItemException"/> if not found.
+    /// </returns>
+    /// <exception cref="MissingItemException">Thrown when no matching entity is found.</exception>
     public static async Task<TEntity> SafeGetAsync<TEntity, TAttributes>(
         this DbSet<TEntity> set,
         string name,
