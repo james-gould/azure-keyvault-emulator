@@ -2,6 +2,7 @@ using AzureKeyVaultEmulator.ApiConfiguration;
 using AzureKeyVaultEmulator.Middleware;
 using AzureKeyVaultEmulator.Shared.Middleware;
 using AzureKeyVaultEmulator.Shared.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +43,7 @@ app.UseMiddleware<ClientRequestIdMiddleware>();
 
 using var scope = app.Services.CreateScope();
 var db = scope.ServiceProvider.GetRequiredService<VaultContext>();
-await db.Database.EnsureCreatedAsync();
+await db.Database.MigrateAsync();
 
 app.UseAuthentication();
 app.UseAuthorization();
