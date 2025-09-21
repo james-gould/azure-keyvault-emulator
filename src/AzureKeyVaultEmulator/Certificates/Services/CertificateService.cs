@@ -60,8 +60,6 @@ public sealed class CertificateService(
 
         context.Add(bundle);
 
-        //await context.Certificates.SafeAddAsync(name, version, bundle);
-
         await context.SaveChangesAsync();
 
         return new CertificateOperation(certIdentifier, name);
@@ -71,14 +69,14 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        return await context.Certificates.SafeGetAsync(name, version);
+        return await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name, version);
     }
 
     public async Task<CertificatePolicy> GetCertificatePolicyAsync(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name);
 
         return cert.CertificatePolicy
             ?? throw new InvalidOperationException($"Found certificate {cert.CertificateName} but the associated policy was null.");
@@ -88,7 +86,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name);
 
         ArgumentNullException.ThrowIfNull(cert.CertificatePolicy);
 
@@ -105,7 +103,7 @@ public sealed class CertificateService(
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(request);
 
-        var cert = await context.Certificates.SafeGetAsync(name, version: version ?? string.Empty);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name, version: version ?? string.Empty);
 
         cert.CertificatePolicy = request.Policy ??= cert.CertificatePolicy;
         cert.Attributes = request.Attributes ?? cert.Attributes;
@@ -120,7 +118,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name);
 
         return new CertificateOperation(cert.CertificateIdentifier, name);
     }
@@ -136,7 +134,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name);
 
         return new ValueModel<string>
         {
@@ -258,7 +256,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name.GetCacheId());
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name.GetCacheId());
 
         ArgumentNullException.ThrowIfNull(cert.FullCertificate);
 
@@ -279,7 +277,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name);
 
         var matches = await context.Certificates.Where(x => x.PersistedName == name).ToListAsync();
 
@@ -297,7 +295,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name, deleted: true);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name, deleted: true);
 
         return new(cert.CertificateIdentifier, name.GetCacheId());
     }
@@ -327,7 +325,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name, deleted: true);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name, deleted: true);
 
         return new CertificateOperation(cert.RecoveryId, name);
     }
@@ -336,7 +334,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var bundle = await context.Certificates.SafeGetAsync(name, deleted: true);
+        var bundle = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name, deleted: true);
 
         var fullCertificate = bundle.FullCertificate;
 
@@ -353,7 +351,7 @@ public sealed class CertificateService(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var cert = await context.Certificates.SafeGetAsync(name);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(name);
 
         return new(cert.CertificateIdentifier, name);
     }
