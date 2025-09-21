@@ -130,6 +130,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             var deleteOperation = await client.StartDeleteSecretAsync(secretName);
 
+            await deleteOperation.WaitForCompletionAsync();
+
             var fromStoreResponse = await client.GetDeletedSecretAsync(secretName);
 
             var fromStore = fromStoreResponse.Value;
