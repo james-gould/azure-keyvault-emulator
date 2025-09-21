@@ -8,24 +8,11 @@
 # Navigate to the main application project (where DbContext is configured via DI)
 Set-Location "src/AzureKeyVaultEmulator"
 
-# Create the initial migration (command used to create 20250921172203_InitialCreate.cs)
-# Note: This command was actually run from the main application project, not the shared project
-# because the VaultContext is properly configured there via dependency injection
-dotnet ef migrations add InitialCreate --context VaultContext
+# Create a new migration with a dynamically generated name
+$migrationName = "Migration_" + [System.Guid]::NewGuid().ToString("N").Substring(0, 8)
+dotnet ef migrations add $migrationName --context VaultContext
 
-# Other useful migration commands:
-
-# List all migrations
-# dotnet ef migrations list --context VaultContext
-
-# Remove the last migration (if needed)
-# dotnet ef migrations remove --context VaultContext
-
-# Create a new migration after model changes
-# dotnet ef migrations add YourMigrationName --context VaultContext
-
-# Apply migrations to database (done automatically in Program.cs)
-# dotnet ef database update --context VaultContext
-
-# Generate SQL script for migrations
-# dotnet ef migrations script --context VaultContext
+dotnet ef migrations list --context VaultContext
+dotnet ef migrations remove --context VaultContext
+dotnet ef database update --context VaultContext
+dotnet ef migrations script --context VaultContext
