@@ -180,7 +180,10 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            await context.Secrets.SafeRemoveAsync(name, deleted: true);
+            var secrets = context.Secrets.Where(x => x.PersistedName == name);
+
+            foreach(var secret in secrets)
+                await context.Secrets.SafeRemoveAsync(name, deleted: true);
 
             await context.SaveChangesAsync();
         }
