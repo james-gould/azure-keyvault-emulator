@@ -12,7 +12,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
     {
         public async Task<SecretBundle> GetSecretAsync(string name, string version = "")
         {
-            return await context.Secrets.SafeGetAsync(name, version);
+            return await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, version);
         }
 
         public async Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest secret)
@@ -45,7 +45,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var secret = await context.Secrets.SafeGetAsync(name, version);
+            var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, version);
 
             if (!string.IsNullOrEmpty(request.ContentType))
                 secret.ContentType = request.ContentType;
@@ -66,7 +66,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var secret = await context.Secrets.SafeGetAsync(name, version);
+            var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, version);
 
             var deleted = new DeletedSecretBundle
             {
@@ -88,7 +88,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
-            var secret = await context.Secrets.SafeGetAsync(name);
+            var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name);
 
             return new ValueModel<string>
             {
@@ -100,7 +100,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
             
-            var secret = await context.Secrets.SafeGetAsync(name, deleted: true);
+            var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, deleted: true);
 
             return secret;
         }
@@ -179,7 +179,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             
-            var secret = await context.Secrets.SafeGetAsync(name, deleted: true);
+            var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, deleted: true);
 
             secret.Deleted = false;
 

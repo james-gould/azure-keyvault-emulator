@@ -104,7 +104,40 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(secretName, afterRecovery.Value.Name);
 
             await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
+        }
 
+        [Fact]
+        public async Task CreatedAndOverridenDeletedSecretWillReturnUpdatedValue()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+            var initialValue = fixture.FreshlyGeneratedGuid;
+            var overrideValue = fixture.FreshlyGeneratedGuid;
+
+            var initialSecret = await fixture.CreateSecretAsync(secretName, initialValue);
+
+            Assert.Equal(secretName, initialSecret.Name);
+            Assert.Equal(initialValue, initialSecret.Value);
+
+            // Ensure underpinning unix time is 100% different
+            await Task.Delay(500);
+
+            var overrideSecret = await fixture.CreateSecretAsync(secretName, overrideValue);
+
+            Assert.Equal(secretName, overrideSecret.Name);
+            Assert.Equal(overrideValue, overrideSecret.Value);
+
+            var deleteOperation = await client.StartDeleteSecretAsync(secretName);
+
+            await deleteOperation.WaitForCompletionAsync();
+
+            var fromStoreResponse = await client.GetDeletedSecretAsync(secretName);
+
+            var fromStore = fromStoreResponse.Value;
+
+            Assert.Equal(secretName, fromStore.Name);
+            Assert.Equal(overrideValue, fromStore.Value);
         }
     }
 }

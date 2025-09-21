@@ -8,5 +8,5 @@ public sealed class MergeCertificatesRequest : TaggedModel
     public IEnumerable<string> Certificates { get; set; } = [];
 
     [JsonPropertyName("attributes")]
-    public CertificateAttributesModel Attributes { get; set; } = new();
+    public CertificateAttributes Attributes { get; set; } = new();
 }
