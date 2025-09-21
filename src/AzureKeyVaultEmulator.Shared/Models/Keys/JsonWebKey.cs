@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
-    public class JsonWebKeyModel : IPersistedItem
+    public class JsonWebKey : IPersistedItem
     {
         [Key]
         [JsonIgnore]
@@ -98,9 +98,9 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public RSAParameters RSAParameters => RsaParametersSerializer.Deserialize(RSAParametersBlob);
 
-        public JsonWebKeyModel() : this(RSA.Create()) { }
+        public JsonWebKey() : this(RSA.Create()) { }
 
-        public JsonWebKeyModel(RSA rsaKey)
+        public JsonWebKey(RSA rsaKey)
         {
             RSAKey = rsaKey;
 
@@ -117,7 +117,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
             Qi = EncodingUtils.Base64UrlEncode(RSAParameters.InverseQ ?? []);
         }
 
-        public JsonWebKeyModel(JsonWebKey key, string name, string version, HttpContext? reqContext)
+        public JsonWebKey(Microsoft.IdentityModel.Tokens.JsonWebKey key, string name, string version, HttpContext? reqContext)
         {
             var parameters = new RSAParameters
             {

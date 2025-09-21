@@ -6,8 +6,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
     {
         Task<KeyBundle> GetKeyAsync(string name);
         Task<KeyBundle> GetKeyAsync(string name, string version);
-        Task<KeyBundle> CreateKeyAsync(string name, CreateKeyModel key);
-        Task<KeyAttributesModel?> UpdateKeyAsync(string name, string version, KeyAttributesModel attributes, Dictionary<string, string> tags);
+        Task<KeyBundle> CreateKeyAsync(string name, CreateKey key);
+        Task<KeyAttributes?> UpdateKeyAsync(string name, string version, KeyAttributes attributes, Dictionary<string, string> tags);
         Task<KeyBundle?> RotateKey(string name, string version);
 
         ValueModel<string> GetRandomBytes(int count);
@@ -25,7 +25,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         ListResult<KeyItemBundle> GetKeyVersions(string name, int maxResults = 25, int skipCount = 25);
 
         Task<ValueModel<string>> ReleaseKeyAsync(string name, string version);
-        Task<KeyBundle> ImportKeyAsync(string name, JsonWebKey key, KeyAttributesModel attributes, Dictionary<string, string> tags);
+        Task<KeyBundle> ImportKeyAsync(string name, JsonWebKey key, KeyAttributes attributes, Dictionary<string, string> tags);
         Task<KeyOperationResult> SignWithKeyAsync(string name, string version, string algo, string value);
         Task<ValueModel<bool>> VerifyDigestAsync(string name, string version, string digest, string signature);
 

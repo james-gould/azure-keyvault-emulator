@@ -6,7 +6,8 @@ using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
-public sealed class CertificateBundle : CertificateProperties, INamedItem
+public sealed class CertificateBundle
+    : CertificateProperties, INamedItem, IAttributedModel<CertificateAttributes>
 {
     [Key]
     [JsonIgnore]

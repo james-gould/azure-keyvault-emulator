@@ -5,7 +5,7 @@ using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets;
 
-public sealed class SecretBundle : TaggedModel, INamedItem
+public sealed class SecretBundle : TaggedModel, INamedItem, IAttributedModel<SecretAttributes>
 {
     [Key]
     [JsonIgnore]
@@ -29,5 +29,5 @@ public sealed class SecretBundle : TaggedModel, INamedItem
     public string ContentType { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public SecretAttributesModel Attributes { get; set; } = new();
+    public SecretAttributes Attributes { get; set; } = new();
 }

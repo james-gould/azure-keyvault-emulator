@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using AzureKeyVaultEmulator.Shared.Exceptions;
+using AzureKeyVaultEmulator.Shared.Models;
 using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,12 +27,13 @@ public static class DictionaryUtils
         return value;
     }
 
-    public static async Task<TEntity> SafeGetAsync<TEntity>(
+    public static async Task<TEntity> SafeGetAsync<TEntity, TAttributes>(
         this DbSet<TEntity> set,
         string name,
         string version = "",
         bool deleted = false)
-    where TEntity : class, INamedItem, IDeletable
+    where TEntity : class, INamedItem, IDeletable, IAttributedModel<TAttributes>
+        where TAttributes : AttributeBase
     {
         ArgumentNullException.ThrowIfNull(set);
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -41,7 +43,7 @@ public static class DictionaryUtils
         if (!string.IsNullOrEmpty(version))
             query = query.Where(x => x.PersistedVersion == version);
 
-        var item = await query.FirstOrDefaultAsync();
+        var item = await query.OrderByDescending(x => x.Attributes.Updated).FirstOrDefaultAsync();
 
         return item ?? throw new MissingItemException(name);
     }
@@ -76,15 +78,6 @@ public static class DictionaryUtils
 
         set.Add(value);
     }
-
-    /// <summary>
-    /// Removes the item for key <paramref name="key"/> from <paramref name="dict"/> without throwing exceptions.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="dict"></param>
-    /// <param name="key"></param>
-    public static void SafeRemove<T>(this ConcurrentDictionary<string, T> dict, string key)
-        => dict.TryRemove(key, out _);
 
     public static async Task SafeRemoveAsync<TEntity>(this DbSet<TEntity> set, string name, bool deleted = false)
         where TEntity : class, INamedItem

@@ -15,7 +15,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         public async Task<IActionResult> CreateKey(
             [FromRoute] string name,
             [ApiVersion] string apiVersion,
-            [FromBody] CreateKeyModel requestBody)
+            [FromBody] CreateKey requestBody)
         {
             var createdKey = await keyService.CreateKeyAsync(name, requestBody);
 

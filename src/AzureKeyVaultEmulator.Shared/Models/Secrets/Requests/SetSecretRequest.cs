@@ -13,7 +13,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets.Requests
         public string ContentType { get; set; } = string.Empty;
 
         [JsonPropertyName("attributes")]
-        public SecretAttributesModel SecretAttributes { get; set; } = new();
+        public SecretAttributes SecretAttributes { get; set; } = new();
 
         [JsonPropertyName("tags")]
         public Dictionary<string, string> Tags { get; set; } = [];

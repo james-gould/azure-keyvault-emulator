@@ -3,8 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 
-public sealed class DeletedKeyBundle : DeletedBundle<KeyAttributesModel>
+public sealed class DeletedKeyBundle : DeletedBundle<KeyAttributes>
 {
     [JsonPropertyName("key")]
-    public required JsonWebKey Key { get; set; }
+    public required Microsoft.IdentityModel.Tokens.JsonWebKey Key { get; set; }
 }

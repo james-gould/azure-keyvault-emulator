@@ -18,7 +18,7 @@ public sealed class CertificateService(
 {
     public async Task<CertificateOperation> CreateCertificateAsync(
         string name,
-        CertificateAttributesModel attributes,
+        CertificateAttributes attributes,
         CertificatePolicy? policy,
         Dictionary<string, string>? tags = null)
     {
@@ -220,7 +220,7 @@ public sealed class CertificateService(
         var (backingKey, backingSecret) = await backingService
             .GetBackingComponentsAsync(name, certificate, request.Password, request.Policy, contentType);
 
-        var attributes = new CertificateAttributesModel
+        var attributes = new CertificateAttributes
         {
             Version = version,
             NotBefore = certificate.NotBefore.ToUnixTimeSeconds(),
@@ -388,7 +388,7 @@ public sealed class CertificateService(
     private static CertificatePolicy UpdateNullablePolicy(
         CertificatePolicy? policy,
         string identifier,
-        CertificateAttributesModel attributes,
+        CertificateAttributes attributes,
         SecretBundle? secret = null,
         KeyBundle? key = null)
     {

@@ -28,7 +28,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return await context.Keys.SafeGetAsync(name, version);
         }
 
-        public async Task<KeyBundle> CreateKeyAsync(string name, CreateKeyModel key)
+        public async Task<KeyBundle> CreateKeyAsync(string name, CreateKey key)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -56,10 +56,10 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return response;
         }
 
-        public async Task<KeyAttributesModel?> UpdateKeyAsync(
+        public async Task<KeyAttributes?> UpdateKeyAsync(
             string name,
             string version,
-            KeyAttributesModel attributes,
+            KeyAttributes attributes,
             Dictionary<string, string> tags)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -257,15 +257,15 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public async Task<KeyBundle> ImportKeyAsync(
             string name,
-            JsonWebKey key,
-            KeyAttributesModel attributes,
+            Microsoft.IdentityModel.Tokens.JsonWebKey key,
+            KeyAttributes attributes,
             Dictionary<string, string> tags)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             var version = Guid.NewGuid().ToString();
 
-            var jsonWebKey = new JsonWebKeyModel(key, name, version, httpContextAccessor.HttpContext);
+            var jsonWebKey = new Shared.Models.Keys.JsonWebKey(key, name, version, httpContextAccessor.HttpContext);
 
             var response = new KeyBundle
             {
@@ -370,7 +370,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
                 Attributes = parentKey.Attributes,
                 RecoveryId = $"{AuthConstants.EmulatorUri}/deletedkeys/{name}",
                 Tags = parentKey.Tags,
-                Key = new JsonWebKey(JsonSerializer.Serialize(parentKey.Key)),
+                Key = new Microsoft.IdentityModel.Tokens.JsonWebKey(JsonSerializer.Serialize(parentKey.Key)),
             };
         }
 
@@ -437,11 +437,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        private static JsonWebKeyModel GetJWKSFromModel(int keySize, string keyType)
+        private static Shared.Models.Keys.JsonWebKey GetJWKSFromModel(int keySize, string keyType)
         {
             return keyType.ToUpper() switch
             {
-                SupportedKeyTypes.RSA => new JsonWebKeyModel(RsaKeyFactory.CreateRsaKey(keySize)),
+                SupportedKeyTypes.RSA => new Shared.Models.Keys.JsonWebKey(RsaKeyFactory.CreateRsaKey(keySize)),
                 SupportedKeyTypes.EC => throw new NotImplementedException("Elliptic Curve keys are not currently supported."),
                 _ => throw new NotImplementedException($"Key type {keyType} is not supported")
             };

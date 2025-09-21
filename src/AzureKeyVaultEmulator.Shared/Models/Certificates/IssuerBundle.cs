@@ -9,7 +9,7 @@ using AzureKeyVaultEmulator.Shared.Utilities;
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
 // https://learn.microsoft.com/en-us/rest/api/keyvault/certificates/get-certificate-issuer/get-certificate-issuer?view=rest-keyvault-certificates-7.4&tabs=HTTP#examples
-public sealed class IssuerBundle : INamedItem
+public sealed class IssuerBundle : INamedItem, IAttributedModel<IssuerAttributes>
 {
     [Key]
     [JsonIgnore]

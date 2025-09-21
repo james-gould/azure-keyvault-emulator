@@ -36,7 +36,7 @@ public sealed class CertificatePolicy : INamedItem
     public IssuerBundle Issuer { get; set; } = new();
 
     [JsonPropertyName("attributes")]
-    public CertificateAttributesModel CertificateAttributes { get; set; } = new();
+    public CertificateAttributes CertificateAttributes { get; set; } = new();
 
     [JsonPropertyName("x509_props")]
     public X509CertificateProperties? CertificateProperties { get; set; } = new();

@@ -2,7 +2,7 @@
 
 namespace AzureKeyVaultEmulator.Shared.Models.Certificates;
 
-public sealed class CertificateAttributesModel : AttributeBase
+public sealed class CertificateAttributes : AttributeBase
 {
     [JsonPropertyName("version")]
     public string Version { get; set; } = string.Empty;
