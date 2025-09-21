@@ -49,7 +49,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
                 if (deletedSecret.Name.Contains(multiSecretName, StringComparison.CurrentCultureIgnoreCase))
                     deletedSecrets.Add(deletedSecret);
 
-            Assert.Single(deletedSecrets);
+            Assert.Equal(executionCount, deletedSecrets.Count);
         }
 
         [Fact]

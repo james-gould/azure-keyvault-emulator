@@ -68,6 +68,8 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, version);
 
+            secret.Deleted = true;
+
             var deleted = new DeletedSecretBundle
             {
                 RecoveryId = secret.SecretIdentifier,
@@ -77,7 +79,15 @@ namespace AzureKeyVaultEmulator.Secrets.Services
                 Value = secret.Value
             };
 
-            secret.Deleted = true;
+            if (string.IsNullOrEmpty(version))
+            {
+                var allSecretVersions = context.Secrets.Where(x => x.PersistedName == name);
+
+                foreach (var item in allSecretVersions)
+                {
+                    item.Deleted = true;
+                }
+            }
 
             await context.SaveChangesAsync();
 
@@ -170,7 +180,10 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            await context.Secrets.SafeRemoveAsync(name, deleted: true);
+            var secrets = context.Secrets.Where(x => x.PersistedName == name);
+
+            foreach(var secret in secrets)
+                await context.Secrets.SafeRemoveAsync(name, deleted: true);
 
             await context.SaveChangesAsync();
         }

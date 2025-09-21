@@ -277,7 +277,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         }
 
         [Fact]
-        public async Task CreatedAndOverridenSecretWillReturnUpdatedValue()
+        public async Task CreatedAndOverridingSecretWillReturnUpdatedValue()
         {
             var client = await fixture.GetClientAsync();
 
@@ -291,7 +291,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(initialValue, initialSecret.Value);
 
             // Ensure underpinning unix time is 100% different
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var overrideSecret = await fixture.CreateSecretAsync(secretName, overrideValue);
 
@@ -304,6 +304,39 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(secretName, fromStore.Name);
             Assert.Equal(overrideValue, fromStore.Value);
+        }
+
+        [Fact]
+        public async Task DeletingSecretWithoutVersionWillDeleteAllByName()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = "deletedSecretMultiple";
+            var firstValue = "deletedFirst";
+            var secondValue = "deletedSecond";
+
+            var initialSecret = await fixture.CreateSecretAsync(secretName, firstValue);
+
+            var firstResponse = await client.GetSecretAsync(secretName);
+
+            Assert.Equal(secretName, firstResponse.Value.Name);
+            Assert.Equal(firstValue, firstResponse.Value.Value);
+
+            // Force timestamps to be different, race condition in fast compute environments...
+            await Task.Delay(1000);
+
+            var secondSecret = await fixture.CreateSecretAsync(secretName, secondValue);
+
+            var secondResponse = await client.GetSecretAsync(secretName);
+
+            Assert.Equal(secretName, secondResponse.Value.Name);
+            Assert.Equal(secondValue, secondResponse.Value.Value);
+
+            var deleteOperation = await client.StartDeleteSecretAsync(secretName);
+
+            await deleteOperation.WaitForCompletionAsync();
+
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
         }
     }
 }
