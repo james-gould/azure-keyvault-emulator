@@ -311,9 +311,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var secretName = fixture.FreshlyGeneratedGuid;
-            var firstValue = fixture.FreshlyGeneratedGuid;
-            var secondValue = fixture.FreshlyGeneratedGuid;
+            var secretName = "deletedSecretMultiple";
+            var firstValue = "deletedFirst";
+            var secondValue = "deletedSecond";
 
             var initialSecret = await fixture.CreateSecretAsync(secretName, firstValue);
 
@@ -321,6 +321,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(secretName, firstResponse.Value.Name);
             Assert.Equal(firstValue, firstResponse.Value.Value);
+
+            // Force timestamps to be different, race condition in fast compute environments...
+            await Task.Delay(1000);
 
             var secondSecret = await fixture.CreateSecretAsync(secretName, secondValue);
 
