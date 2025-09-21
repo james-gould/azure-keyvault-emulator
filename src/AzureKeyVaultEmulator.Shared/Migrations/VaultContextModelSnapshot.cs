@@ -84,7 +84,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                     b.HasKey("PersistedId");
 
-                    b.ToTable("Certificates");
+                    b.ToTable("Certificates", (string)null);
                 });
 
             modelBuilder.Entity("AzureKeyVaultEmulator.Shared.Models.Certificates.CertificatePolicy", b =>
@@ -130,7 +130,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.HasIndex("ParentCertificateId")
                         .IsUnique();
 
-                    b.ToTable("CertificatePolicies");
+                    b.ToTable("CertificatePolicies", (string)null);
 
                     b.HasAnnotation("Relational:JsonPropertyName", "policy");
                 });
@@ -163,7 +163,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                     b.HasKey("PersistedId");
 
-                    b.ToTable("Issuers");
+                    b.ToTable("Issuers", (string)null);
 
                     b.HasAnnotation("Relational:JsonPropertyName", "issuer");
                 });
@@ -190,7 +190,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                     b.HasKey("PersistedId");
 
-                    b.ToTable("CertificateContacts");
+                    b.ToTable("CertificateContacts", (string)null);
                 });
 
             modelBuilder.Entity("AzureKeyVaultEmulator.Shared.Models.Keys.KeyBundle", b =>
@@ -216,7 +216,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                     b.HasKey("PersistedId");
 
-                    b.ToTable("Keys");
+                    b.ToTable("Keys", (string)null);
                 });
 
             modelBuilder.Entity("AzureKeyVaultEmulator.Shared.Models.Secrets.SecretBundle", b =>
@@ -257,7 +257,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                     b.HasKey("PersistedId");
 
-                    b.ToTable("Secrets");
+                    b.ToTable("Secrets", (string)null);
                 });
 
             modelBuilder.Entity("AzureKeyVaultEmulator.Shared.Models.Certificates.CertificateBundle", b =>
@@ -303,7 +303,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("Certificates");
+                            b1.ToTable("Certificates", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
 
@@ -376,7 +376,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("CertificatePolicies");
+                            b1.ToTable("CertificatePolicies", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
 
@@ -409,7 +409,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("CertificatePolicies");
+                            b1.ToTable("CertificatePolicies", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "x509_props");
 
@@ -435,7 +435,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                                     b2.HasKey("PersistedId");
 
-                                    b2.ToTable("CertificatePolicies");
+                                    b2.ToTable("CertificatePolicies", (string)null);
 
                                     b2.HasAnnotation("Relational:JsonPropertyName", "sans");
 
@@ -472,7 +472,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("CertificatePolicies");
+                            b1.ToTable("CertificatePolicies", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "key_props");
 
@@ -492,7 +492,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("CertificatePolicies");
+                            b1.ToTable("CertificatePolicies", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "secret_props");
 
@@ -552,7 +552,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("Issuers");
+                            b1.ToTable("Issuers", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
 
@@ -577,7 +577,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("Issuers");
+                            b1.ToTable("Issuers", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "credentials");
 
@@ -601,7 +601,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("Issuers");
+                            b1.ToTable("Issuers", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "org_details");
 
@@ -620,6 +620,50 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
             modelBuilder.Entity("AzureKeyVaultEmulator.Shared.Models.Keys.KeyBundle", b =>
                 {
+                    b.OwnsOne("AzureKeyVaultEmulator.Shared.Models.Keys.KeyAttributes", "Attributes", b1 =>
+                        {
+                            b1.Property<Guid>("PersistedId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<long>("Created")
+                                .HasColumnType("INTEGER")
+                                .HasAnnotation("Relational:JsonPropertyName", "created");
+
+                            b1.Property<bool>("Enabled")
+                                .HasColumnType("INTEGER")
+                                .HasAnnotation("Relational:JsonPropertyName", "enabled");
+
+                            b1.Property<long>("Expiration")
+                                .HasColumnType("INTEGER")
+                                .HasAnnotation("Relational:JsonPropertyName", "exp");
+
+                            b1.Property<long>("NotBefore")
+                                .HasColumnType("INTEGER")
+                                .HasAnnotation("Relational:JsonPropertyName", "nbf");
+
+                            b1.Property<int>("RecoverableDays")
+                                .HasColumnType("INTEGER")
+                                .HasAnnotation("Relational:JsonPropertyName", "recoverableDays");
+
+                            b1.Property<string>("RecoveryLevel")
+                                .IsRequired()
+                                .HasColumnType("TEXT")
+                                .HasAnnotation("Relational:JsonPropertyName", "recoveryLevel");
+
+                            b1.Property<long>("Updated")
+                                .HasColumnType("INTEGER")
+                                .HasAnnotation("Relational:JsonPropertyName", "updated");
+
+                            b1.HasKey("PersistedId");
+
+                            b1.ToTable("Keys", (string)null);
+
+                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PersistedId");
+                        });
+
                     b.OwnsOne("AzureKeyVaultEmulator.Shared.Models.Keys.InternalJsonWebKey", "Key", b1 =>
                         {
                             b1.Property<Guid>("PersistedId")
@@ -704,53 +748,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("Keys");
+                            b1.ToTable("Keys", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "key");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PersistedId");
-                        });
-
-                    b.OwnsOne("AzureKeyVaultEmulator.Shared.Models.Keys.KeyAttributes", "Attributes", b1 =>
-                        {
-                            b1.Property<Guid>("PersistedId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<long>("Created")
-                                .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "created");
-
-                            b1.Property<bool>("Enabled")
-                                .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "enabled");
-
-                            b1.Property<long>("Expiration")
-                                .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "exp");
-
-                            b1.Property<long>("NotBefore")
-                                .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "nbf");
-
-                            b1.Property<int>("RecoverableDays")
-                                .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoverableDays");
-
-                            b1.Property<string>("RecoveryLevel")
-                                .IsRequired()
-                                .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoveryLevel");
-
-                            b1.Property<long>("Updated")
-                                .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "updated");
-
-                            b1.HasKey("PersistedId");
-
-                            b1.ToTable("Keys");
-
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -801,7 +801,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.HasKey("PersistedId");
 
-                            b1.ToTable("Secrets");
+                            b1.ToTable("Secrets", (string)null);
 
                             b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
 
