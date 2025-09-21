@@ -33,7 +33,7 @@ public static class DictionaryUtils
         string version = "",
         bool deleted = false)
     where TEntity : class, INamedItem, IDeletable, IAttributedModel<TAttributes>
-        where TAttributes : AttributeBase
+    where TAttributes : AttributeBase
     {
         ArgumentNullException.ThrowIfNull(set);
         ArgumentException.ThrowIfNullOrEmpty(name);
