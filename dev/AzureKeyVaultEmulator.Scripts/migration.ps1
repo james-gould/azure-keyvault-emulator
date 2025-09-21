@@ -11,8 +11,3 @@ Set-Location "src/AzureKeyVaultEmulator"
 # Create a new migration with a dynamically generated name
 $migrationName = "Migration_" + [System.Guid]::NewGuid().ToString("N").Substring(0, 8)
 dotnet ef migrations add $migrationName --context VaultContext
-
-dotnet ef migrations list --context VaultContext
-dotnet ef migrations remove --context VaultContext
-dotnet ef database update --context VaultContext
-dotnet ef migrations script --context VaultContext
