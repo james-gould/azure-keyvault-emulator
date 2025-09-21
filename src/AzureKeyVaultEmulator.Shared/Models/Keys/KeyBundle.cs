@@ -17,7 +17,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         public string PersistedVersion { get; set; } = string.Empty;
 
         [JsonPropertyName("key")]
-        public required JsonWebKey Key { get; set; }
+        public required InternalJsonWebKey Key { get; set; }
 
         [JsonPropertyName("attributes")]
         public KeyAttributes Attributes { get; set; } = new();

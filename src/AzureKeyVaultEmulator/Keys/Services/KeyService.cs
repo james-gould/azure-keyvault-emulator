@@ -17,7 +17,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            return await context.Keys.SafeGetAsync(name);
+            return await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name);
         }
 
         public async Task<KeyBundle> GetKeyAsync(string name, string version)
@@ -25,7 +25,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            return await context.Keys.SafeGetAsync(name, version);
+            return await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
         }
 
         public async Task<KeyBundle> CreateKeyAsync(string name, CreateKey key)
@@ -64,7 +64,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var key = await context.Keys.SafeGetAsync(name, version);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             key.Attributes = attributes;
             key.Attributes.RecoverableDays = attributes.RecoverableDays;
@@ -84,7 +84,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var key = await context.Keys.SafeGetAsync(name, version);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             var newKey = new KeyBundle
             {
@@ -104,7 +104,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var foundKey = await context.Keys.SafeGetAsync(name, version);
+            var foundKey = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             var encrypted = EncodingUtils.Base64UrlEncode(foundKey.Key.Encrypt(keyOperationParameters));
 
@@ -119,7 +119,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var foundKey = await context.Keys.SafeGetAsync(name, version);
+            var foundKey = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             var decrypted = foundKey.Key.Decrypt(keyOperationParameters);
 
@@ -134,7 +134,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var foundKey = await context.Keys.SafeGetAsync(name);
+            var foundKey = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name);
 
             return new ValueModel<string>
             {
@@ -178,7 +178,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var key = await context.Keys.SafeGetAsync(name);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name);
 
             var policyExists = _keyRotations.TryGetValue(name, out var keyRotationPolicy);
 
@@ -243,7 +243,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var key = await context.Keys.SafeGetAsync(name, version);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             var aasJwt = tokenService.CreateTokenWithHeaderClaim([], "keys", JsonSerializer.Serialize(key));
 
@@ -257,7 +257,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
         public async Task<KeyBundle> ImportKeyAsync(
             string name,
-            Microsoft.IdentityModel.Tokens.JsonWebKey key,
+            JsonWebKey key,
             KeyAttributes attributes,
             Dictionary<string, string> tags)
         {
@@ -265,7 +265,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var version = Guid.NewGuid().ToString();
 
-            var jsonWebKey = new Shared.Models.Keys.JsonWebKey(key, name, version, httpContextAccessor.HttpContext);
+            var jsonWebKey = new InternalJsonWebKey(key, name, version, httpContextAccessor.HttpContext);
 
             var response = new KeyBundle
             {
@@ -287,7 +287,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(algo);
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
 
-            var key = await context.Keys.SafeGetAsync(name, version);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             var signature = encryptionService.SignWithKey(key.Key.RSAKey, digest);
 
@@ -304,7 +304,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
             ArgumentException.ThrowIfNullOrWhiteSpace(signature);
 
-            var key = await context.Keys.SafeGetAsync(name, version);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             return new ValueModel<bool>
             {
@@ -317,7 +317,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var key = await context.Keys.SafeGetAsync(name, version);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             var encrypted = key.Key.Encrypt(para);
 
@@ -333,7 +333,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
-            var key = await context.Keys.SafeGetAsync(name, version);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
             var decrypted = key.Key.Decrypt(para);
 
@@ -350,7 +350,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var parentCacheId = name.GetCacheId();
 
-            var parentKey = await context.Keys.SafeGetAsync(parentCacheId);
+            var parentKey = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(parentCacheId);
 
             var keys = await context.Keys.Where(x => x.PersistedName == name).ToListAsync();
 
@@ -378,7 +378,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            return await context.Keys.SafeGetAsync(name, deleted: true);
+            return await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, deleted: true);
         }
 
         public ListResult<KeyBundle> GetDeletedKeys(int maxResults = 25, int skipCount = 25)
@@ -415,7 +415,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            var key = await context.Keys.SafeGetAsync(name, deleted: true);
+            var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, deleted: true);
 
             key.Deleted = false;
 
@@ -437,11 +437,11 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        private static Shared.Models.Keys.JsonWebKey GetJWKSFromModel(int keySize, string keyType)
+        private static Shared.Models.Keys.InternalJsonWebKey GetJWKSFromModel(int keySize, string keyType)
         {
             return keyType.ToUpper() switch
             {
-                SupportedKeyTypes.RSA => new Shared.Models.Keys.JsonWebKey(RsaKeyFactory.CreateRsaKey(keySize)),
+                SupportedKeyTypes.RSA => new Shared.Models.Keys.InternalJsonWebKey(RsaKeyFactory.CreateRsaKey(keySize)),
                 SupportedKeyTypes.EC => throw new NotImplementedException("Elliptic Curve keys are not currently supported."),
                 _ => throw new NotImplementedException($"Key type {keyType} is not supported")
             };
