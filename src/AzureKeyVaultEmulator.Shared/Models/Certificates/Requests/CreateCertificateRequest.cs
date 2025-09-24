@@ -5,7 +5,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 public sealed class CreateCertificateRequest
 {
     [JsonPropertyName("attributes")]
-    public CertificateAttributesModel? Attributes { get; set; }
+    public CertificateAttributes? Attributes { get; set; }
 
     [JsonPropertyName("policy")]
     public CertificatePolicy CertificatePolicy { get; set; } = new();
