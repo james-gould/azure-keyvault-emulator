@@ -49,7 +49,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
                 if (deletedSecret.Name.Contains(multiSecretName, StringComparison.CurrentCultureIgnoreCase))
                     deletedSecrets.Add(deletedSecret);
 
-            Assert.Single(deletedSecrets);
+            Assert.Equal(executionCount, deletedSecrets.Count);
         }
 
         [Fact]
@@ -104,7 +104,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(secretName, afterRecovery.Value.Name);
 
             await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
-
         }
     }
 }

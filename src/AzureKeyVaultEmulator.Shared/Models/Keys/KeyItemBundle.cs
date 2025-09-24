@@ -6,7 +6,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys;
 public sealed class KeyItemBundle : TaggedModel
 {
     [JsonPropertyName("attributes")]
-    public KeyAttributesModel KeyAttributes { get; set; } = new();
+    public KeyAttributes KeyAttributes { get; set; } = new();
 
     [JsonPropertyName("kid")]
     public required string KeyId { get; set; }

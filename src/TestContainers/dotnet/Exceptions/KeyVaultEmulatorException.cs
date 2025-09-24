@@ -1,3 +1,11 @@
-﻿namespace AzureKeyVaultEmulator.TestContainers.Exceptions;
+using System;
 
-internal class KeyVaultEmulatorException(string msg) : Exception(msg);
+namespace AzureKeyVaultEmulator.TestContainers.Exceptions
+{
+    internal class KeyVaultEmulatorException : Exception
+    {
+        public KeyVaultEmulatorException(string msg) : base(msg)
+        {
+        }
+    }
+}

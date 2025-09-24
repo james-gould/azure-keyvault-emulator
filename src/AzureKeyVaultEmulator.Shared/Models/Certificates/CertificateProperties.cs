@@ -25,12 +25,12 @@ public class CertificateProperties : TaggedModel
     public required string X509Thumbprint { get; set; }
 
     [JsonPropertyName("status")]
-    public static string OperationStatus = OperationConstants.Completed; // del
+    public static string OperationStatus => OperationConstants.Completed; // del
 
     // Recovery not currently supported. Raise an issue if it's required please.
     [JsonPropertyName("recoveryLevelDays")]
     public int RecoveryLevelDays => 0;
 
     [JsonPropertyName("attributes")]
-    public CertificateAttributesModel Attributes { get; set; } = new();
+    public CertificateAttributes Attributes { get; set; } = new();
 }

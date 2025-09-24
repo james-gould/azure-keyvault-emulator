@@ -2,7 +2,7 @@
 
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets
 {
-    public class DeletedSecretBundle : DeletedBundle<SecretAttributesModel>
+    public class DeletedSecretBundle : DeletedBundle<SecretAttributes>
     {
 
         [JsonPropertyName("id")]

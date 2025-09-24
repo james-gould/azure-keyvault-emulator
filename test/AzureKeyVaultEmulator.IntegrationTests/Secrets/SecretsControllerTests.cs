@@ -275,5 +275,68 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
             await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
         }
+
+        [Fact]
+        public async Task CreatedAndOverridingSecretWillReturnUpdatedValue()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+            var initialValue = fixture.FreshlyGeneratedGuid;
+            var overrideValue = fixture.FreshlyGeneratedGuid;
+
+            var initialSecret = await fixture.CreateSecretAsync(secretName, initialValue);
+
+            Assert.Equal(secretName, initialSecret.Name);
+            Assert.Equal(initialValue, initialSecret.Value);
+
+            // Ensure underpinning unix time is 100% different
+            await Task.Delay(1000);
+
+            var overrideSecret = await fixture.CreateSecretAsync(secretName, overrideValue);
+
+            Assert.Equal(secretName, overrideSecret.Name);
+            Assert.Equal(overrideValue, overrideSecret.Value);
+
+            var fromStoreResponse = await client.GetSecretAsync(secretName);
+
+            var fromStore = fromStoreResponse.Value;
+
+            Assert.Equal(secretName, fromStore.Name);
+            Assert.Equal(overrideValue, fromStore.Value);
+        }
+
+        [Fact]
+        public async Task DeletingSecretWithoutVersionWillDeleteAllByName()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = "deletedSecretMultiple";
+            var firstValue = "deletedFirst";
+            var secondValue = "deletedSecond";
+
+            var initialSecret = await fixture.CreateSecretAsync(secretName, firstValue);
+
+            var firstResponse = await client.GetSecretAsync(secretName);
+
+            Assert.Equal(secretName, firstResponse.Value.Name);
+            Assert.Equal(firstValue, firstResponse.Value.Value);
+
+            // Force timestamps to be different, race condition in fast compute environments...
+            await Task.Delay(1000);
+
+            var secondSecret = await fixture.CreateSecretAsync(secretName, secondValue);
+
+            var secondResponse = await client.GetSecretAsync(secretName);
+
+            Assert.Equal(secretName, secondResponse.Value.Name);
+            Assert.Equal(secondValue, secondResponse.Value.Value);
+
+            var deleteOperation = await client.StartDeleteSecretAsync(secretName);
+
+            await deleteOperation.WaitForCompletionAsync();
+
+            await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
+        }
     }
 }

@@ -3,14 +3,14 @@ using System.Text.Json.Serialization;
 
 namespace AzureKeyVaultEmulator.Shared.Models.Keys
 {
-    public class CreateKeyModel : ICreateItem
+    public class CreateKey : ICreateItem
     {
         [JsonPropertyName("kty")]
         [Required]
         public string KeyType { get; set; } = string.Empty;
 
         [JsonPropertyName("attributes")]
-        public KeyAttributesModel KeyAttributes { get; set; } = new();
+        public KeyAttributes KeyAttributes { get; set; } = new();
 
         [JsonPropertyName("release_policy")]
         public KeyReleasePolicy? keyReleasePolicy { get; set; }

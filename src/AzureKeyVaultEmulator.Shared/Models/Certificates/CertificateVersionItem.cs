@@ -8,7 +8,7 @@ public sealed class CertificateVersionItem : TaggedModel
     public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public CertificateAttributesModel Attributes { get; set; } = new();
+    public CertificateAttributes Attributes { get; set; } = new();
 
     [JsonPropertyName("x5t")]
     public string Thumbprint { get; set; } = string.Empty;

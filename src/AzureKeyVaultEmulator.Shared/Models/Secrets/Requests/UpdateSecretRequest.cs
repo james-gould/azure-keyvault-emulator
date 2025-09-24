@@ -5,7 +5,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Secrets.Requests
     public class UpdateSecretRequest
     {
         [JsonPropertyName("attributes")]
-        public SecretAttributesModel? Attributes { get; set; }
+        public SecretAttributes? Attributes { get; set; }
 
         [JsonPropertyName("contentType")]
         public string ContentType { get; set; } = string.Empty;

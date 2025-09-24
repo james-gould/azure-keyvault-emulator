@@ -19,7 +19,7 @@ public sealed class CertificateBackingService(
 {
     public async Task<IssuerBundle> GetIssuerAsync(string name)
     {
-        return await context.Issuers.SafeGetAsync(name);
+        return await context.Issuers.SafeGetAsync<IssuerBundle, IssuerAttributes>(name);
     }
 
     public async Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(
@@ -46,7 +46,7 @@ public sealed class CertificateBackingService(
     {
         ArgumentException.ThrowIfNullOrEmpty(issuerName);
 
-        var bundle = await context.Issuers.SafeGetAsync(issuerName);
+        var bundle = await context.Issuers.SafeGetAsync<IssuerBundle, IssuerAttributes>(issuerName);
 
         bundle.Deleted = true;
 
@@ -78,8 +78,8 @@ public sealed class CertificateBackingService(
         ArgumentException.ThrowIfNullOrEmpty(certName);
         ArgumentNullException.ThrowIfNull(bundle);
 
-        var cert = await context.Certificates.SafeGetAsync(certName);
-        var issuer = await context.Issuers.SafeGetAsync(bundle.IssuerName);
+        var cert = await context.Certificates.SafeGetAsync<CertificateBundle, CertificateAttributes>(certName);
+        var issuer = await context.Issuers.SafeGetAsync<IssuerBundle, IssuerAttributes>(bundle.IssuerName);
 
         if (cert.CertificatePolicy == null)
             throw new MissingItemException($"Certificate {certName} does not have an associated policy to update");
@@ -99,7 +99,7 @@ public sealed class CertificateBackingService(
         ArgumentException.ThrowIfNullOrEmpty(issuerName);
         ArgumentNullException.ThrowIfNull(bundle);
 
-        var fromStore = await context.Issuers.SafeGetAsync(issuerName);
+        var fromStore = await context.Issuers.SafeGetAsync<IssuerBundle, IssuerAttributes>(issuerName);
 
         fromStore.OrganisationDetails = bundle.OrganisationDetails;
         fromStore.Attributes = bundle.Attributes;
@@ -167,7 +167,7 @@ public sealed class CertificateBackingService(
         int keySize,
         string keyType)
     {
-        return await keyService.CreateKeyAsync(certName, new CreateKeyModel { KeySize = keySize, KeyType = keyType });
+        return await keyService.CreateKeyAsync(certName, new CreateKey { KeySize = keySize, KeyType = keyType });
     }
 
     private async Task<SecretBundle> CreateBackingSecretAsync(

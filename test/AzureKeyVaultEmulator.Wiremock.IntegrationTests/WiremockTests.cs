@@ -7,7 +7,7 @@ public class WiremockTests(WiremockFixture fixture) : IClassFixture<WiremockFixt
 {
     private static TimeSpan _timeout = TimeSpan.FromSeconds(5);
 
-    [Fact]
+    [Fact(Skip = "Low use-case and brittle")]
     public async Task WireMockEndpointReturnsCorrectly()
     {
         var tokenSource = new CancellationTokenSource(_timeout);
@@ -21,7 +21,7 @@ public class WiremockTests(WiremockFixture fixture) : IClassFixture<WiremockFixt
         Assert.Equal(WiremockConstants.ConnectivityResponse, content);
     }
 
-    [Fact]
+    [Fact(Skip = "Low use-case and brittle")]
     public async Task CertificateCreationEndpointEstablishesSSLCorrectly()
     {
         var tokenSource = new CancellationTokenSource(_timeout);

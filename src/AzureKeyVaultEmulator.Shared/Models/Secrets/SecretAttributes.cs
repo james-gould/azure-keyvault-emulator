@@ -1,6 +1,6 @@
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets;
 
-public class SecretAttributesModel : AttributeBase
+public class SecretAttributes : AttributeBase
 {
 
 }

@@ -1,12 +1,17 @@
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using AzureKeyVaultEmulator.TestContainers.Constants;
 using AzureKeyVaultEmulator.TestContainers.Models;
 using AzureKeyVaultEmulator.TestContainers.Helpers;
-using System.Security.Cryptography.X509Certificates;
-using System.Diagnostics;
 
-namespace AzureKeyVaultEmulator.TestContainers;
+namespace AzureKeyVaultEmulator.TestContainers
+{
 
 /// <summary>
 /// Represents a TestContainer for the Azure KeyVault Emulator.
@@ -140,7 +145,7 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     {
         if (_options.ForceCleanupOnShutdown)
         {
-            if (OperatingSystem.IsWindows())
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 UninstallContainerCertificates();
             }
@@ -161,4 +166,5 @@ public sealed class AzureKeyVaultEmulatorContainer : IAsyncDisposable, IDisposab
     {
         _container.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
+}
 }
