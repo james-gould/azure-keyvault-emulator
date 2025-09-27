@@ -22,12 +22,12 @@
     <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.8.0" />
     <PackageReference Include="Azure.Security.KeyVault.Keys" Version="4.8.0" />
     <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
-    <PackageReference Include="Testcontainers" Version="3.9.0" />
+    <PackageReference Include="Testcontainers" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
   </ItemGroup>
 
   <ItemGroup>
