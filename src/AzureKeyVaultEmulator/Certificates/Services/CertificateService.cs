@@ -58,7 +58,11 @@ public sealed class CertificateService(
             FullCertificate = certificate
         };
 
-        context.Add(bundle);
+        var certsFirst = context.Certificates.ToList();
+
+        context.Certificates.Add(bundle);
+
+        var certsSecond = context.Certificates.ToList();
 
         await context.SaveChangesAsync();
 
