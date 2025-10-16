@@ -53,16 +53,12 @@ public sealed class CertificateService(
             CertificatePolicy = concretePolicy,
             SecretId = backingSecret.SecretIdentifier,
             KeyId = backingKey.Key.KeyIdentifier,
-            Tags = tags ??= [],
+            Tags = tags ?? [],
 
             FullCertificate = certificate
         };
 
-        var certsFirst = context.Certificates.ToList();
-
         context.Certificates.Add(bundle);
-
-        var certsSecond = context.Certificates.ToList();
 
         await context.SaveChangesAsync();
 
