@@ -23,7 +23,9 @@ public class CertificatesController(
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var result = await certService.CreateCertificateAsync(name, request.Attributes, request.CertificatePolicy, request.Tags);
+        CertificateAttributes attributes = request.Attributes ?? request.CertificatePolicy.CertificateAttributes;
+
+        var result = await certService.CreateCertificateAsync(name, attributes, request.CertificatePolicy, request.Tags);
 
         return Accepted(result);
     }
