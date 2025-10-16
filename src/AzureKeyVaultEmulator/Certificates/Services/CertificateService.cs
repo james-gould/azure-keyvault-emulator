@@ -53,12 +53,12 @@ public sealed class CertificateService(
             CertificatePolicy = concretePolicy,
             SecretId = backingSecret.SecretIdentifier,
             KeyId = backingKey.Key.KeyIdentifier,
-            Tags = tags ??= [],
+            Tags = tags ?? [],
 
             FullCertificate = certificate
         };
 
-        context.Add(bundle);
+        context.Certificates.Add(bundle);
 
         await context.SaveChangesAsync();
 

@@ -8,7 +8,7 @@ namespace AzureKeyVaultEmulator.TestContainers.Constants
         public const string Image = "jamesgoulddev/azure-keyvault-emulator";
         public const int Port = 4997;
 
-        public const string Tag = "2.6.5";
+        public const string Tag = "2.6.6";
         public static string ArmTag => $"{Tag}-arm";
     }
 

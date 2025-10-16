@@ -169,7 +169,10 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
 
+        var enabled = false;
+
         var policy = fixture.BasicPolicy;
+        policy.Enabled = enabled;
 
         var digitalSignatureKeyUsage = CertificateKeyUsage.DigitalSignature;
 
@@ -180,6 +183,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         await operation.WaitForCompletionAsync();
 
         var certFromStore = await client.GetCertAsync(certName);
+        Assert.Equal(enabled, certFromStore.Policy.Enabled);
 
         var keyUsageFromCert = Assert.Single(certFromStore.Policy.KeyUsage);
 
