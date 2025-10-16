@@ -10,6 +10,9 @@
 
 You can find [sample applications here](https://github.com/james-gould/azure-keyvault-emulator-samples) or you can [read the full launch blog post here!](https://jamesgould.dev/posts/Azure-Key-Vault-Emulator/)
 
+> [!Warning]
+> The Azure Key Vault Emulator should **not** be used in production environments. It is **not** a replacement for Azure Key Vault, it just makes developing applications using Azure Key Vault much easier.
+
 ## Prerequisites
 
 - You'll need [Docker](https://www.docker.com/) installed, or [Podman](https://podman.io/) installed and configured to support Docker commands.
