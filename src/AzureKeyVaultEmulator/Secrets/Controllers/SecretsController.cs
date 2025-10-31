@@ -20,9 +20,27 @@ namespace AzureKeyVaultEmulator.Secrets.Controllers
             [ApiVersion] string apiVersion,
             [FromBody] SetSecretRequest requestBody)
         {
-            var secret = await secretService.SetSecretAsync(name, requestBody);
+            try
+            {
+                var secret = await secretService.SetSecretAsync(name, requestBody);
 
-            return Ok(secret);
+                return Ok(secret);
+            }
+            catch (ConflictedItemException e)
+            {
+                return Conflict(new
+                {
+                    Error = new KeyVaultError()
+                    {
+                        Code = "Conflict",
+                        Message = $"Secret {e.Name} is currently in a deleted but recoverable state, and its name cannot be reused; in this state, the key can only be recovered or purged.",
+                        InnerError = new KeyVaultError
+                        {
+                            Code = "ObjectIsDeletedButRecoverable"
+                        },
+                    }
+                });
+            }
         }
 
         [HttpGet("{name}/{version}")]

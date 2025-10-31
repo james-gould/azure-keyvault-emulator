@@ -1,4 +1,5 @@
-﻿using Azure.Security.KeyVault.Secrets;
+﻿using Azure;
+using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
@@ -112,7 +113,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             Assert.Equal(executionCount, versions.Count);
         }
-    
+
         [Fact]
         public async Task GetSecretsPagesAllSecretsCreatedTest()
         {
@@ -337,6 +338,49 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             await deleteOperation.WaitForCompletionAsync();
 
             await Assert.RequestFailsAsync(() => client.GetSecretAsync(secretName));
+        }
+
+        [Fact]
+        public async Task DeletedSecretWontHaveAnyVersion()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretNameToDelete = fixture.FreshlyGeneratedGuid;
+
+            var key = await fixture.CreateSecretAsync(secretNameToDelete, "val1");
+
+            Assert.NotNull(key);
+            Assert.Equal(secretNameToDelete, key.Name);
+
+            var deletedkeyOp = await client.StartDeleteSecretAsync(secretNameToDelete);
+
+            await deletedkeyOp.WaitForCompletionAsync();
+
+            await foreach (var keyVersion in client.GetPropertiesOfSecretVersionsAsync(secretNameToDelete))
+            {
+                Assert.Fail("No key version should be available for a deleted secret");
+            }
+        }
+
+        [Fact]
+        public async Task RecreatingDeletedSecretReturnConflict()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var keyNameToDelete = fixture.FreshlyGeneratedGuid;
+
+            var key = await fixture.CreateSecretAsync(keyNameToDelete, "val1");
+
+            Assert.NotNull(key);
+            Assert.Equal(keyNameToDelete, key.Name);
+
+            var deletedkeyOp = await client.StartDeleteSecretAsync(keyNameToDelete);
+
+            await deletedkeyOp.WaitForCompletionAsync();
+
+            var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.SetSecretAsync(keyNameToDelete, "val2"));
+
+            Assert.Equal((int)HttpStatusCode.Conflict, exception.Status);
         }
     }
 }

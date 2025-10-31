@@ -1,6 +1,7 @@
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
 using AzureKeyVaultEmulator.Shared.Models.Secrets.Requests;
 using AzureKeyVaultEmulator.Shared.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace AzureKeyVaultEmulator.Secrets.Services
 {
@@ -19,6 +20,11 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNull(secret);
+
+            if (await context.Secrets.AnyAsync(e => e.PersistedName == name && e.Deleted))
+            {
+                throw new ConflictedItemException(name);
+            }
 
             var version = Guid.NewGuid().Neat();
 
@@ -109,7 +115,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         public async Task<SecretBundle> GetDeletedSecretAsync(string name)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
-            
+
             var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, deleted: true);
 
             return secret;
@@ -141,7 +147,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = context.Secrets.Where(x => x.PersistedName == secretName).ToList();
+            var allItems = context.Secrets.Where(x => x.PersistedName == secretName && !x.Deleted).ToList();
 
             if (allItems.Count == 0)
                 return new();
@@ -191,7 +197,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         public async Task<SecretBundle> RecoverDeletedSecretAsync(string name)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            
+
             var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, deleted: true);
 
             secret.Deleted = false;
