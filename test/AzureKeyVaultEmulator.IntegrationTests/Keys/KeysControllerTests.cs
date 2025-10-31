@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using Azure;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
@@ -560,5 +561,48 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         }
 
         Assert.Equal(createdCount, existingCount);
+    }
+
+    [Fact]
+    public async Task DeletedKeyWontHaveAnyVersion()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyNameToDelete = fixture.FreshlyGeneratedGuid;
+
+        var key = await fixture.CreateKeyAsync(keyNameToDelete);
+
+        Assert.NotNull(key);
+        Assert.Equal(keyNameToDelete, key.Name);
+
+        var deletedkeyOp = await client.StartDeleteKeyAsync(keyNameToDelete);
+
+        await deletedkeyOp.WaitForCompletionAsync();
+
+        await foreach (var keyVersion in client.GetPropertiesOfKeyVersionsAsync(keyNameToDelete))
+        {
+            Assert.Fail("No key version should be available for a deleted key");
+        }
+    }
+
+    [Fact]
+    public async Task RecreatingDeletedKeyReturnConflict()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyNameToDelete = fixture.FreshlyGeneratedGuid;
+
+        var key = await fixture.CreateKeyAsync(keyNameToDelete);
+
+        Assert.NotNull(key);
+        Assert.Equal(keyNameToDelete, key.Name);
+
+        var deletedkeyOp = await client.StartDeleteKeyAsync(keyNameToDelete);
+
+        await deletedkeyOp.WaitForCompletionAsync();
+
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.CreateKeyAsync(keyNameToDelete, KeyType.Rsa));
+
+        Assert.Equal((int)HttpStatusCode.Conflict, exception.Status);
     }
 }

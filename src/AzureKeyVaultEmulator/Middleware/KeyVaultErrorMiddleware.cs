@@ -14,11 +14,17 @@ namespace AzureKeyVaultEmulator.Middleware
             {
                 var req = context.Request;
 
-                var errorResponse = new KeyVaultError
+                var errorResponse = new
                 {
-                    Code = "Failed to perform request into Azure Key Vault Emulator",
-                    InnerError = e.InnerException?.Message ?? string.Empty,
-                    Message = e.Message
+                    Error = new KeyVaultError
+                    {
+                        Code = "Failed to perform request into Azure Key Vault Emulator",
+                        InnerError = e.InnerException == null ? null : new KeyVaultError
+                        {
+                            Message = e.InnerException.Message,
+                        },
+                        Message = e.Message
+                    }
                 };
 
                 var status = e is MissingItemException ? HttpStatusCode.NotFound : HttpStatusCode.BadRequest;

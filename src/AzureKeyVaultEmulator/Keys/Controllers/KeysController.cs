@@ -17,9 +17,27 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [ApiVersion] string apiVersion,
             [FromBody] CreateKey requestBody)
         {
-            var createdKey = await keyService.CreateKeyAsync(name, requestBody);
+            try
+            {
+                var createdKey = await keyService.CreateKeyAsync(name, requestBody);
 
-            return Ok(createdKey);
+                return Ok(createdKey);
+            }
+            catch (ConflictedItemException e)
+            {
+                return Conflict(new
+                {
+                    Error = new KeyVaultError()
+                    {
+                        Code = "Conflict",
+                        Message = $"Key {e.Name} is currently in a deleted but recoverable state, and its name cannot be reused; in this state, the key can only be recovered or purged.",
+                        InnerError = new KeyVaultError
+                        {
+                            Code = "ObjectIsDeletedButRecoverable"
+                        },
+                    }
+                });
+            }
         }
 
         [HttpGet("{name}/{version}")]
