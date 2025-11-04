@@ -17,27 +17,9 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [ApiVersion] string apiVersion,
             [FromBody] CreateKey requestBody)
         {
-            try
-            {
-                var createdKey = await keyService.CreateKeyAsync(name, requestBody);
+            var createdKey = await keyService.CreateKeyAsync(name, requestBody);
 
-                return Ok(createdKey);
-            }
-            catch (ConflictedItemException e)
-            {
-                return Conflict(new
-                {
-                    Error = new KeyVaultError()
-                    {
-                        Code = "Conflict",
-                        Message = $"Key {e.Name} is currently in a deleted but recoverable state, and its name cannot be reused; in this state, the key can only be recovered or purged.",
-                        InnerError = new KeyVaultError
-                        {
-                            Code = "ObjectIsDeletedButRecoverable"
-                        },
-                    }
-                });
-            }
+            return Ok(createdKey);
         }
 
         [HttpGet("{name}/{version}")]
@@ -131,7 +113,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
             int skipCount = 0;
 
-            if(!string.IsNullOrEmpty(skipToken))
+            if (!string.IsNullOrEmpty(skipToken))
                 skipCount = tokenService.DecodeSkipToken(skipToken);
 
             var result = keyService.GetKeyVersions(name, maxResults, skipCount);
@@ -198,7 +180,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         [HttpPost("restore")]
         public IActionResult RestoreKey(
             [FromBody] ValueModel<string> backedUpKey,
-            [ApiVersion]string apiVersion)
+            [ApiVersion] string apiVersion)
         {
             var result = keyService.RestoreKey(backedUpKey.Value);
 

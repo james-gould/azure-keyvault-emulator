@@ -11,6 +11,6 @@ namespace AzureKeyVaultEmulator.Shared.Models
         public KeyVaultError? InnerError { get; set; } = null;
 
         [JsonPropertyName("message")]
-        public string? Message { get; set; } = null;
+        public string Message { get; set; } = string.Empty;
     }
 }

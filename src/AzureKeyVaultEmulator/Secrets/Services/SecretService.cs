@@ -22,9 +22,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             ArgumentNullException.ThrowIfNull(secret);
 
             if (await context.Secrets.AnyAsync(e => e.PersistedName == name && e.Deleted))
-            {
-                throw new ConflictedItemException(name);
-            }
+                throw new ConflictedItemException("Secret", name);
 
             var version = Guid.NewGuid().Neat();
 

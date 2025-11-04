@@ -33,9 +33,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
             if(await context.Keys.AnyAsync(e => e.PersistedName == name && e.Deleted))
-            {
-                throw new ConflictedItemException(name);
-            }
+                throw new ConflictedItemException("Key", name);
 
             var JWKS = GetJWKSFromModel(key.KeySize, key.KeyType);
 
