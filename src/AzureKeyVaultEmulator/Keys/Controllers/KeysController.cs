@@ -113,7 +113,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
 
             int skipCount = 0;
 
-            if(!string.IsNullOrEmpty(skipToken))
+            if (!string.IsNullOrEmpty(skipToken))
                 skipCount = tokenService.DecodeSkipToken(skipToken);
 
             var result = keyService.GetKeyVersions(name, maxResults, skipCount);
@@ -180,7 +180,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
         [HttpPost("restore")]
         public IActionResult RestoreKey(
             [FromBody] ValueModel<string> backedUpKey,
-            [ApiVersion]string apiVersion)
+            [ApiVersion] string apiVersion)
         {
             var result = keyService.RestoreKey(backedUpKey.Value);
 

@@ -1,9 +1,9 @@
 ﻿namespace AzureKeyVaultEmulator.Shared.Models
 {
-    public enum DeletionRecoveryLevel
+    public sealed class DeletionRecoveryLevel
     {
-        Purgeable,
-        Recoverable,
-        CustomizedRecoverable
+        public const string Purgeable = "Purgeable";
+        public const string RecoverablePurgeable = "Recoverable+Purgeable";
+        public const string Recoverable = "Recoverable";
     }
 }

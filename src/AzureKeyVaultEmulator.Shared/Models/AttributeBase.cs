@@ -19,7 +19,7 @@ namespace AzureKeyVaultEmulator.Shared.Models
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        [JsonIgnore(Condition = JsonIgnoreCondition.Always)] 
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Guid PersistedId { get; set; } = Guid.NewGuid();
 
         [JsonPropertyName("enabled")]
@@ -38,10 +38,10 @@ namespace AzureKeyVaultEmulator.Shared.Models
         public long Updated { get; set; }
 
         [JsonPropertyName("recoveryLevel")]
-        public string RecoveryLevel { get; set; } = DeletionRecoveryLevel.Purgeable.ToString();
+        public string RecoveryLevel { get; set; } = DeletionRecoveryLevel.RecoverablePurgeable;
 
         [JsonPropertyName("recoverableDays")]
-        public int RecoverableDays { get; set; } = 365;
+        public int RecoverableDays { get; set; } = 90;
 
         public void Update() => Updated = DateTimeOffset.Now.ToUnixTimeSeconds();
     }

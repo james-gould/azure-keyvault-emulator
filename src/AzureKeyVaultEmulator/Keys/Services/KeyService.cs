@@ -32,6 +32,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
+            if(await context.Keys.AnyAsync(e => e.PersistedName == name && e.Deleted))
+                throw new ConflictedItemException("Key", name);
+
             var JWKS = GetJWKSFromModel(key.KeySize, key.KeyType);
 
             var version = Guid.NewGuid().ToString();
@@ -222,7 +225,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = context.Keys.Where(x => x.PersistedName == name);
+            var allItems = context.Keys.Where(x => x.PersistedName == name && !x.Deleted);
 
             if (!allItems.Any())
                 return new();
