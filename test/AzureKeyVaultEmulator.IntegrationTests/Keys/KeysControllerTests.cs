@@ -589,7 +589,31 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     public async Task RecreatingDeletedKeyReturnConflict()
     {
         var client = await fixture.GetClientAsync();
+        string keyNameToDelete = await SetupDeletedKey(client);
 
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.CreateKeyAsync(keyNameToDelete, KeyType.Rsa));
+
+        Assert.Equal((int)HttpStatusCode.Conflict, exception.Status);
+    }
+
+    [Fact]
+    public async Task ImportingDeletedKeyReturnConflict()
+    {
+        var client = await fixture.GetClientAsync();
+
+        string keyNameToDelete = await SetupDeletedKey(client);
+
+        using var rsa = RSA.Create();
+
+        JsonWebKey jwk = new JsonWebKey(rsa, true);
+
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.ImportKeyAsync(keyNameToDelete, jwk));
+
+        Assert.Equal((int)HttpStatusCode.Conflict, exception.Status);
+    }
+
+    private async Task<string> SetupDeletedKey(KeyClient client)
+    {
         var keyNameToDelete = fixture.FreshlyGeneratedGuid;
 
         var key = await fixture.CreateKeyAsync(keyNameToDelete);
@@ -600,9 +624,6 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         var deletedkeyOp = await client.StartDeleteKeyAsync(keyNameToDelete);
 
         await deletedkeyOp.WaitForCompletionAsync();
-
-        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.CreateKeyAsync(keyNameToDelete, KeyType.Rsa));
-
-        Assert.Equal((int)HttpStatusCode.Conflict, exception.Status);
+        return keyNameToDelete;
     }
 }

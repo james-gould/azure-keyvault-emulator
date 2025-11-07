@@ -32,8 +32,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            if(await context.Keys.AnyAsync(e => e.PersistedName == name && e.Deleted))
-                throw new ConflictedItemException("Key", name);
+            await ThrowIfConflictWithDeleted(name);
 
             var JWKS = GetJWKSFromModel(key.KeySize, key.KeyType);
 
@@ -57,6 +56,12 @@ namespace AzureKeyVaultEmulator.Keys.Services
             await context.SaveChangesAsync();
 
             return response;
+        }
+
+        private async Task ThrowIfConflictWithDeleted(string name)
+        {
+            if (await context.Keys.AnyAsync(e => e.PersistedName == name && e.Deleted))
+                throw new ConflictedItemException("Key", name);
         }
 
         public async Task<KeyAttributes?> UpdateKeyAsync(
@@ -265,6 +270,8 @@ namespace AzureKeyVaultEmulator.Keys.Services
             Dictionary<string, string> tags)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            await ThrowIfConflictWithDeleted(name);
 
             var version = Guid.NewGuid().ToString();
 
