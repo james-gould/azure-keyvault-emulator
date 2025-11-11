@@ -25,11 +25,6 @@
     <PackageReference Include="Testcontainers" Version="4.8.1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
-  </ItemGroup>
-
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
     <InternalsVisibleTo Include="AzureKeyVaultEmulator.TestContainers.Tests" />
