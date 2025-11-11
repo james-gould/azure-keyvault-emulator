@@ -24,11 +24,6 @@ jobs:
           dotnet-version: |
             10.0.x
 
-      - name: Install SSL Certificates
-        run: |
-          dotnet dev-certs https --clean
-          dotnet dev-certs https --trust
-
       - name: Run Tests
         run: |
           dotnet test
