@@ -1,6 +1,7 @@
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
