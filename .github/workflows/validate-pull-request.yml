@@ -24,20 +24,13 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
+            10.0.x
 
       - name: Install SSL Certificates
         run: |
           dotnet dev-certs https --clean
           dotnet dev-certs https --trust
 
-      - name: Run Wiremock Integration Tests
+      - name: Run Tests
         run: |
-          dotnet test ./test/AzureKeyVaultEmulator.Wiremock.IntegrationTests/AzureKeyVaultEmulator.Wiremock.IntegrationTests.csproj
-
-      - name: Run API Integration Tests
-        run: |
-          dotnet test ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
-
-      - name: Run TestContainers Integration Tests
-        run: |
-          dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
+          dotnet test
