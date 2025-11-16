@@ -30,21 +30,24 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
+            8.0.x
+            9.0.x
             10.0.x
 
       - name: Install SSL Certificates
         run: |
           dotnet dev-certs https --clean
           dotnet dev-certs https --trust
-
-      - name: Run Tests
-        run: dotnet test 
+          sudo update-ca-certificates
 
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Dotnet Build
-        run: dotnet build --configuration Release --no-restore        
+        run: dotnet build --configuration Release --no-restore 
+
+      - name: Run Tests
+        run: dotnet test        
 
       - name: Pack NuGet Package
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:Version=${{ env.VERSION }}
