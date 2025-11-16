@@ -28,6 +28,7 @@ jobs:
         run: |
           dotnet dev-certs https --clean
           dotnet dev-certs https --trust
+          sudo update-ca-certificates
 
       - name: Run Tests
         run: |
