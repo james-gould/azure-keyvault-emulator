@@ -12,47 +12,54 @@ namespace AzureKeyVaultEmulator.TestContainers.Tests;
 /// Integration tests for the AzureKeyVaultEmulatorContainer.
 /// These tests demonstrate real usage patterns but require Docker to be available.
 /// </summary>
-public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
+public class AzureKeyVaultEmulatorContainerIntegrationTests
 {
-    private AzureKeyVaultEmulatorContainer? _container;
-
-    public async Task InitializeAsync()
+    private static async Task<AzureKeyVaultEmulatorContainer> CreateContainerAsync(bool assignRandomHostPort)
     {
         var tag = "latest";
 
         if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             tag += "-arm";
 
-        _container = new AzureKeyVaultEmulatorContainer(Path.GetTempPath(), tag: tag);
+        var options = new AzureKeyVaultEmulatorOptions
+        {
+            AssignRandomHostPort = assignRandomHostPort,
+            LocalCertificatePath = Path.GetTempPath(),
+            Tag = tag
+        };
+        var container = new AzureKeyVaultEmulatorContainer(options);
 
-        await _container.StartAsync();
+        await container.StartAsync();
+
+        return container;
     }
 
-    public async Task DisposeAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ContainerCanStartAndStopSuccessfully(bool assignRandomHostPort)
     {
-        if (_container is not null)
-            await _container.DisposeAsync();
-    }
+        await using var container = await CreateContainerAsync(assignRandomHostPort);
 
-    [Fact]
-    public void ContainerCanStartAndStopSuccessfully()
-    {
-        ArgumentNullException.ThrowIfNull(_container);
-
-        var endpoint = _container.GetConnectionString();
+        var endpoint = container.GetConnectionString();
         Assert.StartsWith("https://", endpoint);
-        Assert.Contains("4997", endpoint);
 
-        var port = _container.GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
-        Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, port);
+        if(!assignRandomHostPort)
+        {
+            Assert.Contains("4997", endpoint);
+
+            var port = container.GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
+            Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, port);
+        }
     }
 
-    [Fact]
-    public async Task ContainerCanPersistSecretsCorrectly()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ContainerCanPersistSecretsCorrectly(bool assignRandomHostPort)
     {
-        ArgumentNullException.ThrowIfNull(_container);
-
-        var secretClient = _container.GetSecretClient();
+        await using var container = await CreateContainerAsync(assignRandomHostPort);
+        var secretClient = container.GetSecretClient();
 
         var secretName = Guid.NewGuid().ToString();
         var secretValue = Guid.NewGuid().ToString();
@@ -66,12 +73,13 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(secretValue, fromStore.Value.Value);
     }
 
-    [Fact]
-    public async Task ContainerCanPersistCertificatesCorrectly()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ContainerCanPersistCertificatesCorrectly(bool assignRandomHostPort)
     {
-        ArgumentNullException.ThrowIfNull(_container);
-
-        var certClient = _container.GetCertificateClient();
+        await using var container = await CreateContainerAsync(assignRandomHostPort);
+        var certClient = container.GetCertificateClient();
 
         var certName = Guid.NewGuid().ToString();
 
@@ -88,12 +96,13 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(certName, fromStore.Value.Name);
     }
 
-    [Fact]
-    public async Task ContainerCanPersistKeysCorrectly()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ContainerCanPersistKeysCorrectly(bool assignRandomHostPort)
     {
-        ArgumentNullException.ThrowIfNull(_container);
-
-        var client = _container.GetKeyClient();
+        await using var container = await CreateContainerAsync(assignRandomHostPort);
+        var client = container.GetKeyClient();
 
         var keyName = Guid.NewGuid().ToString();
 
@@ -106,14 +115,14 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(keyName, fromStore.Value.Name);
     }
 
-    [Fact(Skip = "Dev run only while port is unconfigurable, error: Bind for 0.0.0.0:4997 failed: port is already allocated")]
+    [Fact]
     public async Task CreatingSetupDatabaseWillPersistBetweenRuns()
     {
         var secretName = Guid.NewGuid().ToString();
         var secretValue = Guid.NewGuid().ToString();
 
         // Marks with -e Persist=true to create an SQLite Database
-        await using var container = new AzureKeyVaultEmulatorContainer(persist: true, tag: "latest");
+        await using var container = new AzureKeyVaultEmulatorContainer(persist: true, tag: "latest", assignRandomHostPort: true);
 
         await container.StartAsync();
 

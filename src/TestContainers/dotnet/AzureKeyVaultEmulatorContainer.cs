@@ -29,14 +29,16 @@ namespace AzureKeyVaultEmulator.TestContainers
         /// <param name="generateCertificates">Whether to automatically generate SSL certificates if they don't exist.</param>
         /// <param name="forceCleanupCertificates">Uninstall the SSL certificates for the container on shutdown.</param>
         /// <param name="tag">Optional Docker image tag to override the default. Useful for testing with specific versions or "latest" for repository releases.</param>
+        /// <param name="assignRandomHostPort">Determines whether Testcontainers assigns a random host port or not.</param>
         public AzureKeyVaultEmulatorContainer(
             string? certificatesDirectory = null,
             bool persist = false,
             bool generateCertificates = true,
             bool forceCleanupCertificates = false,
-            string? tag = null)
+            string? tag = null,
+            bool assignRandomHostPort = false)
         // This feels horrendous. Must be a better way to do this...
-        : this(new AzureKeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates, Tag = tag }) { }
+        : this(new AzureKeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates, Tag = tag, AssignRandomHostPort = assignRandomHostPort}) { }
 
         public AzureKeyVaultEmulatorContainer(AzureKeyVaultEmulatorOptions options)
         {
