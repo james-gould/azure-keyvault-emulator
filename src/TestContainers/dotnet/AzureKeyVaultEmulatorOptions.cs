@@ -51,6 +51,11 @@ namespace AzureKeyVaultEmulator.TestContainers
         public string? Tag { get; set; }
 
         /// <summary>
+        /// Determines whether Testcontainers assigns a random host port or not.
+        /// </summary>
+        public bool AssignRandomHostPort { get; set; } = false;
+
+        /// <summary>
         /// Used to internally validate the configuration of the emulator before performing any IO.
         /// </summary>
         internal bool IsValidCustomisable
@@ -69,10 +74,5 @@ namespace AzureKeyVaultEmulator.TestContainers
         /// Used to carry the CRT through the generation and installation lifetime. Not passed as an option.
         /// </summary>
         internal string? CRT { get; set; }
-
-        /// <summary>
-        /// Determines whether Testcontainers assigns a random host port or not.
-        /// </summary>
-        public bool AssignRandomHostPort { get; set; } = false;
     }
 }
