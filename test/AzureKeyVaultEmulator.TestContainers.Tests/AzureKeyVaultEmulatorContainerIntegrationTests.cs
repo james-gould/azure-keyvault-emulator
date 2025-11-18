@@ -102,7 +102,14 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         var secretValue = Guid.NewGuid().ToString();
 
         // Marks with -e Persist=true to create an SQLite Database
-        await using var container = new AzureKeyVaultEmulatorContainer(persist: true, tag: "latest", assignRandomHostPort: true);
+        var options = new AzureKeyVaultEmulatorOptions()
+        {
+            Persist = true,
+            Tag = "latest",
+            LocalCertificatePath = Path.GetTempPath(),
+            AssignRandomHostPort = true,
+        };
+        await using var container = new AzureKeyVaultEmulatorContainer(options);
 
         await container.StartAsync();
 
@@ -124,7 +131,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         await container.StopAsync();
 
         // Create another with -e Persist=true so it uses the existing SQLite Database.
-        await using var secondaryContainer = new AzureKeyVaultEmulatorContainer(persist: true, tag: "latest");
+        await using var secondaryContainer = new AzureKeyVaultEmulatorContainer(options);
 
         await secondaryContainer.StartAsync();
 
