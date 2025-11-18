@@ -306,8 +306,10 @@ namespace AzureKeyVaultEmulator.TestContainers.Helpers
             if (string.IsNullOrEmpty(pfxPath))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(pfxPath));
 
+            var crtPath = Path.Combine(pfxPath, AzureKeyVaultEmulatorCertConstants.Crt);
+
             Console.WriteLine("To install on macOS trust store, run:");
-            Console.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");
+            Console.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{crtPath}\"");
         }
 
         /// <summary>
