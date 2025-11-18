@@ -4,7 +4,6 @@ using AzureKeyVaultEmulator.TestContainers.Constants;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure;
-using System.Runtime.InteropServices;
 
 namespace AzureKeyVaultEmulator.TestContainers.Tests;
 
@@ -12,54 +11,37 @@ namespace AzureKeyVaultEmulator.TestContainers.Tests;
 /// Integration tests for the AzureKeyVaultEmulatorContainer.
 /// These tests demonstrate real usage patterns but require Docker to be available.
 /// </summary>
-public class AzureKeyVaultEmulatorContainerIntegrationTests
+public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
 {
-    private static async Task<AzureKeyVaultEmulatorContainer> CreateContainerAsync(bool assignRandomHostPort)
+    private AzureKeyVaultEmulatorContainer? _container;
+
+    public async Task InitializeAsync()
     {
-        var tag = "latest";
+        // Will default image + path depending on execution context.
+        _container = new();
 
-        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-            tag += "-arm";
-
-        var options = new AzureKeyVaultEmulatorOptions
-        {
-            AssignRandomHostPort = assignRandomHostPort,
-            LocalCertificatePath = Path.GetTempPath(),
-            Tag = tag
-        };
-        var container = new AzureKeyVaultEmulatorContainer(options);
-
-        await container.StartAsync();
-
-        return container;
+        await _container.StartAsync();
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ContainerCanStartAndStopSuccessfully(bool assignRandomHostPort)
+    [Fact]
+    public async Task ContainerCanStartAndStopSuccessfully()
     {
-        await using var container = await CreateContainerAsync(assignRandomHostPort);
+        ArgumentNullException.ThrowIfNull(_container);
 
-        var endpoint = container.GetConnectionString();
+        var endpoint = _container.GetConnectionString();
         Assert.StartsWith("https://", endpoint);
 
-        if(!assignRandomHostPort)
-        {
-            Assert.Contains("4997", endpoint);
+        var port = _container.GetMappedPublicPort();
 
-            var port = container.GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
-            Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, port);
-        }
+        Assert.NotEqual(AzureKeyVaultEmulatorContainerConstants.Port, port);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ContainerCanPersistSecretsCorrectly(bool assignRandomHostPort)
+    [Fact]
+    public async Task ContainerCanPersistSecretsCorrectly()
     {
-        await using var container = await CreateContainerAsync(assignRandomHostPort);
-        var secretClient = container.GetSecretClient();
+        ArgumentNullException.ThrowIfNull(_container);
+
+        var secretClient = _container.GetSecretClient();
 
         var secretName = Guid.NewGuid().ToString();
         var secretValue = Guid.NewGuid().ToString();
@@ -73,13 +55,12 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
         Assert.Equal(secretValue, fromStore.Value.Value);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ContainerCanPersistCertificatesCorrectly(bool assignRandomHostPort)
+    [Fact]
+    public async Task ContainerCanPersistCertificatesCorrectly()
     {
-        await using var container = await CreateContainerAsync(assignRandomHostPort);
-        var certClient = container.GetCertificateClient();
+        ArgumentNullException.ThrowIfNull(_container);
+
+        var certClient = _container.GetCertificateClient();
 
         var certName = Guid.NewGuid().ToString();
 
@@ -96,13 +77,12 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
         Assert.Equal(certName, fromStore.Value.Name);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ContainerCanPersistKeysCorrectly(bool assignRandomHostPort)
+    [Fact]
+    public async Task ContainerCanPersistKeysCorrectly()
     {
-        await using var container = await CreateContainerAsync(assignRandomHostPort);
-        var client = container.GetKeyClient();
+        ArgumentNullException.ThrowIfNull(_container);
+
+        var client = _container.GetKeyClient();
 
         var keyName = Guid.NewGuid().ToString();
 
@@ -156,5 +136,29 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests
         Assert.Equal(secretName, secretFromSecondaryStore.Value.Name);
         Assert.Equal(secretValue, secretFromSecondaryStore.Value.Value);
         Assert.Equal(fromStoreAfterSetup.Value.Value, secretFromSecondaryStore.Value.Value);
+
+        await secondaryContainer.StopAsync();
+    }
+
+    [Fact]
+    public async Task RandomPortWontBeAssignedWhenSpecificPortProvided()
+    {
+        await using var container = new AzureKeyVaultEmulatorContainer(persist: false, tag: "latest", assignRandomHostPort: false);
+        await container.StartAsync();
+
+        var mappedPort = container.GetMappedPublicPort();
+
+        Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, mappedPort);
+
+        await container.StopAsync();
+        await container.DisposeAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+        await _container.StopAsync();
+        await _container.DisposeAsync();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
     }
 }
