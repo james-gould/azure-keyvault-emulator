@@ -106,8 +106,6 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         {
             Persist = true,
             LocalCertificatePath = Path.GetTempPath(),
-            Tag = "latest",
-            AssignRandomHostPort = true,
         };
         await using var container = new AzureKeyVaultEmulatorContainer(options);
 
