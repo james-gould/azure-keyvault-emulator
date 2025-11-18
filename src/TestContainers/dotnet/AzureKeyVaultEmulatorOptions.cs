@@ -53,7 +53,7 @@ namespace AzureKeyVaultEmulator.TestContainers
         /// <summary>
         /// Determines whether Testcontainers assigns a random host port or not.
         /// </summary>
-        public bool AssignRandomHostPort { get; set; } = false;
+        public bool AssignRandomHostPort { get; set; } = true;
 
         /// <summary>
         /// Used to internally validate the configuration of the emulator before performing any IO.

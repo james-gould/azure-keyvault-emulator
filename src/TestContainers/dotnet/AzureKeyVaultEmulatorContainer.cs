@@ -36,7 +36,7 @@ namespace AzureKeyVaultEmulator.TestContainers
             bool generateCertificates = true,
             bool forceCleanupCertificates = false,
             string? tag = null,
-            bool assignRandomHostPort = false)
+            bool assignRandomHostPort = true)
         // This feels horrendous. Must be a better way to do this...
         : this(new AzureKeyVaultEmulatorOptions { Persist = persist, LocalCertificatePath = certificatesDirectory ?? string.Empty, ShouldGenerateCertificates = generateCertificates, ForceCleanupOnShutdown = forceCleanupCertificates, Tag = tag, AssignRandomHostPort = assignRandomHostPort}) { }
 
