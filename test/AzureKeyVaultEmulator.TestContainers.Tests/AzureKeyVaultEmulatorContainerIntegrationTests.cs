@@ -4,7 +4,6 @@ using AzureKeyVaultEmulator.TestContainers.Constants;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure;
-using System.Runtime.InteropServices;
 
 namespace AzureKeyVaultEmulator.TestContainers.Tests;
 
@@ -18,20 +17,10 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        var tag = "latest";
-
-        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-            tag += "-arm";
-
-        _container = new AzureKeyVaultEmulatorContainer(Path.GetTempPath(), tag: tag);
+        // Will default image + path depending on execution context.
+        _container = new();
 
         await _container.StartAsync();
-    }
-
-    public async Task DisposeAsync()
-    {
-        if (_container is not null)
-            await _container.DisposeAsync();
     }
 
     [Fact]
@@ -41,10 +30,10 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
 
         var endpoint = _container.GetConnectionString();
         Assert.StartsWith("https://", endpoint);
-        Assert.Contains("4997", endpoint);
 
-        var port = _container.GetMappedPublicPort(AzureKeyVaultEmulatorContainerConstants.Port);
-        Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, port);
+        var port = _container.GetMappedPublicPort();
+
+        Assert.NotEqual(AzureKeyVaultEmulatorContainerConstants.Port, port);
     }
 
     [Fact]
@@ -106,14 +95,14 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(keyName, fromStore.Value.Name);
     }
 
-    [Fact(Skip = "Dev run only while port is unconfigurable, error: Bind for 0.0.0.0:4997 failed: port is already allocated")]
+    [Fact]
     public async Task CreatingSetupDatabaseWillPersistBetweenRuns()
     {
         var secretName = Guid.NewGuid().ToString();
         var secretValue = Guid.NewGuid().ToString();
 
         // Marks with -e Persist=true to create an SQLite Database
-        await using var container = new AzureKeyVaultEmulatorContainer(persist: true, tag: "latest");
+        await using var container = new AzureKeyVaultEmulatorContainer(persist: true, tag: "latest", assignRandomHostPort: true);
 
         await container.StartAsync();
 
@@ -147,5 +136,29 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(secretName, secretFromSecondaryStore.Value.Name);
         Assert.Equal(secretValue, secretFromSecondaryStore.Value.Value);
         Assert.Equal(fromStoreAfterSetup.Value.Value, secretFromSecondaryStore.Value.Value);
+
+        await secondaryContainer.StopAsync();
+    }
+
+    [Fact]
+    public async Task RandomPortWontBeAssignedWhenSpecificPortProvided()
+    {
+        await using var container = new AzureKeyVaultEmulatorContainer(persist: false, tag: "latest", assignRandomHostPort: false);
+        await container.StartAsync();
+
+        var mappedPort = container.GetMappedPublicPort();
+
+        Assert.Equal(AzureKeyVaultEmulatorContainerConstants.Port, mappedPort);
+
+        await container.StopAsync();
+        await container.DisposeAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+        await _container.StopAsync();
+        await _container.DisposeAsync();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
     }
 }
