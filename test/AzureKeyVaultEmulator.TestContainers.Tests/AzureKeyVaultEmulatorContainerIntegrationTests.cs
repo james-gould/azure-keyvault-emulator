@@ -102,7 +102,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         var secretValue = Guid.NewGuid().ToString();
 
         // Marks with -e Persist=true to create an SQLite Database
-        await using var container = new AzureKeyVaultEmulatorContainer(persist: true, tag: "latest", assignRandomHostPort: true);
+        await using var container = new AzureKeyVaultEmulatorContainer(persist: true, assignRandomHostPort: true);
 
         await container.StartAsync();
 
@@ -124,7 +124,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         await container.StopAsync();
 
         // Create another with -e Persist=true so it uses the existing SQLite Database.
-        await using var secondaryContainer = new AzureKeyVaultEmulatorContainer(persist: true, tag: "latest");
+        await using var secondaryContainer = new AzureKeyVaultEmulatorContainer(persist: true);
 
         await secondaryContainer.StartAsync();
 
@@ -143,7 +143,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task RandomPortWontBeAssignedWhenSpecificPortProvided()
     {
-        await using var container = new AzureKeyVaultEmulatorContainer(persist: false, tag: "latest", assignRandomHostPort: false);
+        await using var container = new AzureKeyVaultEmulatorContainer(assignRandomHostPort: false);
         await container.StartAsync();
 
         var mappedPort = container.GetMappedPublicPort();
