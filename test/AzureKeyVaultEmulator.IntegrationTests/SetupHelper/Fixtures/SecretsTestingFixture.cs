@@ -37,7 +37,7 @@ public class SecretsTestingFixture : KeyVaultClientTestingFixture<SecretClient>
     public async Task<KeyVaultSecret> CreateSecretAsync(string secretName, string secretValue)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(secretName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(secretValue);
+        ArgumentNullException.ThrowIfNull(secretValue);
 
         _secretClient = await GetClientAsync();
 
