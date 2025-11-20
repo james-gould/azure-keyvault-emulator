@@ -56,6 +56,22 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.NotNull(secret.Properties.RecoverableDays);
         }
 
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public async Task SecretCanBeEmptyOrWhitespaceString(string secretValue)
+        {
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var secret = await fixture.CreateSecretAsync(secretName, secretValue);
+            Assert.NotNull(secret);
+
+            var client = await fixture.GetClientAsync();
+            var retrievedSecret = await client.GetSecretAsync(secretName);
+            Assert.NotNull(retrievedSecret);
+            Assert.Equal(secretValue, retrievedSecret.Value.Value);
+        }
+
         [Fact]
         public async Task GetSecretAfterDeletingProvidesKeyVaultErrorTest()
         {
