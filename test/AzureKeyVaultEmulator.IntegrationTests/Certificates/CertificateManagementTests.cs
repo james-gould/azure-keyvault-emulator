@@ -116,7 +116,7 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
     }
 
     [Fact]
-    public async Task ImportedPasswordProtectedCertificateStripsPassword()
+    public async Task ImportingPasswordProtectedCertificateStripsPassword()
     {
         // Arrange: Create and import a password-protected certificate
         var client = await fixture.GetClientAsync();
@@ -153,7 +153,7 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
     }
 
     [Fact]
-    public async Task GetCertificateDoesNotIncludePrivateKey()
+    public async Task GettingCertificateDoesNotIncludePrivateKey()
     {
         // Arrange: Import a certificate with private key
         var certClient = await fixture.GetClientAsync();
@@ -191,7 +191,7 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
     }
 
     [Fact]
-    public async Task ImportedCertificateCreatesBackingSecret()
+    public async Task ImportingCertificateCreatesBackingSecret()
     {
         // Arrange: Import a certificate
         var certClient = await fixture.GetClientAsync();
@@ -225,7 +225,7 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
     }
 
     [Fact]
-    public async Task ImportedPasswordProtectedCertificateBackingSecretHasNoPassword()
+    public async Task ImportingPasswordProtectedCertificateBackingSecretHasNoPassword()
     {
         // Arrange: Create and import a password-protected certificate
         var certClient = await fixture.GetClientAsync();
