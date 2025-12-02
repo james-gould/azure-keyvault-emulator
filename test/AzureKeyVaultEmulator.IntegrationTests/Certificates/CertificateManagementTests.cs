@@ -135,18 +135,59 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
 
         await client.ImportCertificateAsync(options);
 
-        // Act: Download the certificate (this retrieves the backing secret)
+        // Act: DownloadCertificateAsync is a convenience method in Azure SDK that internally
+        // retrieves the backing secret (via SecretClient) and returns the full certificate with private key.
+        // This is different from GetCertificateAsync which only returns public cert + metadata.
         var downloadedCertificateResponse = await client.DownloadCertificateAsync(certName);
         var downloadedCertificate = downloadedCertificateResponse.Value;
 
-        // Assert: The downloaded certificate should be usable without password
-        // Azure Key Vault strips the password from imported certificates
+        // Assert: The downloaded certificate should be usable without the original password
+        // Azure Key Vault strips the password from imported certificates when storing in backing secret
         Assert.NotNull(downloadedCertificate);
-        Assert.True(downloadedCertificate.HasPrivateKey, "Downloaded certificate should have private key");
+        Assert.True(downloadedCertificate.HasPrivateKey, "DownloadCertificateAsync should return certificate with private key (from backing secret)");
 
-        // Verify private key is accessible (this would fail if password was retained)
+        // Verify private key is accessible without the original password
+        // This would fail if the password was retained in the backing secret
         var privateKey = downloadedCertificate.GetRSAPrivateKey();
         Assert.NotNull(privateKey);
+    }
+
+    [Fact]
+    public async Task GetCertificateDoesNotIncludePrivateKey()
+    {
+        // Arrange: Import a certificate with private key
+        var certClient = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var certPwd = fixture.FreshlyGeneratedGuid;
+
+        var x509 = CreateCertificate(certName);
+
+        var exportedFromRaw = x509.Export(X509ContentType.Pkcs12, certPwd);
+
+        var importOptions = new ImportCertificateOptions(certName, exportedFromRaw)
+        {
+            Password = certPwd,
+        };
+
+        await certClient.ImportCertificateAsync(importOptions);
+
+        // Act: Get the certificate via CertificateClient (NOT SecretClient)
+        var certResponse = await certClient.GetCertificateAsync(certName);
+        var cert = certResponse.Value;
+
+        // Assert: The certificate from CertificateClient should NOT have private key
+        // Azure Key Vault's Certificates API only returns public certificate + metadata
+        // Private key is only available via SecretClient (backing secret)
+        Assert.NotNull(cert);
+        Assert.NotNull(cert.Cer);
+        Assert.NotEmpty(cert.Cer);
+
+        // Load the certificate from the Cer property (raw X.509 certificate bytes - DER encoded)
+        var loadedCert = X509CertificateLoader.LoadCertificate(cert.Cer);
+
+        Assert.NotNull(loadedCert);
+        Assert.False(loadedCert.HasPrivateKey, "Certificate from CertificateClient.GetCertificateAsync should NOT have private key");
     }
 
     [Fact]
