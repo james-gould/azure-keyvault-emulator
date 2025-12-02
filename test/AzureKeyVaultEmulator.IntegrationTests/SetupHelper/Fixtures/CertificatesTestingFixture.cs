@@ -1,10 +1,12 @@
 ﻿using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Secrets;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<CertificateClient>
 {
     private CertificateClient? _certClient;
+    private SecretClient? _secretClient;
 
 #pragma warning disable CA1822 // Mark members as static, instance data is required in tests
     public CertificatePolicy BasicPolicy => CertificatePolicy.Default;
@@ -32,6 +34,22 @@ public sealed class CertificatesTestingFixture : KeyVaultClientTestingFixture<Ce
         };
 
         return _certClient = new CertificateClient(setup.VaultUri, setup.Credential, options);
+    }
+
+    public async ValueTask<SecretClient> GetSecretClientAsync()
+    {
+        if (_secretClient is not null)
+            return _secretClient;
+
+        var setup = await GetClientSetupModelAsync();
+
+        var options = new SecretClientOptions
+        {
+            DisableChallengeResourceVerification = true,
+            RetryPolicy = _clientRetryPolicy
+        };
+
+        return _secretClient = new SecretClient(setup.VaultUri, setup.Credential, options);
     }
 
     public async Task<KeyVaultCertificateWithPolicy>
