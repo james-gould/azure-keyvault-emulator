@@ -149,6 +149,51 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
         Assert.NotNull(privateKey);
     }
 
+    [Fact]
+    public async Task ImportedPasswordProtectedCertificateBackingSecretHasNoPassword()
+    {
+        // Arrange: Create and import a password-protected certificate
+        var certClient = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var originalPassword = fixture.FreshlyGeneratedGuid;
+
+        var x509 = CreateCertificate(certName);
+
+        var exportedFromRaw = x509.Export(X509ContentType.Pkcs12, originalPassword);
+
+        var importOptions = new ImportCertificateOptions(certName, exportedFromRaw)
+        {
+            Password = originalPassword,
+        };
+
+        await certClient.ImportCertificateAsync(importOptions);
+
+        // Act: Get the backing secret directly via SecretClient
+        var backingSecretResponse = await secretClient.GetSecretAsync(certName);
+        var backingSecret = backingSecretResponse.Value;
+
+        // Assert: The backing secret should contain PFX data
+        Assert.NotNull(backingSecret);
+        Assert.NotNull(backingSecret.Value);
+        Assert.Equal("application/x-pkcs12", backingSecret.Properties.ContentType);
+
+        // Convert base64 secret value to bytes
+        var pfxBytes = Convert.FromBase64String(backingSecret.Value);
+
+        // Assert: Load the certificate WITHOUT any password - this proves password was stripped
+        // If the password was retained, this would throw CryptographicException
+        var loadedCert = X509CertificateLoader.LoadPkcs12(pfxBytes, null);
+
+        Assert.NotNull(loadedCert);
+        Assert.True(loadedCert.HasPrivateKey, "Certificate from backing secret should have private key");
+
+        // Verify private key is accessible without the original password
+        var privateKey = loadedCert.GetRSAPrivateKey();
+        Assert.NotNull(privateKey);
+    }
+
     private static X509Certificate2 CreateCertificate(string name)
     {
         var keySize = 2048;
