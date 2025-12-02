@@ -115,6 +115,40 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
         Assert.Equal(expectedContentType, importedCertificate.Policy.ContentType);
     }
 
+    [Fact]
+    public async Task ImportedPasswordProtectedCertificateStripsPassword()
+    {
+        // Arrange: Create and import a password-protected certificate
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var certPwd = fixture.FreshlyGeneratedGuid;
+
+        var x509 = CreateCertificate(certName);
+
+        var exportedFromRaw = x509.Export(X509ContentType.Pkcs12, certPwd);
+
+        var options = new ImportCertificateOptions(certName, exportedFromRaw)
+        {
+            Password = certPwd,
+        };
+
+        await client.ImportCertificateAsync(options);
+
+        // Act: Download the certificate (this retrieves the backing secret)
+        var downloadedCertificateResponse = await client.DownloadCertificateAsync(certName);
+        var downloadedCertificate = downloadedCertificateResponse.Value;
+
+        // Assert: The downloaded certificate should be usable without password
+        // Azure Key Vault strips the password from imported certificates
+        Assert.NotNull(downloadedCertificate);
+        Assert.True(downloadedCertificate.HasPrivateKey, "Downloaded certificate should have private key");
+
+        // Verify private key is accessible (this would fail if password was retained)
+        var privateKey = downloadedCertificate.GetRSAPrivateKey();
+        Assert.NotNull(privateKey);
+    }
+
     private static X509Certificate2 CreateCertificate(string name)
     {
         var keySize = 2048;
