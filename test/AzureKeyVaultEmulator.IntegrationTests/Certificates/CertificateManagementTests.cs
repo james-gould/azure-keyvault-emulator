@@ -150,6 +150,40 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
     }
 
     [Fact]
+    public async Task ImportedCertificateCreatesBackingSecret()
+    {
+        // Arrange: Import a certificate
+        var certClient = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var certPwd = fixture.FreshlyGeneratedGuid;
+
+        var x509 = CreateCertificate(certName);
+
+        var exportedFromRaw = x509.Export(X509ContentType.Pkcs12, certPwd);
+
+        var importOptions = new ImportCertificateOptions(certName, exportedFromRaw)
+        {
+            Password = certPwd,
+        };
+
+        // Act: Import the certificate
+        await certClient.ImportCertificateAsync(importOptions);
+
+        // Assert: A backing secret with the same name should be created
+        // Azure Key Vault automatically creates a secret with the same name as the certificate
+        // containing the full PFX (with private key) when a certificate is imported
+        var backingSecretResponse = await secretClient.GetSecretAsync(certName);
+        var backingSecret = backingSecretResponse.Value;
+
+        Assert.NotNull(backingSecret);
+        Assert.Equal(certName, backingSecret.Name);
+        Assert.NotNull(backingSecret.Value);
+        Assert.Equal("application/x-pkcs12", backingSecret.Properties.ContentType);
+    }
+
+    [Fact]
     public async Task ImportedPasswordProtectedCertificateBackingSecretHasNoPassword()
     {
         // Arrange: Create and import a password-protected certificate
