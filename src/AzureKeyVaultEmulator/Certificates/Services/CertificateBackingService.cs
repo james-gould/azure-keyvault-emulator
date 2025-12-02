@@ -37,7 +37,7 @@ public sealed class CertificateBackingService(
 
         var backingKey = await CreateBackingKeyAsync(certName, keySize, keyType);
 
-        var backingSecret = await CreateBackingSecretAsync(certName, contentType, certificate, certificatePassword);
+        var backingSecret = await CreateBackingSecretAsync(certName, contentType, certificate, null);
 
         return (backingKey, backingSecret);
     }
