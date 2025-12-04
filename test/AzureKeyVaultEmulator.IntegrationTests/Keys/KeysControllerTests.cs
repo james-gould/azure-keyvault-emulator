@@ -457,7 +457,12 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var cryptoProvider = await fixture.GetCryptographyClientAsync(key);
 
-        var digest = RequestSetup.CreateRandomBytes(64);
+        byte[] digest;
+        using (var sha = SHA256.Create())
+        {
+            var data = RequestSetup.CreateRandomBytes(128);
+            digest = sha.ComputeHash(data); // 32-byte SHA-256 digest
+        }
 
         var signAlgorithm = SignatureAlgorithm.RS256;
 

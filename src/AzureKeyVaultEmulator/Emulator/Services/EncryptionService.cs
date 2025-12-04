@@ -27,7 +27,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
         {
             var bytes = data.Base64UrlDecode();
 
-            var signedBytes = key.SignData(bytes, _hashingAlgorithm, _padding);
+            var signedBytes = key.SignHash(bytes, _hashingAlgorithm, _padding);
 
             return signedBytes.Base64UrlEncode();
         }
@@ -37,7 +37,7 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             var hashBytes = digest.Base64UrlDecode();
             var sigBytes = signature.Base64UrlDecode();
 
-            return key.VerifyData(hashBytes, sigBytes, _hashingAlgorithm, _padding);
+            return key.VerifyHash(hashBytes, sigBytes, _hashingAlgorithm, _padding);
         }
 
         public T DecryptFromKeyVaultJwe<T>(string jweToken)
