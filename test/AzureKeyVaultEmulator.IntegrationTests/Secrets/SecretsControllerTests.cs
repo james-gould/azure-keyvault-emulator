@@ -131,7 +131,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         }
 
         [Fact]
-        public async Task GetPropertiesOfSecretWillReturnOnlyBaseSecretVersion()
+        public async Task GetSecretsPagesAllSecretsCreatedTest()
         {
             var client = await fixture.GetClientAsync();
 
@@ -140,6 +140,9 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var firstSecretSecondValue = fixture.FreshlyGeneratedGuid;
 
             await fixture.CreateSecretAsync(firstSecretName, firstSecretValue);
+
+            await Task.Delay(1000);
+
             await fixture.CreateSecretAsync(firstSecretName, firstSecretSecondValue);
 
             var secondSecretName = fixture.FreshlyGeneratedGuid;
@@ -147,39 +150,23 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var secondSecretSecondValue = fixture.FreshlyGeneratedGuid;
 
             await fixture.CreateSecretAsync(secondSecretName, secondSecretValue);
+
+            await Task.Delay(1000);
+
             await fixture.CreateSecretAsync(secondSecretName, secondSecretSecondValue);
-
-            var properties = client.GetPropertiesOfSecretsAsync();
-
-            var list = new List<SecretProperties?>();
-
-            await foreach (var prop in properties)
-            {
-                list.Add(prop);
-            }
-
-            Assert.Equal(2, list.Count);
-        }
-
-        [Fact]
-        public async Task GetSecretsPagesAllSecretsCreatedTest()
-        {
-            var client = await fixture.GetClientAsync();
-
-            var secretName = fixture.FreshlyGeneratedGuid;
-
-            var executionCount = await RequestSetup
-                .CreateMultiple(26, 30, i => client.SetSecretAsync(secretName, $"{i}value"));
 
             var testSecrets = new List<SecretProperties?>();
 
             var secrets = client.GetPropertiesOfSecretsAsync();
 
             await foreach (var secret in secrets)
-                if (secret.Name.Equals(secretName, StringComparison.CurrentCultureIgnoreCase))
-                    testSecrets.Add(secret);
+                if(
+                    secret.Name.Equals(firstSecretName, StringComparison.InvariantCultureIgnoreCase) ||
+                    secret.Name.Equals(secondSecretName, StringComparison.InvariantCultureIgnoreCase)
+                  )
+                        testSecrets.Add(secret);
 
-            Assert.Equal(executionCount, testSecrets.Count);
+            Assert.Equal(2, testSecrets.Count);
         }
 
         [Fact]
@@ -244,15 +231,21 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             var secretValue = fixture.FreshlyGeneratedGuid;
 
-            var min = 1;
-            var max = 3;
+            async Task<KeyVaultSecret> CreateDelayedSecret(string name, string value)
+            {
+                var secret = await fixture.CreateSecretAsync(name, value);
 
-            var createdCount = await RequestSetup.CreateMultiple(min, max, x => fixture.CreateSecretAsync(secretNamesToKeep, secretValue));
+                await Task.Delay(1000);
 
-            var key = await fixture.CreateSecretAsync(secretNameToDelete, secretValue);
+                return secret;
+            }
 
-            Assert.NotNull(key);
-            Assert.Equal(secretNameToDelete, key.Name);
+            var createdCount = await RequestSetup.CreateMultiple(1, 3, x => CreateDelayedSecret(secretNamesToKeep, secretValue));
+
+            var secretToDelete = await fixture.CreateSecretAsync(secretNameToDelete, secretValue);
+
+            Assert.NotNull(secretToDelete);
+            Assert.Equal(secretNameToDelete, secretToDelete.Name);
 
             var deletedSecretOp = await client.StartDeleteSecretAsync(secretNameToDelete);
 

@@ -17,12 +17,25 @@ public static class QueryUtils
     /// <param name="items">The DbSet containing the entities to evaluate. Cannot be null.</param>
     /// <returns>An enumerable collection of entities, each representing the earliest version for a given persisted name. If no
     /// entities are present, the collection will be empty.</returns>
-    public static IEnumerable<TEntity> GetInitialVersions<TEntity, TAttribute>(this DbSet<TEntity> items)
+    public static IQueryable<TEntity> GetInitialVersions<TEntity, TAttribute>(this DbSet<TEntity> items)
         where TEntity : class, IAttributedModel<TAttribute>, INamedItem
         where TAttribute : AttributeBase
     {
+        var minima =
+            items
+                .GroupBy(x => x.PersistedName)
+                .Select(g => new
+                {
+                    Name = g.Key,
+                    MinUpdated = g.Min(x => x.Attributes.Updated)
+                });
+
         return items
-            .GroupBy(x => x.PersistedName)
-            .Select(g => g.OrderBy(x => x.Attributes.Updated).First());
+            .Join(
+                minima,
+                item => new { item.PersistedName, item.Attributes.Updated },
+                m => new { PersistedName = m.Name, Updated = m.MinUpdated },
+                (item, _) => item
+            );
     }
 }
