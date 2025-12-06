@@ -131,6 +131,37 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         }
 
         [Fact]
+        public async Task GetPropertiesOfSecretWillReturnOnlyBaseSecretVersion()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var firstSecretName = fixture.FreshlyGeneratedGuid;
+            var firstSecretValue = fixture.FreshlyGeneratedGuid;
+            var firstSecretSecondValue = fixture.FreshlyGeneratedGuid;
+
+            await fixture.CreateSecretAsync(firstSecretName, firstSecretValue);
+            await fixture.CreateSecretAsync(firstSecretName, firstSecretSecondValue);
+
+            var secondSecretName = fixture.FreshlyGeneratedGuid;
+            var secondSecretValue = fixture.FreshlyGeneratedGuid;
+            var secondSecretSecondValue = fixture.FreshlyGeneratedGuid;
+
+            await fixture.CreateSecretAsync(secondSecretName, secondSecretValue);
+            await fixture.CreateSecretAsync(secondSecretName, secondSecretSecondValue);
+
+            var properties = client.GetPropertiesOfSecretsAsync();
+
+            var list = new List<SecretProperties?>();
+
+            await foreach (var prop in properties)
+            {
+                list.Add(prop);
+            }
+
+            Assert.Equal(2, list.Count);
+        }
+
+        [Fact]
         public async Task GetSecretsPagesAllSecretsCreatedTest()
         {
             var client = await fixture.GetClientAsync();

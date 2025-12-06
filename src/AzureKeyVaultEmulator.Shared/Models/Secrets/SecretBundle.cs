@@ -16,9 +16,6 @@ public sealed class SecretBundle : TaggedModel, INamedItem, IAttributedModel<Sec
 
     public string PersistedVersion { get; set; } = string.Empty;
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public bool Deleted { get; set; } = false;
-
     [JsonPropertyName("id")]
     public required string SecretIdentifier { get; set; } = string.Empty;
 
@@ -30,4 +27,7 @@ public sealed class SecretBundle : TaggedModel, INamedItem, IAttributedModel<Sec
 
     [JsonPropertyName("attributes")]
     public SecretAttributes Attributes { get; set; } = new();
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public bool Deleted { get; set; } = false;
 }

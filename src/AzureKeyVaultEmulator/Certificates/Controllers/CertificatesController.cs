@@ -53,7 +53,7 @@ public class CertificatesController(
         if (!string.IsNullOrEmpty(skipToken))
             skipCount = tokenService.DecodeSkipToken(skipToken);
 
-        var result = await certService.GetCertificatesAsync(maxResults, skipCount);
+        var result = await certService.GetCertificates(maxResults, skipCount);
 
         return Ok(result);
     }
