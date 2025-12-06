@@ -24,6 +24,13 @@ jobs:
           fi
           echo "VERSION=${TAG#v}" >> $GITHUB_ENV
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+    
+      - name: Start Docker service
+        run: |
+          sudo service docker start
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
