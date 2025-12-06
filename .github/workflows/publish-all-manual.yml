@@ -1,11 +1,17 @@
 name: Publish NuGet Packages and Docker Images
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build and Test"]
+    types:
+      - completed
+    branches:
+      - master
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       id-token: write
 
@@ -33,17 +39,6 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
-
-      - name: Install SSL Certificates
-        run: |
-          dotnet dev-certs https --clean
-          dotnet dev-certs https --trust
-
-      - name: Run API Integration Tests
-        run: dotnet test ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
-
-      - name: Run TestContainers Integration Tests
-        run: dotnet test ./test/AzureKeyVaultEmulator.TestContainers.Tests/AzureKeyVaultEmulator.TestContainers.Tests.csproj
 
       - name: Restore dependencies
         run: dotnet restore
