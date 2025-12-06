@@ -18,7 +18,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         // Will default image + path depending on execution context.
-        _container = new();
+        _container = new(tag: "latest");
 
         await _container.StartAsync();
     }
@@ -143,7 +143,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task RandomPortWontBeAssignedWhenSpecificPortProvided()
     {
-        await using var container = new AzureKeyVaultEmulatorContainer(assignRandomHostPort: false);
+        await using var container = new AzureKeyVaultEmulatorContainer(assignRandomHostPort: false, tag: "latest");
         await container.StartAsync();
 
         var mappedPort = container.GetMappedPublicPort();

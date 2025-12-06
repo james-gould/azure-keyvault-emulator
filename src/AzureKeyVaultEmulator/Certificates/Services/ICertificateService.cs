@@ -8,7 +8,7 @@ public interface ICertificateService
 {
     Task<CertificateOperation> CreateCertificateAsync(string name, CertificateAttributes attributes, CertificatePolicy? policy, Dictionary<string, string>? tags = null);
     Task<CertificateBundle> GetCertificateAsync(string name, string version = "");
-    Task<ListResult<CertificateVersionItem>> GetCertificatesAsync(int maxResults = 25, int skipToken = 25);
+    ListResult<CertificateVersionItem> GetCertificates(int maxResults = 25, int skipToken = 25);
     Task<ListResult<CertificateVersionItem>> GetCertificateVersionsAsync(string name, int maxResults = 25, int skipCount = 25);
 
     Task<CertificateOperation> GetPendingCertificateAsync(string name);

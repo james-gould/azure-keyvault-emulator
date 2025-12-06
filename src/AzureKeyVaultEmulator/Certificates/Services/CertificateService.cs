@@ -182,12 +182,14 @@ public sealed class CertificateService(
         };
     }
 
-    public async Task<ListResult<CertificateVersionItem>> GetCertificatesAsync(int maxResults = 25, int skipCount = 25)
+    public ListResult<CertificateVersionItem> GetCertificates(int maxResults = 25, int skipCount = 25)
     {
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
-        var allItems = await context.Certificates.Where(x => !x.Deleted).ToListAsync();
+        var initialVersions = context.Certificates.GetInitialVersions<CertificateBundle, CertificateAttributes>();
+
+        var allItems = initialVersions.Where(x => !x.Deleted).ToList();
 
         if (allItems.Count == 0)
             return new();

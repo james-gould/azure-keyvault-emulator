@@ -149,8 +149,17 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
+        async Task<KeyVaultKey> CreateDelayedKey(string keyName)
+        {
+            var key = await client.CreateKeyAsync(keyName, KeyType.Rsa);
+
+            await Task.Delay(1000);
+
+            return key;
+        }
+
         var executionCount = await RequestSetup
-            .CreateMultiple(26, 30, i => client.CreateKeyAsync(keyName, KeyType.Rsa));
+            .CreateMultiple(1, 5, i => CreateDelayedKey(keyName));
 
         List<string> matchingKeys = [];
 
