@@ -18,7 +18,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         // Will default image + path depending on execution context.
-        _container = new();
+        _container = new(tag: "latest");
 
         await _container.StartAsync();
     }
