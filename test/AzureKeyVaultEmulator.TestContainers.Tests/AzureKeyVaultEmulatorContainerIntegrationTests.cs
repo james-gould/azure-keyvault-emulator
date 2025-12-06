@@ -143,7 +143,7 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task RandomPortWontBeAssignedWhenSpecificPortProvided()
     {
-        await using var container = new AzureKeyVaultEmulatorContainer(assignRandomHostPort: false);
+        await using var container = new AzureKeyVaultEmulatorContainer(assignRandomHostPort: false, tag: "latest");
         await container.StartAsync();
 
         var mappedPort = container.GetMappedPublicPort();
