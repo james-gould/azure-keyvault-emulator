@@ -1,6 +1,9 @@
-﻿using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+﻿using Azure.Identity;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 using AzureKeyVaultEmulator.IntegrationTests.Extensions;
 using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
+using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.Shared.Constants;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 
@@ -236,6 +239,103 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var byVersion = versionResponse.Value;
 
         Assert.CertificatesAreEqual(byVersion, cert);
+    }
+
+    [Fact]
+    public async Task CertificateListOnlyContainsBaseIdentifierUri()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
+
+        var certFromList = listResponse.Single(x => x.X509ThumbprintString == cert.Properties.X509ThumbprintString);
+
+        var baseIdentifier = $"{cert.Properties.VaultUri}certificates/{cert.Name}";
+        Assert.Equal(baseIdentifier, certFromList.Id.ToString());
+    }
+
+    [Fact]
+    public async Task CertificateVersionListContainsFullIdentifierUri()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var firstVersion = await fixture.CreateCertificateAsync(certName);
+        await Task.Delay(1000);
+        var secondVersion =  await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificateVersionsAsync(certName).ToListAsync();
+
+        var firstVersionFromList = listResponse.Single(x => x.CreatedOn == firstVersion.Properties.CreatedOn);
+        var secondVersionFromList = listResponse.Single(x => x.CreatedOn == secondVersion.Properties.CreatedOn);
+
+        Assert.Contains(firstVersion.Properties.Version, firstVersionFromList.Id.ToString());
+        Assert.Contains(secondVersion.Properties.Version, secondVersionFromList.Id.ToString());
+    }
+
+    [Fact]
+    public async Task CertificateListOnlyContainsBaseAttributes()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
+
+        var certFromList = listResponse.Single(x => x.X509ThumbprintString == cert.Properties.X509ThumbprintString);
+
+        Assert.Null(certFromList.RecoverableDays);
+        Assert.Null(certFromList.RecoveryLevel);
+        Assert.Null(certFromList.Version);
+    }
+
+    [Fact]
+    public async Task CertificateListOnlyContainsOneCertificateForMultipleVersions()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await fixture.CreateCertificateAsync(certName);
+        await Task.Delay(1000);
+        await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
+        Assert.Single(listResponse, x => x.Id.ToString().Contains(certName));
+    }
+
+    [Fact]
+    public async Task CertificateListContainsAttributesForLatestVersion()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var min = 1;
+        var max = 10;
+
+        await RequestSetup.CreateMultiple(min, max, async _ =>
+        {
+            await Task.Delay(1000);
+            return await fixture.CreateCertificateAsync(certName);
+        });
+        var latestVersion = await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
+
+        var certFromList = listResponse.Single(x => x.X509ThumbprintString == latestVersion.Properties.X509ThumbprintString);
+
+        Assert.Equal(latestVersion.Properties.NotBefore, certFromList.NotBefore);
+        Assert.Equal(latestVersion.Properties.ExpiresOn, certFromList.ExpiresOn);
+        Assert.Equal(latestVersion.Properties.CreatedOn, certFromList.CreatedOn);
+        Assert.Equal(latestVersion.Properties.UpdatedOn, certFromList.UpdatedOn);
     }
 
     [Fact]

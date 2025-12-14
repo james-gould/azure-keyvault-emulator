@@ -38,10 +38,12 @@ namespace AzureKeyVaultEmulator.Shared.Models
         public long Updated { get; set; }
 
         [JsonPropertyName("recoveryLevel")]
-        public string RecoveryLevel { get; set; } = DeletionRecoveryLevel.RecoverablePurgeable;
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? RecoveryLevel { get; set; } = DeletionRecoveryLevel.RecoverablePurgeable;
 
         [JsonPropertyName("recoverableDays")]
-        public int RecoverableDays { get; set; } = 90;
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? RecoverableDays { get; set; } = 90;
 
         public void Update() => Updated = DateTimeOffset.Now.ToUnixTimeSeconds();
     }

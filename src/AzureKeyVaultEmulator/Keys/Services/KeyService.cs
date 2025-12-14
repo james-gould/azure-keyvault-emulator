@@ -209,9 +209,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new ListResult<KeyItemBundle>();
 
-            var initialVersions = context.Keys.GetInitialVersions<KeyBundle, KeyAttributes>();
+            var latestVersions = context.Keys.GetLatestVersions<KeyBundle, KeyAttributes>();
 
-            var items = initialVersions.Where(x => !x.Deleted).Skip(skipCount).Take(maxResults);
+            var items = latestVersions.Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new ListResult<KeyItemBundle>();
