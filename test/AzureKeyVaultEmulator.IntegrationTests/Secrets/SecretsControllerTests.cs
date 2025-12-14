@@ -170,6 +170,85 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         }
 
         [Fact]
+         public async Task SecretListOnlyContainsBaseIdentifierUri()
+         {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var secret = await fixture.CreateSecretAsync(secretName, secretName);
+
+            var listResponse = await client.GetPropertiesOfSecretsAsync().ToListAsync();
+
+            var secretFromList = listResponse.Single(x => x.Id.ToString().Contains(secretName));
+
+            var baseIdentifier = $"{secret.Properties.VaultUri}secrets/{secret.Name}";
+            Assert.Equal(baseIdentifier, secretFromList.Id.ToString());
+        }
+
+        [Fact]
+        public async Task SecretVersionListContainsFullIdentifierUri()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var firstVersion = await fixture.CreateSecretAsync(secretName, secretName);
+            await Task.Delay(1000);
+            var secondVersion =  await fixture.CreateSecretAsync(secretName, secretName);
+
+            var listResponse = await client.GetPropertiesOfSecretVersionsAsync(secretName).ToListAsync();
+
+            var firstVersionFromList = listResponse.Single(x => x.Id.ToString().Contains(secretName) && x.CreatedOn == firstVersion.Properties.CreatedOn);
+            var secondVersionFromList = listResponse.Single(x => x.Id.ToString().Contains(secretName) && x.CreatedOn == secondVersion.Properties.CreatedOn);
+
+            Assert.Contains(firstVersion.Properties.Version, firstVersionFromList.Id.ToString());
+            Assert.Contains(secondVersion.Properties.Version, secondVersionFromList.Id.ToString());
+        }
+
+        [Fact]
+        public async Task SecretListOnlyContainsOneSecretForMultipleVersions()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            await fixture.CreateSecretAsync(secretName, secretName);
+            await Task.Delay(1000);
+            await fixture.CreateSecretAsync(secretName, secretName);
+
+            var listResponse = await client.GetPropertiesOfSecretsAsync().ToListAsync();
+            Assert.Single(listResponse, x => x.Id.ToString().Contains(secretName));
+        }
+
+        [Fact]
+        public async Task SecretListContainsAttributesForLatestVersion()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var min = 1;
+            var max = 10;
+
+            await RequestSetup.CreateMultiple(min, max, async _ =>
+            {
+                await Task.Delay(1000);
+                return await fixture.CreateSecretAsync(secretName, secretName);
+            });
+            var latestVersion = await fixture.CreateSecretAsync(secretName, secretName);
+
+            var listResponse = await client.GetPropertiesOfSecretsAsync().ToListAsync();
+
+            var secretFromList = listResponse.Single(x => x.Id.ToString().Contains(secretName));
+
+            Assert.Equal(latestVersion.Properties.NotBefore, secretFromList.NotBefore);
+            Assert.Equal(latestVersion.Properties.ExpiresOn, secretFromList.ExpiresOn);
+            Assert.Equal(latestVersion.Properties.CreatedOn, secretFromList.CreatedOn);
+            Assert.Equal(latestVersion.Properties.UpdatedOn, secretFromList.UpdatedOn);
+        }
+
+        [Fact]
         public async Task RestoreSecretTest()
         {
             var client = await fixture.GetClientAsync();

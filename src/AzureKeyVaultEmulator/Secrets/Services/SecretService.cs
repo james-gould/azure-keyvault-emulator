@@ -139,7 +139,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             };
         }
 
-        public ListResult<SecretBundle> GetSecretVersions(string secretName, int maxResults = 25, int skipCount = 0)
+        public ListResult<SecretItemBundle> GetSecretVersions(string secretName, int maxResults = 25, int skipCount = 0)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(secretName);
 
@@ -155,14 +155,14 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var requiresPaging = maxedItems.Count() >= maxResults;
 
-            return new ListResult<SecretBundle>
+            return new ListResult<SecretItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems
+                Values = maxedItems.Select(x => ToSecretItemBundle(x, isVaultLevelList: false))
             };
         }
 
-        public ListResult<SecretBundle> GetSecrets(int maxResults = 25, int skipCount = 0)
+        public ListResult<SecretItemBundle> GetSecrets(int maxResults = 25, int skipCount = 0)
         {
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
@@ -176,10 +176,10 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var requiresPaging = items.Count() >= maxResults;
 
-            return new ListResult<SecretBundle>
+            return new ListResult<SecretItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items
+                Values = items.Select(x => ToSecretItemBundle(x, isVaultLevelList: true))
             };
         }
 
@@ -220,6 +220,18 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             await context.SaveChangesAsync();
 
             return secret;
+        }
+
+        private static SecretItemBundle ToSecretItemBundle(SecretBundle bundle, bool isVaultLevelList)
+        {
+            return new SecretItemBundle
+            {
+                SecretAttributes = bundle.Attributes,
+                Id =  isVaultLevelList ? string.Join("/", bundle.SecretIdentifier.Split("/")[..^1]): bundle.SecretIdentifier,
+                ContentType = bundle.ContentType,
+                Managed = bundle.Managed,
+                Tags = bundle.Tags,
+            };
         }
 
         private string GenerateNextLink(int maxResults)
