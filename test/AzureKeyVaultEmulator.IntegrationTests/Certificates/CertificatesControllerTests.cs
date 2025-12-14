@@ -271,8 +271,8 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var listResponse = await client.GetPropertiesOfCertificateVersionsAsync(certName).ToListAsync();
 
-        var firstVersionFromList = listResponse.Single(x => x.CreatedOn == firstVersion.Properties.CreatedOn);
-        var secondVersionFromList = listResponse.Single(x => x.CreatedOn == secondVersion.Properties.CreatedOn);
+        var firstVersionFromList = listResponse.Single(x => x.Id.ToString().Contains(certName) && x.CreatedOn == firstVersion.Properties.CreatedOn);
+        var secondVersionFromList = listResponse.Single(x => x.Id.ToString().Contains(certName) && x.CreatedOn == secondVersion.Properties.CreatedOn);
 
         Assert.Contains(firstVersion.Properties.Version, firstVersionFromList.Id.ToString());
         Assert.Contains(secondVersion.Properties.Version, secondVersionFromList.Id.ToString());

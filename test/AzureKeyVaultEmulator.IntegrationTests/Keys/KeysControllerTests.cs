@@ -200,7 +200,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var listResponse = await client.GetPropertiesOfKeysAsync().ToListAsync();
 
-        var keyFromList = listResponse.Single(x => x.CreatedOn == key.Properties.CreatedOn);
+        var keyFromList = listResponse.Single(x => x.Id.ToString().Contains(keyName));
 
         var baseIdentifier = $"{key.Properties.VaultUri}keys/{key.Name}";
         Assert.Equal(baseIdentifier, keyFromList.Id.ToString());
@@ -219,8 +219,8 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var listResponse = await client.GetPropertiesOfKeyVersionsAsync(keyName).ToListAsync();
 
-        var firstVersionFromList = listResponse.Single(x => x.CreatedOn == firstVersion.Properties.CreatedOn);
-        var secondVersionFromList = listResponse.Single(x => x.CreatedOn == secondVersion.Properties.CreatedOn);
+        var firstVersionFromList = listResponse.Single(x => x.Id.ToString().Contains(keyName) && x.CreatedOn == firstVersion.Properties.CreatedOn);
+        var secondVersionFromList = listResponse.Single(x => x.Id.ToString().Contains(keyName) && x.CreatedOn == secondVersion.Properties.CreatedOn);
 
         Assert.Contains(firstVersion.Properties.Version, firstVersionFromList.Id.ToString());
         Assert.Contains(secondVersion.Properties.Version, secondVersionFromList.Id.ToString());
@@ -260,7 +260,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var listResponse = await client.GetPropertiesOfKeysAsync().ToListAsync();
 
-        var keyFromList = listResponse.Single(x => x.CreatedOn == latestVersion.Properties.CreatedOn);
+        var keyFromList = listResponse.Single(x => x.Id.ToString().Contains(keyName));
 
         Assert.Equal(latestVersion.Properties.NotBefore, keyFromList.NotBefore);
         Assert.Equal(latestVersion.Properties.ExpiresOn, keyFromList.ExpiresOn);
