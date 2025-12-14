@@ -25,7 +25,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
-    public async Task EvaulatingCertificateOperationWillSucceed()
+    public async Task EvaluatingCertificateOperationWillSucceed()
     {
         var client = await fixture.GetClientAsync();
 
