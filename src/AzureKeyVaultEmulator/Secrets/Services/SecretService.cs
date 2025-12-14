@@ -16,7 +16,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, version);
         }
 
-        public async Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest secret)
+        public async Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest secret, bool? managed = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNull(secret);
@@ -32,6 +32,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             {
                 SecretIdentifier = secretUri,
                 Value = secret.Value,
+                Managed = managed,
                 Attributes = secret.SecretAttributes,
                 ContentType = secret.ContentType,
                 Tags = secret.Tags
@@ -124,7 +125,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var items = context.Secrets.Where(x => x.Deleted == true).Skip(skipCount).Take(maxResults);
+            var items = context.Secrets.Where(x => x.Deleted == true && x.Managed == false).Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();

@@ -339,6 +339,93 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task CertificateBackingKeyAndSecretShowsAsManaged()
+    {
+        var secretClient = await fixture.GetSecretClientAsync();
+        var keyClient = await fixture.GetKeyClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var secretPropertiesList = await secretClient.GetPropertiesOfSecretsAsync().ToListAsync();
+        var keyPropertiesList = await keyClient.GetPropertiesOfKeysAsync().ToListAsync();
+
+        var backingSecret = secretPropertiesList.Single(x => x.Id.ToString().Contains(certName));
+        var backingKey = keyPropertiesList.Single(x => x.Id.ToString().Contains(certName));
+
+        Assert.True(backingSecret.Managed);
+        Assert.True(backingKey.Managed);
+    }
+
+    [Fact]
+    public async Task DeleteCertificateDeletesBackingSecretAndKey()
+    {
+        var certClient = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+        var keyClient = await fixture.GetKeyClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var deleteOperation = await certClient.StartDeleteCertificateAsync(cert.Name);
+        await deleteOperation.WaitForCompletionAsync();
+
+        var certListResponse = await certClient.GetPropertiesOfCertificatesAsync().ToListAsync();
+        var secretListResponse = await secretClient.GetPropertiesOfSecretsAsync().ToListAsync();
+        var keyListResponse = await keyClient.GetPropertiesOfKeysAsync().ToListAsync();
+
+        Assert.DoesNotContain(certListResponse, x => x.Id.ToString().Contains(certName));
+        Assert.DoesNotContain(secretListResponse, x => x.Id.ToString().Contains(certName));
+        Assert.DoesNotContain(keyListResponse, x => x.Id.ToString().Contains(certName));
+    }
+
+    [Fact]
+    public async Task BackingKeyAndSecretDontShowInDeletedLists()
+    {
+        var certClient = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+        var keyClient = await fixture.GetKeyClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var deleteOperation = await certClient.StartDeleteCertificateAsync(cert.Name);
+        await deleteOperation.WaitForCompletionAsync();
+
+        var deletedCertListResponse = await certClient.GetDeletedCertificatesAsync().ToListAsync();
+        var deletedSecretListResponse = await secretClient.GetDeletedSecretsAsync().ToListAsync();
+        var deletedKeyListResponse = await keyClient.GetDeletedKeysAsync().ToListAsync();
+
+        Assert.Contains(deletedCertListResponse, x => x.Id.ToString().Contains(certName));
+        Assert.DoesNotContain(deletedSecretListResponse, x => x.Id.ToString().Contains(certName));
+        Assert.DoesNotContain(deletedKeyListResponse, x => x.Id.ToString().Contains(certName));
+    }
+
+    [Fact]
+    public async Task CanGetIndividualDeletedBackingKeyAndSecret()
+    {
+        var certClient = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+        var keyClient = await fixture.GetKeyClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var deleteOperation = await certClient.StartDeleteCertificateAsync(cert.Name);
+        await deleteOperation.WaitForCompletionAsync();
+
+        var deletedSecret = await secretClient.GetDeletedSecretAsync(certName);
+        var deletedKey = await keyClient.GetDeletedKeyAsync(certName);
+
+        Assert.NotNull(deletedSecret);
+        Assert.NotNull(deletedKey);
+    }
+
+    [Fact]
     public async Task AddingCustomSubjectsToCertificateWillPersist()
     {
         var client = await fixture.GetClientAsync();

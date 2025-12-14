@@ -25,6 +25,10 @@ public sealed class SecretBundle : TaggedModel, INamedItem, IAttributedModel<Sec
     [JsonPropertyName("contentType")]
     public string ContentType { get; set; } = string.Empty;
 
+    [JsonPropertyName("managed")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Managed { get; set; } = null;
+
     [JsonPropertyName("attributes")]
     public SecretAttributes Attributes { get; set; } = new();
 

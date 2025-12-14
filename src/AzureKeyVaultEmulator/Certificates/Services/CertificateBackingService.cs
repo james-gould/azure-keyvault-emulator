@@ -42,6 +42,16 @@ public sealed class CertificateBackingService(
         return (backingKey, backingSecret);
     }
 
+    public async Task<(DeletedKeyBundle deletedBackingKey, DeletedSecretBundle deletedBackingSecret)> DeleteBackingComponentsAsync(string certName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(certName);
+
+        var keyDeletion = await keyService.DeleteKeyAsync(certName);
+        var secretDeletion = await secretService.DeleteSecretAsync(certName);
+
+        return (keyDeletion, secretDeletion);
+    }
+
     public async Task<IssuerBundle> DeleteIssuerAsync(string issuerName)
     {
         ArgumentException.ThrowIfNullOrEmpty(issuerName);
@@ -167,7 +177,7 @@ public sealed class CertificateBackingService(
         int keySize,
         string keyType)
     {
-        return await keyService.CreateKeyAsync(certName, new CreateKey { KeySize = keySize, KeyType = keyType });
+        return await keyService.CreateKeyAsync(certName, new CreateKey { KeySize = keySize, KeyType = keyType }, managed: true);
     }
 
     private async Task<SecretBundle> CreateBackingSecretAsync(
@@ -184,6 +194,6 @@ public sealed class CertificateBackingService(
                 Value = certificateData,
                 ContentType = contentType.ParseContentType(),
                 SecretAttributes = new()
-            });
+            }, managed: true);
     }
 }

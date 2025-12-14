@@ -28,7 +28,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
         }
 
-        public async Task<KeyBundle> CreateKeyAsync(string name, CreateKey key)
+        public async Task<KeyBundle> CreateKeyAsync(string name, CreateKey key, bool? managed = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -47,6 +47,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             var response = new KeyBundle
             {
                 Key = JWKS,
+                Managed = managed,
                 Attributes = key.KeyAttributes,
                 Tags = key.Tags ?? []
             };
@@ -398,7 +399,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = context.Keys.Where(x => x.Deleted == true).ToList();
+            var allItems = context.Keys.Where(x => x.Deleted == true && x.Managed == false).ToList();
 
             if (allItems.Count == 0)
                 return new();
@@ -444,7 +445,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             {
                 KeyAttributes = bundle.Attributes,
                 KeyId = bundle.Key.KeyIdentifier,
-                Managed = false,
+                Managed = bundle.Managed,
                 Tags = bundle.Tags
             };
         }

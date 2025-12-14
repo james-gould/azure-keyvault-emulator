@@ -288,6 +288,8 @@ public sealed class CertificateService(
 
         cert.Deleted = true;
 
+        await backingService.DeleteBackingComponentsAsync(name);
+
         await context.SaveChangesAsync();
 
         return new(cert.RecoveryId, name.GetCacheId());

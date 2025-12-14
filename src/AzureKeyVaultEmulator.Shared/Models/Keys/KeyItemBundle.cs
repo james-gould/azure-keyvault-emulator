@@ -12,5 +12,6 @@ public sealed class KeyItemBundle : TaggedModel
     public required string KeyId { get; set; }
 
     [JsonPropertyName("managed")]
-    public required bool Managed { get; set; } = false;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Managed { get; set; } = null;
 }

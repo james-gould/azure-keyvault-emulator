@@ -6,7 +6,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
     public interface ISecretService
     {
         Task<SecretBundle> GetSecretAsync(string name, string version = "");
-        Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest requestBody);
+        Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest requestBody, bool? managed = null);
         Task<DeletedSecretBundle> DeleteSecretAsync(string name, string version = "");
         Task<ValueModel<string>> BackupSecretAsync(string name);
         Task<SecretBundle> GetDeletedSecretAsync(string name);
