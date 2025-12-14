@@ -189,6 +189,85 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(executionCount, matchingKeys.Count);
     }
 
+     [Fact]
+     public async Task KeyListOnlyContainsBaseIdentifierUri()
+     {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var key = await fixture.CreateKeyAsync(keyName);
+
+        var listResponse = await client.GetPropertiesOfKeysAsync().ToListAsync();
+
+        var keyFromList = listResponse.Single(x => x.CreatedOn == key.Properties.CreatedOn);
+
+        var baseIdentifier = $"{key.Properties.VaultUri}keys/{key.Name}";
+        Assert.Equal(baseIdentifier, keyFromList.Id.ToString());
+    }
+
+    [Fact]
+    public async Task KeyVersionListContainsFullIdentifierUri()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var firstVersion = await fixture.CreateKeyAsync(keyName);
+        await Task.Delay(1000);
+        var secondVersion =  await fixture.CreateKeyAsync(keyName);
+
+        var listResponse = await client.GetPropertiesOfKeyVersionsAsync(keyName).ToListAsync();
+
+        var firstVersionFromList = listResponse.Single(x => x.CreatedOn == firstVersion.Properties.CreatedOn);
+        var secondVersionFromList = listResponse.Single(x => x.CreatedOn == secondVersion.Properties.CreatedOn);
+
+        Assert.Contains(firstVersion.Properties.Version, firstVersionFromList.Id.ToString());
+        Assert.Contains(secondVersion.Properties.Version, secondVersionFromList.Id.ToString());
+    }
+
+    [Fact]
+    public async Task KeyListOnlyContainsOneKeyForMultipleVersions()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        await fixture.CreateKeyAsync(keyName);
+        await Task.Delay(1000);
+        await fixture.CreateKeyAsync(keyName);
+
+        var listResponse = await client.GetPropertiesOfKeysAsync().ToListAsync();
+        Assert.Single(listResponse, x => x.Id.ToString().Contains(keyName));
+    }
+
+    [Fact]
+    public async Task KeyListContainsAttributesForLatestVersion()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var min = 1;
+        var max = 10;
+
+        await RequestSetup.CreateMultiple(min, max, async _ =>
+        {
+            await Task.Delay(1000);
+            return await fixture.CreateKeyAsync(keyName);
+        });
+        var latestVersion = await fixture.CreateKeyAsync(keyName);
+
+        var listResponse = await client.GetPropertiesOfKeysAsync().ToListAsync();
+
+        var keyFromList = listResponse.Single(x => x.CreatedOn == latestVersion.Properties.CreatedOn);
+
+        Assert.Equal(latestVersion.Properties.NotBefore, keyFromList.NotBefore);
+        Assert.Equal(latestVersion.Properties.ExpiresOn, keyFromList.ExpiresOn);
+        Assert.Equal(latestVersion.Properties.CreatedOn, keyFromList.CreatedOn);
+        Assert.Equal(latestVersion.Properties.UpdatedOn, keyFromList.UpdatedOn);
+    }
+
     [Theory]
     [MemberData(nameof(SupportedEncryptionAlgorithms))]
     public async Task EncryptAndDecryptWithKeySucceeds(EncryptionAlgorithm algo)

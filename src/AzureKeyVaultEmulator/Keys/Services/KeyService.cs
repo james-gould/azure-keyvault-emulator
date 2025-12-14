@@ -222,7 +222,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items.Select(ToKeyItemBundle)
+                Values = items.Select(x => ToKeyItemBundle(x, isVaultLevelList: true))
             };
         }
 
@@ -245,7 +245,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems.Select(ToKeyItemBundle)
+                Values = maxedItems.Select(x => ToKeyItemBundle(x, isVaultLevelList: false))
             };
         }
 
@@ -439,12 +439,12 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return key;
         }
 
-        private KeyItemBundle ToKeyItemBundle(KeyBundle bundle)
+        private static KeyItemBundle ToKeyItemBundle(KeyBundle bundle, bool isVaultLevelList)
         {
             return new KeyItemBundle
             {
                 KeyAttributes = bundle.Attributes,
-                KeyId = bundle.Key.KeyIdentifier,
+                KeyId =  isVaultLevelList ? string.Join("/", bundle.Key.KeyIdentifier.Split("/")[..^1]): bundle.Key.KeyIdentifier,
                 Managed = bundle.Managed,
                 Tags = bundle.Tags
             };
