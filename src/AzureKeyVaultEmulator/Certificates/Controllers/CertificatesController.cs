@@ -43,7 +43,7 @@ public class CertificatesController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCertificates(
+    public Task<IActionResult> GetCertificates(
         [ApiVersion] string apiVersion,
         [FromQuery] int maxResults = 25,
         [SkipToken] string skipToken = "")
@@ -55,7 +55,7 @@ public class CertificatesController(
 
         var result = certService.GetCertificates(maxResults, skipCount);
 
-        return Ok(result);
+        return Task.FromResult<IActionResult>(Ok(result));
     }
 
     [HttpGet("{name}/pending")]
