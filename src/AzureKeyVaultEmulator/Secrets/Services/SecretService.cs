@@ -227,7 +227,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return new SecretItemBundle
             {
                 SecretAttributes = bundle.Attributes,
-                Id =  isVaultLevelList ? string.Join("/", bundle.SecretIdentifier.Split("/")[..^1]): bundle.SecretIdentifier,
+                Id =  isVaultLevelList ? string.Join("/", bundle.SecretIdentifier.Split("/")[..^1]) : bundle.SecretIdentifier,
                 ContentType = bundle.ContentType,
                 Managed = bundle.Managed,
                 Tags = bundle.Tags,

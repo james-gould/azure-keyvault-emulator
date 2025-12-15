@@ -383,7 +383,7 @@ public sealed class CertificateService(
 
         return new()
         {
-            Id = isVaultLevelList ? string.Join("/", bundle.CertificateIdentifier.Split("/")[..^1]): bundle.CertificateIdentifier,
+            Id = isVaultLevelList ? string.Join("/", bundle.CertificateIdentifier.Split("/")[..^1]) : bundle.CertificateIdentifier,
             Attributes = bundle.Attributes,
             Thumbprint = bundle.X509Thumbprint,
             Tags = bundle.Tags,

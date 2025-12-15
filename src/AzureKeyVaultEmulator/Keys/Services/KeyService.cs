@@ -444,7 +444,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return new KeyItemBundle
             {
                 KeyAttributes = bundle.Attributes,
-                KeyId =  isVaultLevelList ? string.Join("/", bundle.Key.KeyIdentifier.Split("/")[..^1]): bundle.Key.KeyIdentifier,
+                KeyId =  isVaultLevelList ? string.Join("/", bundle.Key.KeyIdentifier.Split("/")[..^1]) : bundle.Key.KeyIdentifier,
                 Managed = bundle.Managed,
                 Tags = bundle.Tags
             };

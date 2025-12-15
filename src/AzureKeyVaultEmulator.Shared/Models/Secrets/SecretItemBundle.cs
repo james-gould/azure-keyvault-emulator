@@ -2,7 +2,7 @@
 
 namespace AzureKeyVaultEmulator.Shared.Models.Secrets;
 
-public class SecretItemBundle: TaggedModel
+public class SecretItemBundle : TaggedModel
 {
     [JsonPropertyName("attributes")]
     public SecretAttributes SecretAttributes { get; set; } = new();
