@@ -43,7 +43,7 @@ public class CertificatesController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCertificates(
+    public IActionResult GetCertificates(
         [ApiVersion] string apiVersion,
         [FromQuery] int maxResults = 25,
         [SkipToken] string skipToken = "")

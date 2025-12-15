@@ -178,7 +178,7 @@ public sealed class CertificateService(
         return new ListResult<CertificateVersionItem>
         {
             NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-            Values = maxedItems.Select(ToCertificateVersionItem)
+            Values = maxedItems.Select(x => ToCertificateVersionItem(x, isVaultLevelList: false))
         };
     }
 
@@ -187,9 +187,9 @@ public sealed class CertificateService(
         if (maxResults is default(int) && skipCount is default(int))
             return new();
 
-        var initialVersions = context.Certificates.GetInitialVersions<CertificateBundle, CertificateAttributes>();
+        var latestVersions = context.Certificates.GetLatestVersions<CertificateBundle, CertificateAttributes>();
 
-        var allItems = initialVersions.Where(x => !x.Deleted).ToList();
+        var allItems = latestVersions.ToList();
 
         if (allItems.Count == 0)
             return new();
@@ -201,7 +201,7 @@ public sealed class CertificateService(
         return new ListResult<CertificateVersionItem>
         {
             NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-            Values = maxedItems.Select(ToCertificateVersionItem)
+            Values = maxedItems.Select(x => ToCertificateVersionItem(x, isVaultLevelList: true))
         };
     }
 
@@ -243,7 +243,6 @@ public sealed class CertificateService(
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.SecretIdentifier.ToString(),
             KeyId = backingKey.Key.KeyIdentifier,
-            
             FullCertificate = certificate
         };
 
@@ -287,6 +286,8 @@ public sealed class CertificateService(
             match.Deleted = true;
 
         cert.Deleted = true;
+
+        await backingService.DeleteBackingComponentsAsync(name);
 
         await context.SaveChangesAsync();
 
@@ -374,11 +375,15 @@ public sealed class CertificateService(
         return httpContextAccessor.GetNextLink(skipToken, maxResults);
     }
 
-    private static CertificateVersionItem ToCertificateVersionItem(CertificateBundle bundle)
+    private static CertificateVersionItem ToCertificateVersionItem(CertificateBundle bundle, bool isVaultLevelList)
     {
+        // Certificate list calls don't contain all the attributes of individual versions
+        bundle.Attributes.RecoverableDays = null;
+        bundle.Attributes.RecoveryLevel = null;
+
         return new()
         {
-            Id = bundle.CertificateIdentifier,
+            Id = isVaultLevelList ? string.Join("/", bundle.CertificateIdentifier.Split("/")[..^1]) : bundle.CertificateIdentifier,
             Attributes = bundle.Attributes,
             Thumbprint = bundle.X509Thumbprint,
             Tags = bundle.Tags,

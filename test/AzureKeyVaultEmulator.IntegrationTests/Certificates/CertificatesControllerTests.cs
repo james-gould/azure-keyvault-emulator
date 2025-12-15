@@ -1,8 +1,9 @@
-﻿using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+﻿using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.IntegrationTests.Extensions;
-using Azure.Security.KeyVault.Certificates;
-using AzureKeyVaultEmulator.Shared.Constants;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+using AzureKeyVaultEmulator.Shared.Constants;
+using CertificateContentType = Azure.Security.KeyVault.Certificates.CertificateContentType;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 
@@ -25,7 +26,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
-    public async Task EvaulatingCertificateOperationWillSucceed()
+    public async Task EvaluatingCertificateOperationWillSucceed()
     {
         var client = await fixture.GetClientAsync();
 
@@ -111,7 +112,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
             KeyType = CertificateKeyType.Rsa,
             KeySize = 2048,
             ReuseKey = true,
-            ContentType = Azure.Security.KeyVault.Certificates.CertificateContentType.Pkcs12,
+            ContentType = CertificateContentType.Pkcs12,
             ValidityInMonths = 12
 
         };
@@ -239,6 +240,190 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task CertificateListOnlyContainsBaseIdentifierUri()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
+
+        var certFromList = listResponse.Single(x => x.X509ThumbprintString == cert.Properties.X509ThumbprintString);
+
+        var baseIdentifier = $"{cert.Properties.VaultUri}certificates/{cert.Name}";
+        Assert.Equal(baseIdentifier, certFromList.Id.ToString());
+    }
+
+    [Fact]
+    public async Task CertificateVersionListContainsFullIdentifierUri()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var firstVersion = await fixture.CreateCertificateAsync(certName);
+        await Task.Delay(1000);
+        var secondVersion =  await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificateVersionsAsync(certName).ToListAsync();
+
+        var firstVersionFromList = listResponse.Single(x => x.Id.ToString().Contains(certName) && x.CreatedOn == firstVersion.Properties.CreatedOn);
+        var secondVersionFromList = listResponse.Single(x => x.Id.ToString().Contains(certName) && x.CreatedOn == secondVersion.Properties.CreatedOn);
+
+        Assert.Contains(firstVersion.Properties.Version, firstVersionFromList.Id.ToString());
+        Assert.Contains(secondVersion.Properties.Version, secondVersionFromList.Id.ToString());
+    }
+
+    [Fact]
+    public async Task CertificateListOnlyContainsBaseAttributes()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
+
+        var certFromList = listResponse.Single(x => x.X509ThumbprintString == cert.Properties.X509ThumbprintString);
+
+        Assert.Null(certFromList.RecoverableDays);
+        Assert.Null(certFromList.RecoveryLevel);
+        Assert.Null(certFromList.Version);
+    }
+
+    [Fact]
+    public async Task CertificateListOnlyContainsOneCertificateForMultipleVersions()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await fixture.CreateCertificateAsync(certName);
+        await Task.Delay(1000);
+        await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
+        Assert.Single(listResponse, x => x.Id.ToString().Contains(certName));
+    }
+
+    [Fact]
+    public async Task CertificateListContainsAttributesForLatestVersion()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var min = 1;
+        var max = 10;
+
+        await RequestSetup.CreateMultiple(min, max, async _ =>
+        {
+            await Task.Delay(1000);
+            return await fixture.CreateCertificateAsync(certName);
+        });
+        var latestVersion = await fixture.CreateCertificateAsync(certName);
+
+        var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
+
+        var certFromList = listResponse.Single(x => x.X509ThumbprintString == latestVersion.Properties.X509ThumbprintString);
+
+        Assert.Equal(latestVersion.Properties.NotBefore, certFromList.NotBefore);
+        Assert.Equal(latestVersion.Properties.ExpiresOn, certFromList.ExpiresOn);
+        Assert.Equal(latestVersion.Properties.CreatedOn, certFromList.CreatedOn);
+        Assert.Equal(latestVersion.Properties.UpdatedOn, certFromList.UpdatedOn);
+    }
+
+    [Fact]
+    public async Task CertificateBackingKeyAndSecretShowsAsManaged()
+    {
+        var secretClient = await fixture.GetSecretClientAsync();
+        var keyClient = await fixture.GetKeyClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var secretPropertiesList = await secretClient.GetPropertiesOfSecretsAsync().ToListAsync();
+        var keyPropertiesList = await keyClient.GetPropertiesOfKeysAsync().ToListAsync();
+
+        var backingSecret = secretPropertiesList.Single(x => x.Id.ToString().Contains(certName));
+        var backingKey = keyPropertiesList.Single(x => x.Id.ToString().Contains(certName));
+
+        Assert.True(backingSecret.Managed);
+        Assert.True(backingKey.Managed);
+    }
+
+    [Fact]
+    public async Task DeleteCertificateDeletesBackingSecretAndKey()
+    {
+        var certClient = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+        var keyClient = await fixture.GetKeyClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var deleteOperation = await certClient.StartDeleteCertificateAsync(cert.Name);
+        await deleteOperation.WaitForCompletionAsync();
+
+        var certListResponse = await certClient.GetPropertiesOfCertificatesAsync().ToListAsync();
+        var secretListResponse = await secretClient.GetPropertiesOfSecretsAsync().ToListAsync();
+        var keyListResponse = await keyClient.GetPropertiesOfKeysAsync().ToListAsync();
+
+        Assert.DoesNotContain(certListResponse, x => x.Id.ToString().Contains(certName));
+        Assert.DoesNotContain(secretListResponse, x => x.Id.ToString().Contains(certName));
+        Assert.DoesNotContain(keyListResponse, x => x.Id.ToString().Contains(certName));
+    }
+
+    [Fact]
+    public async Task BackingKeyAndSecretDontShowInDeletedLists()
+    {
+        var certClient = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+        var keyClient = await fixture.GetKeyClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var deleteOperation = await certClient.StartDeleteCertificateAsync(cert.Name);
+        await deleteOperation.WaitForCompletionAsync();
+
+        var deletedCertListResponse = await certClient.GetDeletedCertificatesAsync().ToListAsync();
+        var deletedSecretListResponse = await secretClient.GetDeletedSecretsAsync().ToListAsync();
+        var deletedKeyListResponse = await keyClient.GetDeletedKeysAsync().ToListAsync();
+
+        Assert.Contains(deletedCertListResponse, x => x.Id.ToString().Contains(certName));
+        Assert.DoesNotContain(deletedSecretListResponse, x => x.Id.ToString().Contains(certName));
+        Assert.DoesNotContain(deletedKeyListResponse, x => x.Id.ToString().Contains(certName));
+    }
+
+    [Fact]
+    public async Task CanGetIndividualDeletedBackingKeyAndSecret()
+    {
+        var certClient = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+        var keyClient = await fixture.GetKeyClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var deleteOperation = await certClient.StartDeleteCertificateAsync(cert.Name);
+        await deleteOperation.WaitForCompletionAsync();
+
+        var deletedSecret = await secretClient.GetDeletedSecretAsync(certName);
+        var deletedKey = await keyClient.GetDeletedKeyAsync(certName);
+
+        Assert.NotNull(deletedSecret);
+        Assert.NotNull(deletedKey);
+    }
+
+    [Fact]
     public async Task AddingCustomSubjectsToCertificateWillPersist()
     {
         var client = await fixture.GetClientAsync();
@@ -258,7 +443,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var policy = new CertificatePolicy(AuthConstants.EmulatorIss, sans)
         {
             KeySize = 2048,
-            ContentType = Azure.Security.KeyVault.Certificates.CertificateContentType.Pkcs12
+            ContentType = CertificateContentType.Pkcs12
         };
 
         var operation = await client.StartCreateCertificateAsync(certName, policy);
@@ -595,7 +780,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
 #pragma warning disable SYSLIB0028 // Type or member is obsolete
 
-        // Surpressed because SDK is still populating this prop.
+        // Suppressed because SDK is still populating this prop.
         Assert.NotNull(downloadedCertificate.PrivateKey);
 
 #pragma warning restore SYSLIB0028 // Type or member is obsolete

@@ -19,6 +19,10 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys
         [JsonPropertyName("key")]
         public required InternalJsonWebKey Key { get; set; }
 
+        [JsonPropertyName("managed")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? Managed { get; set; } = null;
+
         [JsonPropertyName("attributes")]
         public KeyAttributes Attributes { get; set; } = new();
 

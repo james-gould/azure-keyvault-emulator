@@ -28,7 +28,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
         }
 
-        public async Task<KeyBundle> CreateKeyAsync(string name, CreateKey key)
+        public async Task<KeyBundle> CreateKeyAsync(string name, CreateKey key, bool? managed = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -47,6 +47,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             var response = new KeyBundle
             {
                 Key = JWKS,
+                Managed = managed,
                 Attributes = key.KeyAttributes,
                 Tags = key.Tags ?? []
             };
@@ -209,9 +210,9 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new ListResult<KeyItemBundle>();
 
-            var initialVersions = context.Keys.GetInitialVersions<KeyBundle, KeyAttributes>();
+            var latestVersions = context.Keys.GetLatestVersions<KeyBundle, KeyAttributes>();
 
-            var items = initialVersions.Where(x => !x.Deleted).Skip(skipCount).Take(maxResults);
+            var items = latestVersions.Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new ListResult<KeyItemBundle>();
@@ -221,7 +222,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items.Select(ToKeyItemBundle)
+                Values = items.Select(x => ToKeyItemBundle(x, isVaultLevelList: true))
             };
         }
 
@@ -244,7 +245,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return new ListResult<KeyItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems.Select(ToKeyItemBundle)
+                Values = maxedItems.Select(x => ToKeyItemBundle(x, isVaultLevelList: false))
             };
         }
 
@@ -398,7 +399,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = context.Keys.Where(x => x.Deleted == true).ToList();
+            var allItems = context.Keys.Where(x => x.Deleted == true && x.Managed != true).ToList();
 
             if (allItems.Count == 0)
                 return new();
@@ -438,13 +439,13 @@ namespace AzureKeyVaultEmulator.Keys.Services
             return key;
         }
 
-        private KeyItemBundle ToKeyItemBundle(KeyBundle bundle)
+        private static KeyItemBundle ToKeyItemBundle(KeyBundle bundle, bool isVaultLevelList)
         {
             return new KeyItemBundle
             {
                 KeyAttributes = bundle.Attributes,
-                KeyId = bundle.Key.KeyIdentifier,
-                Managed = false,
+                KeyId =  isVaultLevelList ? string.Join("/", bundle.Key.KeyIdentifier.Split("/")[..^1]) : bundle.Key.KeyIdentifier,
+                Managed = bundle.Managed,
                 Tags = bundle.Tags
             };
         }

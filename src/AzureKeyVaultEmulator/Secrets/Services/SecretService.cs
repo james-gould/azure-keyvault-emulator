@@ -16,7 +16,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, version);
         }
 
-        public async Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest secret)
+        public async Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest secret, bool? managed = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNull(secret);
@@ -32,6 +32,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             {
                 SecretIdentifier = secretUri,
                 Value = secret.Value,
+                Managed = managed,
                 Attributes = secret.SecretAttributes,
                 ContentType = secret.ContentType,
                 Tags = secret.Tags
@@ -124,7 +125,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var items = context.Secrets.Where(x => x.Deleted == true).Skip(skipCount).Take(maxResults);
+            var items = context.Secrets.Where(x => x.Deleted == true && x.Managed != true).Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();
@@ -138,7 +139,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             };
         }
 
-        public ListResult<SecretBundle> GetSecretVersions(string secretName, int maxResults = 25, int skipCount = 0)
+        public ListResult<SecretItemBundle> GetSecretVersions(string secretName, int maxResults = 25, int skipCount = 0)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(secretName);
 
@@ -154,31 +155,31 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var requiresPaging = maxedItems.Count() >= maxResults;
 
-            return new ListResult<SecretBundle>
+            return new ListResult<SecretItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = maxedItems
+                Values = maxedItems.Select(x => ToSecretItemBundle(x, isVaultLevelList: false))
             };
         }
 
-        public ListResult<SecretBundle> GetSecrets(int maxResults = 25, int skipCount = 0)
+        public ListResult<SecretItemBundle> GetSecrets(int maxResults = 25, int skipCount = 0)
         {
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var initialVersions = context.Secrets.GetInitialVersions<SecretBundle, SecretAttributes>();
+            var latestVersions = context.Secrets.GetLatestVersions<SecretBundle, SecretAttributes>();
 
-            var items = initialVersions.Where(x => !x.Deleted).Skip(skipCount).Take(maxResults);
+            var items = latestVersions.Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();
 
             var requiresPaging = items.Count() >= maxResults;
 
-            return new ListResult<SecretBundle>
+            return new ListResult<SecretItemBundle>
             {
                 NextLink = requiresPaging ? GenerateNextLink(maxResults + skipCount) : string.Empty,
-                Values = items
+                Values = items.Select(x => ToSecretItemBundle(x, isVaultLevelList: true))
             };
         }
 
@@ -219,6 +220,18 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             await context.SaveChangesAsync();
 
             return secret;
+        }
+
+        private static SecretItemBundle ToSecretItemBundle(SecretBundle bundle, bool isVaultLevelList)
+        {
+            return new SecretItemBundle
+            {
+                SecretAttributes = bundle.Attributes,
+                Id =  isVaultLevelList ? string.Join("/", bundle.SecretIdentifier.Split("/")[..^1]) : bundle.SecretIdentifier,
+                ContentType = bundle.ContentType,
+                Managed = bundle.Managed,
+                Tags = bundle.Tags,
+            };
         }
 
         private string GenerateNextLink(int maxResults)
