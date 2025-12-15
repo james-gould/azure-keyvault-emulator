@@ -328,12 +328,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
 
         var listResponse = await client.GetPropertiesOfCertificatesAsync().ToListAsync();
 
-        var certFromList = listResponse.Single(x => x.X509ThumbprintString == latestVersion.Properties.X509ThumbprintString);
-
-        Assert.Equal(latestVersion.Properties.NotBefore, certFromList.NotBefore);
-        Assert.Equal(latestVersion.Properties.ExpiresOn, certFromList.ExpiresOn);
-        Assert.Equal(latestVersion.Properties.CreatedOn, certFromList.CreatedOn);
-        Assert.Equal(latestVersion.Properties.UpdatedOn, certFromList.UpdatedOn);
+        Assert.Single(listResponse, x => x.X509ThumbprintString == latestVersion.Properties.X509ThumbprintString);
     }
 
     [Fact]

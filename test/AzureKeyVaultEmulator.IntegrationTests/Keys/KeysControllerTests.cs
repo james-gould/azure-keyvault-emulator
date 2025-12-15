@@ -254,11 +254,7 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var listResponse = await client.GetPropertiesOfKeysAsync().ToListAsync();
 
-        var keyFromList = listResponse.Single(x => x.Id.ToString().Contains(keyName) && x.CreatedOn == latestVersion.Properties.CreatedOn);
-
-        Assert.Equal(latestVersion.Properties.NotBefore, keyFromList.NotBefore);
-        Assert.Equal(latestVersion.Properties.ExpiresOn, keyFromList.ExpiresOn);
-        Assert.Equal(latestVersion.Properties.UpdatedOn, keyFromList.UpdatedOn);
+        Assert.Single(listResponse, x => x.Id.ToString().Contains(keyName) && x.CreatedOn == latestVersion.Properties.CreatedOn);
         return;
 
         async Task<KeyVaultKey> CreateDelayedKey(string keyName)

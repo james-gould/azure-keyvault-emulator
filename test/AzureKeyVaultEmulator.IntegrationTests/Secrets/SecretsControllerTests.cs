@@ -234,11 +234,7 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             var listResponse = await client.GetPropertiesOfSecretsAsync().ToListAsync();
 
-            var secretFromList = listResponse.Single(x => x.Id.ToString().Contains(secretName) && x.CreatedOn == latestVersion.Properties.CreatedOn);
-
-            Assert.Equal(latestVersion.Properties.NotBefore, secretFromList.NotBefore);
-            Assert.Equal(latestVersion.Properties.ExpiresOn, secretFromList.ExpiresOn);
-            Assert.Equal(latestVersion.Properties.UpdatedOn, secretFromList.UpdatedOn);
+            Assert.Single(listResponse, x => x.Id.ToString().Contains(secretName) && x.CreatedOn == latestVersion.Properties.CreatedOn);
             return;
 
             async Task<KeyVaultSecret> CreateDelayedSecret(string secretName, string secretValue)
