@@ -125,7 +125,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var items = context.Secrets.Where(x => x.Deleted == true && x.Managed == false).Skip(skipCount).Take(maxResults);
+            var items = context.Secrets.Where(x => x.Deleted == true && x.Managed != true).Skip(skipCount).Take(maxResults);
 
             if (!items.Any())
                 return new();

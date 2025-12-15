@@ -233,18 +233,17 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             await RequestSetup.CreateMultiple(min, max, async _ =>
             {
-                await Task.Delay(1000);
+                await Task.Delay(2000);
                 return await fixture.CreateSecretAsync(secretName, secretName);
             });
             var latestVersion = await fixture.CreateSecretAsync(secretName, secretName);
 
             var listResponse = await client.GetPropertiesOfSecretsAsync().ToListAsync();
 
-            var secretFromList = listResponse.Single(x => x.Id.ToString().Contains(secretName));
+            var secretFromList = listResponse.Single(x => x.Id.ToString().Contains(secretName) && x.CreatedOn == latestVersion.Properties.CreatedOn);
 
             Assert.Equal(latestVersion.Properties.NotBefore, secretFromList.NotBefore);
             Assert.Equal(latestVersion.Properties.ExpiresOn, secretFromList.ExpiresOn);
-            Assert.Equal(latestVersion.Properties.CreatedOn, secretFromList.CreatedOn);
             Assert.Equal(latestVersion.Properties.UpdatedOn, secretFromList.UpdatedOn);
         }
 

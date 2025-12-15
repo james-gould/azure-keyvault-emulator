@@ -399,7 +399,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
             if (maxResults is default(int) && skipCount is default(int))
                 return new();
 
-            var allItems = context.Keys.Where(x => x.Deleted == true && x.Managed == false).ToList();
+            var allItems = context.Keys.Where(x => x.Deleted == true && x.Managed != true).ToList();
 
             if (allItems.Count == 0)
                 return new();

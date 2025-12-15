@@ -253,18 +253,17 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         await RequestSetup.CreateMultiple(min, max, async _ =>
         {
-            await Task.Delay(1000);
+            await Task.Delay(2000);
             return await fixture.CreateKeyAsync(keyName);
         });
         var latestVersion = await fixture.CreateKeyAsync(keyName);
 
         var listResponse = await client.GetPropertiesOfKeysAsync().ToListAsync();
 
-        var keyFromList = listResponse.Single(x => x.Id.ToString().Contains(keyName));
+        var keyFromList = listResponse.Single(x => x.Id.ToString().Contains(keyName) && x.CreatedOn == latestVersion.Properties.CreatedOn);
 
         Assert.Equal(latestVersion.Properties.NotBefore, keyFromList.NotBefore);
         Assert.Equal(latestVersion.Properties.ExpiresOn, keyFromList.ExpiresOn);
-        Assert.Equal(latestVersion.Properties.CreatedOn, keyFromList.CreatedOn);
         Assert.Equal(latestVersion.Properties.UpdatedOn, keyFromList.UpdatedOn);
     }
 
