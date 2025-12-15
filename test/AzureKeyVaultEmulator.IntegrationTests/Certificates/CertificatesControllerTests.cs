@@ -1,11 +1,9 @@
-﻿using Azure.Identity;
-using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+﻿using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.IntegrationTests.Extensions;
-using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Keys;
-using Azure.Security.KeyVault.Secrets;
-using AzureKeyVaultEmulator.Shared.Constants;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
+using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+using AzureKeyVaultEmulator.Shared.Constants;
+using CertificateContentType = Azure.Security.KeyVault.Certificates.CertificateContentType;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
 
@@ -114,7 +112,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
             KeyType = CertificateKeyType.Rsa,
             KeySize = 2048,
             ReuseKey = true,
-            ContentType = Azure.Security.KeyVault.Certificates.CertificateContentType.Pkcs12,
+            ContentType = CertificateContentType.Pkcs12,
             ValidityInMonths = 12
 
         };
@@ -445,7 +443,7 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var policy = new CertificatePolicy(AuthConstants.EmulatorIss, sans)
         {
             KeySize = 2048,
-            ContentType = Azure.Security.KeyVault.Certificates.CertificateContentType.Pkcs12
+            ContentType = CertificateContentType.Pkcs12
         };
 
         var operation = await client.StartCreateCertificateAsync(certName, policy);
