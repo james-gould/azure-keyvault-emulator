@@ -228,14 +228,8 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             var secretName = fixture.FreshlyGeneratedGuid;
 
-            var min = 1;
-            var max = 10;
+            await RequestSetup.CreateMultiple(1, 5, _ => CreateDelayedSecret(secretName, secretName));
 
-            await RequestSetup.CreateMultiple(min, max, async _ =>
-            {
-                await Task.Delay(2000);
-                return await fixture.CreateSecretAsync(secretName, secretName);
-            });
             var latestVersion = await fixture.CreateSecretAsync(secretName, secretName);
 
             var listResponse = await client.GetPropertiesOfSecretsAsync().ToListAsync();
@@ -245,6 +239,16 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.Equal(latestVersion.Properties.NotBefore, secretFromList.NotBefore);
             Assert.Equal(latestVersion.Properties.ExpiresOn, secretFromList.ExpiresOn);
             Assert.Equal(latestVersion.Properties.UpdatedOn, secretFromList.UpdatedOn);
+            return;
+
+            async Task<KeyVaultSecret> CreateDelayedSecret(string secretName, string secretValue)
+            {
+                var key = await client.SetSecretAsync(secretName, secretValue);
+
+                await Task.Delay(1000);
+
+                return key;
+            }
         }
 
         [Fact]

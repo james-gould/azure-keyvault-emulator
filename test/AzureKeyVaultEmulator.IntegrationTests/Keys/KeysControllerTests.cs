@@ -248,14 +248,8 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
 
         var keyName = fixture.FreshlyGeneratedGuid;
 
-        var min = 1;
-        var max = 10;
+        await RequestSetup.CreateMultiple(1, 5, _ => CreateDelayedKey(keyName));
 
-        await RequestSetup.CreateMultiple(min, max, async _ =>
-        {
-            await Task.Delay(2000);
-            return await fixture.CreateKeyAsync(keyName);
-        });
         var latestVersion = await fixture.CreateKeyAsync(keyName);
 
         var listResponse = await client.GetPropertiesOfKeysAsync().ToListAsync();
@@ -265,6 +259,16 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         Assert.Equal(latestVersion.Properties.NotBefore, keyFromList.NotBefore);
         Assert.Equal(latestVersion.Properties.ExpiresOn, keyFromList.ExpiresOn);
         Assert.Equal(latestVersion.Properties.UpdatedOn, keyFromList.UpdatedOn);
+        return;
+
+        async Task<KeyVaultKey> CreateDelayedKey(string keyName)
+        {
+            var key = await client.CreateKeyAsync(keyName, KeyType.Rsa);
+
+            await Task.Delay(1000);
+
+            return key;
+        }
     }
 
     [Theory]
