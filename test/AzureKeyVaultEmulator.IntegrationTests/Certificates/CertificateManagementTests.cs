@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Azure.Security.KeyVault.Certificates;
+using AzureKeyVaultEmulator.IntegrationTests.Certificates.Helpers;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
@@ -83,6 +84,23 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
 
         Assert.NotNull(importedCertificate);
         Assert.Equal(certName, importedCertificate.Name);
+    }
+
+    [Fact]
+    public async Task ImportingCertificateChainWillPersistAllCertificates()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var certPwd = fixture.FreshlyGeneratedGuid;
+
+        var cName = fixture.FreshlyGeneratedGuid;
+
+        var allCerts = MultiCertGenerator.Generate(cName);
+
+        var importOptions = new ImportCertificateOptions(certName, allCerts.PfxBytes);
+
+        var importResult = await client.ImportCertificateAsync(importOptions);
     }
 
     [Fact]

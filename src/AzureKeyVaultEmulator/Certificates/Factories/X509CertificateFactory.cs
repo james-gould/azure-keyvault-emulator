@@ -65,26 +65,41 @@ public static class X509CertificateFactory
     {
         ArgumentNullException.ThrowIfNull(rawCert);
 
-        if (rawCert.Length == 0)
-            throw new InvalidOperationException($"Cannot import empty certificate bytes");
+        var collection = X509CertificateLoader.LoadPkcs12Collection(rawCert, password);
 
-        try
-        {
-            // PFX
-            return X509CertificateLoader.LoadCertificate(rawCert);
-        }
-        catch { }
+        return collection[0];
 
-        // Failure might happen due to password being required, now we should validate it's not null and use it.
-        ArgumentNullException.ThrowIfNull(password);
+        //var asStr = Encoding.UTF8.GetString(rawCert);
 
-        try
-        {
-            return X509CertificateLoader.LoadPkcs12(rawCert, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet);
-        }
-        catch { }
+        //var multiCert = asStr.Split("----- BEGIN CERTIFICATE -----");
 
-        throw new InvalidOperationException($"Failed to import certificate due to incompatible type.");
+        //if (multiCert.Length > 1)
+        //{
+        //    var collection = X509CertificateLoader.LoadPkcs12Collection(rawCert, password);
+
+        //    return collection[0];
+        //}
+
+        //if (rawCert.Length == 0)
+        //    throw new InvalidOperationException($"Cannot import empty certificate bytes");
+
+        //try
+        //{
+        //    // PFX
+        //    return X509CertificateLoader.LoadCertificate(rawCert);
+        //}
+        //catch { }
+
+        //// Failure might happen due to password being required, now we should validate it's not null and use it.
+        //ArgumentNullException.ThrowIfNull(password);
+
+        //try
+        //{
+        //    return X509CertificateLoader.LoadPkcs12(rawCert, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet);
+        //}
+        //catch { }
+
+        //throw new InvalidOperationException($"Failed to import certificate due to incompatible type.");
     }
 
     public static string ParseContentType(this X509ContentType contentType) => contentType switch
