@@ -61,45 +61,34 @@ public static class X509CertificateFactory
         return baseCert;
     }
 
-    public static X509Certificate2 ImportFromBase64(byte[] rawCert, string? password = null)
+    public static X509Certificate2 ImportFromBase64(byte[] rawCert, string? password, out X509Certificate2Collection? collection)
     {
         ArgumentNullException.ThrowIfNull(rawCert);
+        collection = null;
 
-        var collection = X509CertificateLoader.LoadPkcs12Collection(rawCert, password);
+        var importKeys = X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet;
 
-        return collection[0];
+        if (rawCert.Length == 0)
+            throw new InvalidOperationException($"Cannot import empty certificate bytes");
 
-        //var asStr = Encoding.UTF8.GetString(rawCert);
+        try
+        {
+            // PFX
+            return X509CertificateLoader.LoadCertificate(rawCert);
+        }
+        catch { }
 
-        //var multiCert = asStr.Split("----- BEGIN CERTIFICATE -----");
+        // Failure might happen due to password being required, now we should validate it's not null and use it.
+        ArgumentNullException.ThrowIfNull(password);
 
-        //if (multiCert.Length > 1)
-        //{
-        //    var collection = X509CertificateLoader.LoadPkcs12Collection(rawCert, password);
+        try
+        {
+            collection = X509CertificateLoader.LoadPkcs12Collection(rawCert, password);
+            return X509CertificateLoader.LoadPkcs12(rawCert, password, importKeys);
+        }
+        catch { }
 
-        //    return collection[0];
-        //}
-
-        //if (rawCert.Length == 0)
-        //    throw new InvalidOperationException($"Cannot import empty certificate bytes");
-
-        //try
-        //{
-        //    // PFX
-        //    return X509CertificateLoader.LoadCertificate(rawCert);
-        //}
-        //catch { }
-
-        //// Failure might happen due to password being required, now we should validate it's not null and use it.
-        //ArgumentNullException.ThrowIfNull(password);
-
-        //try
-        //{
-        //    return X509CertificateLoader.LoadPkcs12(rawCert, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet);
-        //}
-        //catch { }
-
-        //throw new InvalidOperationException($"Failed to import certificate due to incompatible type.");
+        throw new InvalidOperationException($"Failed to import certificate due to incompatible type.");
     }
 
     public static string ParseContentType(this X509ContentType contentType) => contentType switch

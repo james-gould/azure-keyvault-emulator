@@ -213,12 +213,20 @@ public sealed class CertificateService(
 
         var bytes = Convert.FromBase64String(request.Value);
 
-        var certificate = X509CertificateFactory.ImportFromBase64(bytes, request.Password);
+        var certificate = X509CertificateFactory.ImportFromBase64(bytes, request.Password, out X509Certificate2Collection? collection);
+
+        X509Certificate2? collectionRemainder = null;
+
+        if(collection is not null)
+        {
+            var base64Collection = collection.Select(x => Convert.ToBase64String(x.RawData));
+            collectionRemainder = X509CertificateFactory.MergeCertificates(certificate, base64Collection);
+        }
 
         var contentType = X509Certificate2.GetCertContentType(bytes);
 
         var (backingKey, backingSecret) = await backingService
-            .GetBackingComponentsAsync(name, certificate, request.Password, request.Policy, contentType);
+            .GetBackingComponentsAsync(name, collectionRemainder ?? certificate, request.Password, request.Policy, contentType);
 
         var attributes = new CertificateAttributes
         {
