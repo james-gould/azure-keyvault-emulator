@@ -94,11 +94,6 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
         var client = await fixture.GetClientAsync();
         var secretClient = await fixture.GetSecretClientAsync();
 
-        //var uri = new Uri("https://azure-keyvault-emulator.vault.azure.net/");
-
-        //var client = new CertificateClient(uri, new DefaultAzureCredential());
-        //var secretClient = new SecretClient(uri, new DefaultAzureCredential());
-
         var certName = fixture.FreshlyGeneratedGuid;
         var certPwd = fixture.FreshlyGeneratedGuid;
 
