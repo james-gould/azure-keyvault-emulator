@@ -68,7 +68,10 @@ public static class X509CertificateFactory
         var sb = new StringBuilder();
 
         foreach (var cert in collection)
+        {
             sb.Append(cert.ExportCertificatePem());
+            sb.Append(Environment.NewLine);
+        }
 
         return sb.ToString();
     }
