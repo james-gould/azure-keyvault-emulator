@@ -215,11 +215,16 @@ public sealed class CertificateService(
 
         var certificate = X509CertificateFactory.ImportFromBase64(bytes, request.Password, out X509Certificate2Collection? collection);
 
+        // When importing a cert chain, the leaf should be returned as the "certificate"
+        // but the backing secret should contain the contents of the chain
         X509Certificate2? collectionRemainder = null;
 
-        if(collection is not null)
+        if(collection is not null && collection.Count > 1)
         {
+            // Encode the raw bytes from each certificate in the collection, ready for merging into a single certificate/pem
             var base64Collection = collection.Select(x => Convert.ToBase64String(x.RawData));
+
+            // Merge all ----- BEGIN CERTIFICATE ----- objects into a single pem format for the backing secret
             collectionRemainder = X509CertificateFactory.MergeCertificates(certificate, base64Collection);
         }
 
