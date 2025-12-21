@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Azure.Security.KeyVault.Certificates;
+using AzureKeyVaultEmulator.IntegrationTests.Certificates.Helpers;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
 
 namespace AzureKeyVaultEmulator.IntegrationTests.Certificates;
@@ -83,6 +84,36 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
 
         Assert.NotNull(importedCertificate);
         Assert.Equal(certName, importedCertificate.Name);
+    }
+
+    [Fact]
+    public async Task ImportingCertificateChainWillPersistAllCertificates()
+    {
+        var client = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var certPwd = fixture.FreshlyGeneratedGuid;
+
+        var cName = fixture.FreshlyGeneratedGuid;
+
+        var allCerts = MultiCertGenerator.Generate(cName);
+
+        var importOptions = new ImportCertificateOptions(certName, allCerts.PfxBytes);
+
+        var importResult = await client.ImportCertificateAsync(importOptions);
+
+        var backingSecret = await secretClient.GetSecretAsync(certName);
+
+        Assert.NotNull(importResult.Value);
+        Assert.NotNull(backingSecret.Value);
+
+        var backingSecretPemCount = backingSecret.Value.Value.Split("-----BEGIN CERTIFICATE-----").Where(x => !string.IsNullOrEmpty(x));
+
+        // Importing 3 certificates will return back leaf cert as the import result
+        // and the root CA + intermediate as the backing secret.
+        // Assert the backing secret has 2 certificates, CA + intermediate
+        Assert.Equal(2, backingSecretPemCount.Count());
     }
 
     [Fact]

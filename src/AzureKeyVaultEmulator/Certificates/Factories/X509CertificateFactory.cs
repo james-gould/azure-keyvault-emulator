@@ -45,7 +45,7 @@ public static class X509CertificateFactory
         foreach (var cert64 in mergedAsBase64)
         {
 #pragma warning disable SYSLIB0057 // Type or member is obsolete
-            var cert = new X509Certificate2(Encoding.UTF8.GetBytes(cert64));
+            var cert = new X509Certificate2(Convert.FromBase64String(cert64));
 #pragma warning restore SYSLIB0057 // Type or member is obsolete
             //var cert = X509CertificateLoader.LoadCertificate(Encoding.Default.GetBytes(cert64));
 
@@ -61,9 +61,42 @@ public static class X509CertificateFactory
         return baseCert;
     }
 
-    public static X509Certificate2 ImportFromBase64(byte[] rawCert, string? password = null)
+    public static string CombinePemBundle(X509Certificate2Collection collection)
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+
+        var sb = new StringBuilder();
+
+        for (int i = 1; i < collection.Count; i++)
+        {
+            var cert = collection[i];
+            sb.Append(cert.ExportCertificatePem());
+            sb.Append(Environment.NewLine);
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Imports an X.509 certificate from a base64-encoded byte array, optionally using a password, and returns the
+    /// primary certificate.
+    /// </summary>
+    /// <remarks>This method attempts to import the certificate as a PFX/PKCS#12 file. If the certificate is
+    /// password-protected, the password parameter must be provided. The returned collection may contain additional
+    /// certificates, such as intermediate or root certificates, if present in the input data.</remarks>
+    /// <param name="rawCert">A byte array containing the base64-encoded certificate data to import. Cannot be null or empty.</param>
+    /// <param name="password">An optional password used to decrypt the certificate if it is password-protected. If the certificate requires a
+    /// password, this parameter must not be null.</param>
+    /// <param name="collection">When this method returns, contains a collection of all certificates found in the input data, or null if no
+    /// collection was created.</param>
+    /// <returns>An X509Certificate2 object representing the primary certificate imported from the provided data.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the input byte array is empty or if the certificate cannot be imported due to an incompatible format.</exception>
+    public static X509Certificate2 ImportFromBase64(byte[] rawCert, string? password, out X509Certificate2Collection? collection)
     {
         ArgumentNullException.ThrowIfNull(rawCert);
+        collection = null;
+
+        var importKeys = X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet;
 
         if (rawCert.Length == 0)
             throw new InvalidOperationException($"Cannot import empty certificate bytes");
@@ -80,7 +113,9 @@ public static class X509CertificateFactory
 
         try
         {
-            return X509CertificateLoader.LoadPkcs12(rawCert, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet);
+            collection = X509CertificateLoader.LoadPkcs12Collection(rawCert, password, importKeys);
+
+            return X509CertificateLoader.LoadPkcs12(rawCert, password, importKeys);
         }
         catch { }
 
