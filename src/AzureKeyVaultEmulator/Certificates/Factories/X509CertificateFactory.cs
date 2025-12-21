@@ -61,22 +61,6 @@ public static class X509CertificateFactory
         return baseCert;
     }
 
-    public static string CombinePemBundle(X509Certificate2Collection collection)
-    {
-        ArgumentNullException.ThrowIfNull(collection);
-
-        var sb = new StringBuilder();
-
-        for (int i = 1; i < collection.Count; i++)
-        {
-            var cert = collection[i];
-            sb.Append(cert.ExportCertificatePem());
-            sb.Append(Environment.NewLine);
-        }
-
-        return sb.ToString();
-    }
-
     /// <summary>
     /// Imports an X.509 certificate from a base64-encoded byte array, optionally using a password, and returns the
     /// primary certificate.

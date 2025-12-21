@@ -5,12 +5,21 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Certificates.Helpers;
 
 internal static class MultiCertGenerator
 {
-    public sealed record Result(
-        byte[] PfxBytes,
-        string CombinedPem,
-        X509Certificate2 RootCa,
-        X509Certificate2 IntermediateCa,
-        X509Certificate2 LeafWithPrivateKey);
+    public sealed class Result(
+        byte[] pfxBytes,
+        string combinedPem,
+        X509Certificate2 rootCa,
+        X509Certificate2 intermediateCa,
+        X509Certificate2 leafWithPrivateKey)
+    {
+        public byte[] PfxBytes => pfxBytes;
+        public string CombinedPem => combinedPem;
+        public X509Certificate2 RootCa => rootCa;
+        public X509Certificate2 IntermediateCa => intermediateCa;
+        public X509Certificate2 LeafWithPrivateKey => leafWithPrivateKey;
+
+        public IEnumerable<X509Certificate2> All => [IntermediateCa, LeafWithPrivateKey, RootCa];
+    }
 
     public static Result Generate(string cName)
     {
@@ -55,11 +64,11 @@ internal static class MultiCertGenerator
         var pfxBytes = collection.Export(X509ContentType.Pfx); // NO PASSWORD
 
         return new Result(
-            PfxBytes: pfxBytes ?? [],
-            CombinedPem: combinedPem,
-            RootCa: rootCert,
-            IntermediateCa: intermediateCert,
-            LeafWithPrivateKey: leafCertWithKey);
+            pfxBytes: pfxBytes ?? [],
+            combinedPem: combinedPem,
+            rootCa: rootCert,
+            intermediateCa: intermediateCert,
+            leafWithPrivateKey: leafCertWithKey);
     }
 
     private static X509Certificate2 CreateRootCa(RSA rootKey, string subject)

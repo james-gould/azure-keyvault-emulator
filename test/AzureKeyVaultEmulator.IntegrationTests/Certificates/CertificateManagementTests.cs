@@ -1,5 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+//using Azure.Identity;
+//using Azure.Security.KeyVault.Secrets;
 using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.IntegrationTests.Certificates.Helpers;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
@@ -92,6 +94,11 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
         var client = await fixture.GetClientAsync();
         var secretClient = await fixture.GetSecretClientAsync();
 
+        //var uri = new Uri("https://azure-keyvault-emulator.vault.azure.net/");
+
+        //var client = new CertificateClient(uri, new DefaultAzureCredential());
+        //var secretClient = new SecretClient(uri, new DefaultAzureCredential());
+
         var certName = fixture.FreshlyGeneratedGuid;
         var certPwd = fixture.FreshlyGeneratedGuid;
 
@@ -108,12 +115,16 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
         Assert.NotNull(importResult.Value);
         Assert.NotNull(backingSecret.Value);
 
-        var backingSecretPemCount = backingSecret.Value.Value.Split("-----BEGIN CERTIFICATE-----").Where(x => !string.IsNullOrEmpty(x));
+        var base64Chain = Convert.FromBase64String(backingSecret.Value.Value);
 
-        // Importing 3 certificates will return back leaf cert as the import result
-        // and the root CA + intermediate as the backing secret.
-        // Assert the backing secret has 2 certificates, CA + intermediate
-        Assert.Equal(2, backingSecretPemCount.Count());
+        // Password is always empty for imports. PKCS#12 exports require a password
+        // This matches Azure exporting a full chain too.
+        var chainCollection = X509CertificateLoader.LoadPkcs12Collection(base64Chain, "");
+
+        // Assert that the generated count of certificates matches the count of the backing secret contents, parsed as PKCS#12
+        Assert.Equal(allCerts.All.Count(), chainCollection.Count);
+
+        Assert.NotNull(chainCollection.OfType<X509Certificate2>().SingleOrDefault(x => x.HasPrivateKey));
     }
 
     [Fact]

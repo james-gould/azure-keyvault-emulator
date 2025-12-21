@@ -223,10 +223,8 @@ public sealed class CertificateService(
         // Multi-cert chain has been imported, backing secret should contain chain in pem format
         if(collection is not null && collection.Count > 1)
         {
-            var pemBundle = X509CertificateFactory.CombinePemBundle(collection);
-
             (backingKey, backingSecret) = await backingService
-                .GetBackingComponentsAsync(name, pemBundle, request.Password, request.Policy, contentType);
+                .GetBackingComponentsAsync(name, collection, request.Password, request.Policy, contentType);
         }
         else
         {
