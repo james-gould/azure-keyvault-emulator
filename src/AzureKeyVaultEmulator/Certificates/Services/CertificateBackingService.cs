@@ -44,20 +44,20 @@ public sealed class CertificateBackingService(
 
     public async Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(
         string certName,
-        string pemBundle,
+        X509Certificate2Collection collection,
         string? certificatesPassword,
         CertificatePolicy? policy = null,
         X509ContentType contentType = X509ContentType.Pfx)
     {
         ArgumentException.ThrowIfNullOrEmpty(certName);
-        ArgumentException.ThrowIfNullOrEmpty(pemBundle);
+        ArgumentNullException.ThrowIfNull(collection);
 
         var keySize = policy?.KeyProperties?.KeySize ?? 2048;
         var keyType = !string.IsNullOrEmpty(policy?.KeyProperties?.JsonWebKeyType) ? policy.KeyProperties.JsonWebKeyType : SupportedKeyTypes.RSA;
 
         var backingKey = await CreateBackingKeyAsync(certName, keySize, keyType);
 
-        var backingSecret = await CreateBackingSecretAsync(certName, contentType, pemBundle);
+        var backingSecret = await CreateBackingSecretAsync(certName, collection);
 
         return (backingKey, backingSecret);
     }
@@ -206,6 +206,17 @@ public sealed class CertificateBackingService(
                 Value = pemBundle,
                 ContentType = contentType.ParseContentType()
             }, managed: true);
+
+    private async Task<SecretBundle> CreateBackingSecretAsync(string certName, X509Certificate2Collection collection)
+    {
+        var content = Convert.ToBase64String(collection.Export(X509ContentType.Pkcs12, "") ?? []);
+
+        return await secretService.SetSecretAsync(certName, new SetSecretRequest
+        {
+            Value = content,
+            ContentType = X509ContentType.Pkcs12.ParseContentType(),
+        }, managed: true);
+    }
 
     private async Task<SecretBundle> CreateBackingSecretAsync(
         string certName,
