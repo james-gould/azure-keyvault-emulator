@@ -107,6 +107,13 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
 
         Assert.NotNull(importResult.Value);
         Assert.NotNull(backingSecret.Value);
+
+        var backingSecretPemCount = backingSecret.Value.Value.Split("-----BEGIN CERTIFICATE-----").Where(x => !string.IsNullOrEmpty(x));
+
+        // Importing 3 certificates will return back leaf cert as the import result
+        // and the root CA + intermediate as the backing secret.
+        // Assert the backing secret has 2 certificates, CA + intermediate
+        Assert.Equal(2, backingSecretPemCount.Count());
     }
 
     [Fact]
