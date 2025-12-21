@@ -90,6 +90,7 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
     public async Task ImportingCertificateChainWillPersistAllCertificates()
     {
         var client = await fixture.GetClientAsync();
+        var secretClient = await fixture.GetSecretClientAsync();
 
         var certName = fixture.FreshlyGeneratedGuid;
         var certPwd = fixture.FreshlyGeneratedGuid;
@@ -101,6 +102,11 @@ public class CertificateManagementTests(CertificatesTestingFixture fixture) : IC
         var importOptions = new ImportCertificateOptions(certName, allCerts.PfxBytes);
 
         var importResult = await client.ImportCertificateAsync(importOptions);
+
+        var backingSecret = await secretClient.GetSecretAsync(certName);
+
+        Assert.NotNull(importResult.Value);
+        Assert.NotNull(backingSecret.Value);
     }
 
     [Fact]
