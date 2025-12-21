@@ -42,6 +42,26 @@ public sealed class CertificateBackingService(
         return (backingKey, backingSecret);
     }
 
+    public async Task<(KeyBundle backingKey, SecretBundle backingSecret)> GetBackingComponentsAsync(
+        string certName,
+        string pemBundle,
+        string? certificatesPassword,
+        CertificatePolicy? policy = null,
+        X509ContentType contentType = X509ContentType.Pfx)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(certName);
+        ArgumentException.ThrowIfNullOrEmpty(pemBundle);
+
+        var keySize = policy?.KeyProperties?.KeySize ?? 2048;
+        var keyType = !string.IsNullOrEmpty(policy?.KeyProperties?.JsonWebKeyType) ? policy.KeyProperties.JsonWebKeyType : SupportedKeyTypes.RSA;
+
+        var backingKey = await CreateBackingKeyAsync(certName, keySize, keyType);
+
+        var backingSecret = await CreateBackingSecretAsync(certName, contentType, pemBundle);
+
+        return (backingKey, backingSecret);
+    }
+
     public async Task<(DeletedKeyBundle deletedBackingKey, DeletedSecretBundle deletedBackingSecret)> DeleteBackingComponentsAsync(string certName)
     {
         ArgumentException.ThrowIfNullOrEmpty(certName);
@@ -180,6 +200,13 @@ public sealed class CertificateBackingService(
         return await keyService.CreateKeyAsync(certName, new CreateKey { KeySize = keySize, KeyType = keyType }, managed: true);
     }
 
+    private async Task<SecretBundle> CreateBackingSecretAsync(string certName, X509ContentType contentType, string pemBundle)
+        => await secretService.SetSecretAsync(certName, new SetSecretRequest
+            {
+                Value = pemBundle,
+                ContentType = contentType.ParseContentType()
+            }, managed: true);
+
     private async Task<SecretBundle> CreateBackingSecretAsync(
         string certName,
         X509ContentType contentType,
@@ -193,7 +220,6 @@ public sealed class CertificateBackingService(
             {
                 Value = certificateData,
                 ContentType = contentType.ParseContentType(),
-                SecretAttributes = new()
             }, managed: true);
     }
 }

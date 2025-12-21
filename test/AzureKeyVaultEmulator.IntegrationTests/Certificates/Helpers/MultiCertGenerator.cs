@@ -143,7 +143,7 @@ internal static class MultiCertGenerator
             notAfter: notAfter,
             serialNumber: serial);
 
-        // We return the intermediate cert *without* private key attached (not needed for this POC),
+        // We return the intermediate cert *without* private key attached
         // because we keep intermediateKey for signing leaf. This also avoids tricky provider export issues.
 #pragma warning disable SYSLIB0057 // Type or member is obsolete
         return new X509Certificate2(
