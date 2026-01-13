@@ -162,6 +162,41 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
     }
 
     [Fact]
+    public async Task ImportingCertificateWithTagsWillPersist()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var throwawayCertName = fixture.FreshlyGeneratedGuid;
+        var certName = fixture.FreshlyGeneratedGuid;
+
+        await Assert.RequestFailsAsync(() => client.GetCertAsync(certName));
+
+        var throwawayOp = await client.StartCreateCertificateAsync(throwawayCertName, fixture.BasicPolicy);
+
+        await throwawayOp.WaitForCompletionAsync();
+
+        var throwawayCert = (await client.GetCertAsync(throwawayCertName)).Cer;
+
+        var tagName = fixture.FreshlyGeneratedGuid;
+        var tagValue = fixture.FreshlyGeneratedGuid;
+
+        var importOptions = new ImportCertificateOptions(certName, throwawayCert);
+
+        importOptions.Tags.Add(tagName, tagValue);
+
+        await client.ImportCertificateAsync(importOptions);
+
+        var importedCert = await client.GetCertAsync(certName);
+
+        Assert.NotEmpty(importedCert.Properties.Tags);
+
+        var val = importedCert.Properties.Tags.FirstOrDefault(x => x.Key == tagName);
+
+        Assert.NotNull(val.Value);
+        Assert.Equal(tagValue, val.Value);
+    }
+
+    [Fact]
     public async Task CreatingCertificateWithKeyUsageWillPersist()
     {
         var client = await fixture.GetClientAsync();
