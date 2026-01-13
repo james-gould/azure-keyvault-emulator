@@ -256,7 +256,8 @@ public sealed class CertificateService(
             CertificateContents = Convert.ToBase64String(certificate.RawData),
             SecretId = backingSecret.SecretIdentifier.ToString(),
             KeyId = backingKey.Key.KeyIdentifier,
-            FullCertificate = certificate
+            FullCertificate = certificate,
+            Tags = request.Tags
         };
 
         await context.Certificates.SafeAddAsync(name, version, bundle);
