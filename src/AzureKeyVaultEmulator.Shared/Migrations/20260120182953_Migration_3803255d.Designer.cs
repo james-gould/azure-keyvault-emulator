@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AzureKeyVaultEmulator.Shared.Migrations
 {
     [DbContext(typeof(VaultContext))]
-    [Migration("20251214064111_ManagedProperty")]
-    partial class ManagedProperty
+    [Migration("20260120182953_Migration_3803255d")]
+    partial class Migration_3803255d
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.1");
 
             modelBuilder.Entity("AzureKeyVaultEmulator.Shared.Models.Certificates.CertificateBundle", b =>
                 {
@@ -32,17 +32,17 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("CertificateContents")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "cer");
+                        .HasJsonPropertyName("cer");
 
                     b.Property<string>("CertificateIdentifier")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "id");
+                        .HasJsonPropertyName("id");
 
                     b.Property<string>("CertificateName")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "name");
+                        .HasJsonPropertyName("name");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("INTEGER");
@@ -50,7 +50,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("KeyId")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "kid");
+                        .HasJsonPropertyName("kid");
 
                     b.Property<string>("PersistedName")
                         .IsRequired()
@@ -63,12 +63,12 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("RecoveryId")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "recoveryId");
+                        .HasJsonPropertyName("recoveryId");
 
                     b.Property<string>("SecretId")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "sid");
+                        .HasJsonPropertyName("sid");
 
                     b.Property<string>("TagsSerialized")
                         .IsRequired()
@@ -78,12 +78,12 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("VaultUri")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "vaultUri");
+                        .HasJsonPropertyName("vaultUri");
 
                     b.Property<string>("X509Thumbprint")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "x5t");
+                        .HasJsonPropertyName("x5t");
 
                     b.HasKey("PersistedId");
 
@@ -105,7 +105,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("Identifier")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "id");
+                        .HasJsonPropertyName("id");
 
                     b.Property<Guid>("IssuerId")
                         .HasColumnType("TEXT");
@@ -149,7 +149,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("IssuerName")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "name");
+                        .HasJsonPropertyName("name");
 
                     b.Property<string>("PersistedName")
                         .IsRequired()
@@ -162,7 +162,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "provider");
+                        .HasJsonPropertyName("provider");
 
                     b.HasKey("PersistedId");
 
@@ -206,7 +206,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                     b.Property<bool?>("Managed")
                         .HasColumnType("INTEGER")
-                        .HasAnnotation("Relational:JsonPropertyName", "managed");
+                        .HasJsonPropertyName("managed");
 
                     b.Property<string>("PersistedName")
                         .IsRequired()
@@ -234,14 +234,14 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "contentType");
+                        .HasJsonPropertyName("contentType");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool?>("Managed")
                         .HasColumnType("INTEGER")
-                        .HasAnnotation("Relational:JsonPropertyName", "managed");
+                        .HasJsonPropertyName("managed");
 
                     b.Property<string>("PersistedName")
                         .IsRequired()
@@ -254,7 +254,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("SecretIdentifier")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "id");
+                        .HasJsonPropertyName("id");
 
                     b.Property<string>("TagsSerialized")
                         .IsRequired()
@@ -264,7 +264,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasAnnotation("Relational:JsonPropertyName", "value");
+                        .HasJsonPropertyName("value");
 
                     b.HasKey("PersistedId");
 
@@ -280,42 +280,42 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.Property<long>("Created")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "created");
+                                .HasJsonPropertyName("created");
 
                             b1.Property<bool>("Enabled")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "enabled");
+                                .HasJsonPropertyName("enabled");
 
                             b1.Property<long>("Expiration")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "exp");
+                                .HasJsonPropertyName("exp");
 
                             b1.Property<long>("NotBefore")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "nbf");
+                                .HasJsonPropertyName("nbf");
 
                             b1.Property<int?>("RecoverableDays")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoverableDays");
+                                .HasJsonPropertyName("recoverableDays");
 
                             b1.Property<string>("RecoveryLevel")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoveryLevel");
+                                .HasJsonPropertyName("recoveryLevel");
 
                             b1.Property<long>("Updated")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "updated");
+                                .HasJsonPropertyName("updated");
 
                             b1.Property<string>("Version")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "version");
+                                .HasJsonPropertyName("version");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("Certificates");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1.HasJsonPropertyName("attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -352,42 +352,42 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.Property<long>("Created")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "created");
+                                .HasJsonPropertyName("created");
 
                             b1.Property<bool>("Enabled")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "enabled");
+                                .HasJsonPropertyName("enabled");
 
                             b1.Property<long>("Expiration")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "exp");
+                                .HasJsonPropertyName("exp");
 
                             b1.Property<long>("NotBefore")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "nbf");
+                                .HasJsonPropertyName("nbf");
 
                             b1.Property<int?>("RecoverableDays")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoverableDays");
+                                .HasJsonPropertyName("recoverableDays");
 
                             b1.Property<string>("RecoveryLevel")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoveryLevel");
+                                .HasJsonPropertyName("recoveryLevel");
 
                             b1.Property<long>("Updated")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "updated");
+                                .HasJsonPropertyName("updated");
 
                             b1.Property<string>("Version")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "version");
+                                .HasJsonPropertyName("version");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("CertificatePolicies");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1.HasJsonPropertyName("attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -405,22 +405,22 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                             b1.PrimitiveCollection<string>("BackingKeyUsage")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "key_usage");
+                                .HasJsonPropertyName("key_usage");
 
                             b1.Property<string>("Subject")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "subject");
+                                .HasJsonPropertyName("subject");
 
                             b1.Property<int>("ValidityMonths")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "validity_months");
+                                .HasJsonPropertyName("validity_months");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("CertificatePolicies");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "x509_props");
+                            b1.HasJsonPropertyName("x509_props");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -446,7 +446,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                                     b2.ToTable("CertificatePolicies");
 
-                                    b2.HasAnnotation("Relational:JsonPropertyName", "sans");
+                                    b2.HasJsonPropertyName("sans");
 
                                     b2.WithOwner()
                                         .HasForeignKey("PersistedId");
@@ -464,26 +464,26 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                             b1.Property<string>("JsonWebKeyCurveName")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "crv");
+                                .HasJsonPropertyName("crv");
 
                             b1.Property<string>("JsonWebKeyType")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "kty");
+                                .HasJsonPropertyName("kty");
 
                             b1.Property<int>("KeySize")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "key_size");
+                                .HasJsonPropertyName("key_size");
 
                             b1.Property<bool>("ReuseKey")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "reuse_key");
+                                .HasJsonPropertyName("reuse_key");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("CertificatePolicies");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "key_props");
+                            b1.HasJsonPropertyName("key_props");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -497,13 +497,13 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                             b1.Property<string>("ContentType")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "contentType");
+                                .HasJsonPropertyName("contentType");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("CertificatePolicies");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "secret_props");
+                            b1.HasJsonPropertyName("secret_props");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -532,37 +532,37 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.Property<long>("Created")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "created");
+                                .HasJsonPropertyName("created");
 
                             b1.Property<bool>("Enabled")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "enabled");
+                                .HasJsonPropertyName("enabled");
 
                             b1.Property<long>("Expiration")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "exp");
+                                .HasJsonPropertyName("exp");
 
                             b1.Property<long>("NotBefore")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "nbf");
+                                .HasJsonPropertyName("nbf");
 
                             b1.Property<int?>("RecoverableDays")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoverableDays");
+                                .HasJsonPropertyName("recoverableDays");
 
                             b1.Property<string>("RecoveryLevel")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoveryLevel");
+                                .HasJsonPropertyName("recoveryLevel");
 
                             b1.Property<long>("Updated")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "updated");
+                                .HasJsonPropertyName("updated");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("Issuers");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1.HasJsonPropertyName("attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -576,18 +576,18 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                             b1.Property<string>("AccountId")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "account_id");
+                                .HasJsonPropertyName("account_id");
 
                             b1.Property<string>("Password")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "pwd");
+                                .HasJsonPropertyName("pwd");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("Issuers");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "credentials");
+                            b1.HasJsonPropertyName("credentials");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -605,13 +605,13 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                             b1.Property<string>("Identifier")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "id");
+                                .HasJsonPropertyName("id");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("Issuers");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "org_details");
+                            b1.HasJsonPropertyName("org_details");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -635,48 +635,48 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.Property<string>("D")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "d");
+                                .HasJsonPropertyName("d");
 
                             b1.Property<string>("Dp")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "dp");
+                                .HasJsonPropertyName("dp");
 
                             b1.Property<string>("Dq")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "dq");
+                                .HasJsonPropertyName("dq");
 
                             b1.Property<string>("E")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "e");
+                                .HasJsonPropertyName("e");
 
                             b1.Property<string>("K")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "k");
+                                .HasJsonPropertyName("k");
 
                             b1.Property<string>("KeyCurve")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "crv");
+                                .HasJsonPropertyName("crv");
 
                             b1.Property<string>("KeyHsm")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "key_hsm");
+                                .HasJsonPropertyName("key_hsm");
 
                             b1.Property<string>("KeyIdentifier")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "kid");
+                                .HasJsonPropertyName("kid");
 
                             b1.Property<string>("KeyName")
                                 .HasColumnType("TEXT");
 
                             b1.PrimitiveCollection<string>("KeyOperations")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "key_ops");
+                                .HasJsonPropertyName("key_ops");
 
                             b1.Property<string>("KeyType")
                                 .IsRequired()
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "kty");
+                                .HasJsonPropertyName("kty");
 
                             b1.Property<string>("KeyVersion")
                                 .IsRequired()
@@ -684,19 +684,19 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.Property<string>("N")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "n");
+                                .HasJsonPropertyName("n");
 
                             b1.Property<string>("P")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "p");
+                                .HasJsonPropertyName("p");
 
                             b1.Property<string>("Q")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "q");
+                                .HasJsonPropertyName("q");
 
                             b1.Property<string>("Qi")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "qi");
+                                .HasJsonPropertyName("qi");
 
                             b1.Property<byte[]>("RSAParametersBlob")
                                 .IsRequired()
@@ -704,17 +704,17 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.Property<string>("X")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "x");
+                                .HasJsonPropertyName("x");
 
                             b1.Property<string>("Y")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "y");
+                                .HasJsonPropertyName("y");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("Keys");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "key");
+                            b1.HasJsonPropertyName("key");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -727,37 +727,37 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.Property<long>("Created")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "created");
+                                .HasJsonPropertyName("created");
 
                             b1.Property<bool>("Enabled")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "enabled");
+                                .HasJsonPropertyName("enabled");
 
                             b1.Property<long>("Expiration")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "exp");
+                                .HasJsonPropertyName("exp");
 
                             b1.Property<long>("NotBefore")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "nbf");
+                                .HasJsonPropertyName("nbf");
 
                             b1.Property<int?>("RecoverableDays")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoverableDays");
+                                .HasJsonPropertyName("recoverableDays");
 
                             b1.Property<string>("RecoveryLevel")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoveryLevel");
+                                .HasJsonPropertyName("recoveryLevel");
 
                             b1.Property<long>("Updated")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "updated");
+                                .HasJsonPropertyName("updated");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("Keys");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1.HasJsonPropertyName("attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -779,37 +779,37 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.Property<long>("Created")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "created");
+                                .HasJsonPropertyName("created");
 
                             b1.Property<bool>("Enabled")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "enabled");
+                                .HasJsonPropertyName("enabled");
 
                             b1.Property<long>("Expiration")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "exp");
+                                .HasJsonPropertyName("exp");
 
                             b1.Property<long>("NotBefore")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "nbf");
+                                .HasJsonPropertyName("nbf");
 
                             b1.Property<int?>("RecoverableDays")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoverableDays");
+                                .HasJsonPropertyName("recoverableDays");
 
                             b1.Property<string>("RecoveryLevel")
                                 .HasColumnType("TEXT")
-                                .HasAnnotation("Relational:JsonPropertyName", "recoveryLevel");
+                                .HasJsonPropertyName("recoveryLevel");
 
                             b1.Property<long>("Updated")
                                 .HasColumnType("INTEGER")
-                                .HasAnnotation("Relational:JsonPropertyName", "updated");
+                                .HasJsonPropertyName("updated");
 
                             b1.HasKey("PersistedId");
 
                             b1.ToTable("Secrets");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1.HasJsonPropertyName("attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
