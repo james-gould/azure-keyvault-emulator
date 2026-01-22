@@ -5,7 +5,7 @@
 namespace AzureKeyVaultEmulator.Shared.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Migration_b108255a : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -43,14 +43,7 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     CertificateName = table.Column<string>(type: "TEXT", nullable: false),
                     VaultUri = table.Column<string>(type: "TEXT", nullable: false),
                     X509Thumbprint = table.Column<string>(type: "TEXT", nullable: false),
-                    Attributes_Version = table.Column<string>(type: "TEXT", nullable: false),
-                    Attributes_Enabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Attributes_Expiration = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_NotBefore = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_Created = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_Updated = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_RecoveryLevel = table.Column<string>(type: "TEXT", nullable: false),
-                    Attributes_RecoverableDays = table.Column<int>(type: "INTEGER", nullable: false)
+                    Attributes = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -67,17 +60,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     Deleted = table.Column<bool>(type: "INTEGER", nullable: false),
                     Provider = table.Column<string>(type: "TEXT", nullable: false),
                     IssuerName = table.Column<string>(type: "TEXT", nullable: false),
-                    Credentials_AccountId = table.Column<string>(type: "TEXT", nullable: false),
-                    Credentials_Password = table.Column<string>(type: "TEXT", nullable: false),
-                    Attributes_Enabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Attributes_Expiration = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_NotBefore = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_Created = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_Updated = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_RecoveryLevel = table.Column<string>(type: "TEXT", nullable: false),
-                    Attributes_RecoverableDays = table.Column<int>(type: "INTEGER", nullable: false),
-                    OrganisationDetails_Identifier = table.Column<string>(type: "TEXT", nullable: true),
-                    OrganisationDetails_BackingAdminDetails = table.Column<string>(type: "TEXT", nullable: true)
+                    Attributes = table.Column<string>(type: "TEXT", nullable: false),
+                    Credentials = table.Column<string>(type: "TEXT", nullable: false),
+                    OrganisationDetails = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -91,34 +76,11 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     PersistedId = table.Column<Guid>(type: "TEXT", nullable: false),
                     PersistedName = table.Column<string>(type: "TEXT", nullable: false),
                     PersistedVersion = table.Column<string>(type: "TEXT", nullable: false),
-                    Key_KeyCurve = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_D = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_Dp = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_Dq = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_E = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_K = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_KeyHsm = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_KeyOperations = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_KeyType = table.Column<string>(type: "TEXT", nullable: false),
-                    Key_KeyIdentifier = table.Column<string>(type: "TEXT", nullable: false),
-                    Key_KeyName = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_KeyVersion = table.Column<string>(type: "TEXT", nullable: false),
-                    Key_N = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_P = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_Q = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_Qi = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_X = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_Y = table.Column<string>(type: "TEXT", nullable: true),
-                    Key_RSAParametersBlob = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    Attributes_Enabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Attributes_Expiration = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_NotBefore = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_Created = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_Updated = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_RecoveryLevel = table.Column<string>(type: "TEXT", nullable: false),
-                    Attributes_RecoverableDays = table.Column<int>(type: "INTEGER", nullable: false),
+                    Managed = table.Column<bool>(type: "INTEGER", nullable: true),
                     Deleted = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Tags = table.Column<string>(type: "TEXT", nullable: false)
+                    Tags = table.Column<string>(type: "TEXT", nullable: false),
+                    Attributes = table.Column<string>(type: "TEXT", nullable: false),
+                    Key = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -132,18 +94,13 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     PersistedId = table.Column<Guid>(type: "TEXT", nullable: false),
                     PersistedName = table.Column<string>(type: "TEXT", nullable: false),
                     PersistedVersion = table.Column<string>(type: "TEXT", nullable: false),
-                    Deleted = table.Column<bool>(type: "INTEGER", nullable: false),
                     SecretIdentifier = table.Column<string>(type: "TEXT", nullable: false),
                     Value = table.Column<string>(type: "TEXT", nullable: false),
                     ContentType = table.Column<string>(type: "TEXT", nullable: false),
-                    Attributes_Enabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Attributes_Expiration = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_NotBefore = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_Created = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_Updated = table.Column<long>(type: "INTEGER", nullable: false),
-                    Attributes_RecoveryLevel = table.Column<string>(type: "TEXT", nullable: false),
-                    Attributes_RecoverableDays = table.Column<int>(type: "INTEGER", nullable: false),
-                    Tags = table.Column<string>(type: "TEXT", nullable: false)
+                    Managed = table.Column<bool>(type: "INTEGER", nullable: true),
+                    Deleted = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Tags = table.Column<string>(type: "TEXT", nullable: false),
+                    Attributes = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -162,14 +119,6 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     Deleted = table.Column<bool>(type: "INTEGER", nullable: false),
                     Identifier = table.Column<string>(type: "TEXT", nullable: false),
                     IssuerPersistedId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    CertificateAttributes_Version = table.Column<string>(type: "TEXT", nullable: false),
-                    CertificateAttributes_Enabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CertificateAttributes_Expiration = table.Column<long>(type: "INTEGER", nullable: false),
-                    CertificateAttributes_NotBefore = table.Column<long>(type: "INTEGER", nullable: false),
-                    CertificateAttributes_Created = table.Column<long>(type: "INTEGER", nullable: false),
-                    CertificateAttributes_Updated = table.Column<long>(type: "INTEGER", nullable: false),
-                    CertificateAttributes_RecoveryLevel = table.Column<string>(type: "TEXT", nullable: false),
-                    CertificateAttributes_RecoverableDays = table.Column<int>(type: "INTEGER", nullable: false),
                     CertificateProperties_BackingEnhancedUsage = table.Column<string>(type: "TEXT", nullable: true),
                     CertificateProperties_BackingKeyUsage = table.Column<string>(type: "TEXT", nullable: true),
                     CertificateProperties_SubjectAlternativeNames_BackingDns = table.Column<string>(type: "TEXT", nullable: true),
@@ -178,11 +127,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
                     CertificateProperties_Subject = table.Column<string>(type: "TEXT", nullable: true),
                     CertificateProperties_ValidityMonths = table.Column<int>(type: "INTEGER", nullable: true),
                     BackingLifetimeActions = table.Column<string>(type: "TEXT", nullable: false),
-                    KeyProperties_JsonWebKeyCurveName = table.Column<string>(type: "TEXT", nullable: true),
-                    KeyProperties_KeySize = table.Column<int>(type: "INTEGER", nullable: true),
-                    KeyProperties_JsonWebKeyType = table.Column<string>(type: "TEXT", nullable: true),
-                    KeyProperties_ReuseKey = table.Column<bool>(type: "INTEGER", nullable: true),
-                    SecretProperies_ContentType = table.Column<string>(type: "TEXT", nullable: true)
+                    CertificateAttributes = table.Column<string>(type: "TEXT", nullable: false),
+                    KeyProperties = table.Column<string>(type: "TEXT", nullable: true),
+                    SecretProperies = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

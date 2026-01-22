@@ -43,7 +43,18 @@ app.UseMiddleware<ClientRequestIdMiddleware>();
 
 using var scope = app.Services.CreateScope();
 var db = scope.ServiceProvider.GetRequiredService<VaultContext>();
-await db.Database.MigrateAsync();
+
+// Bodge around SQLite table already exists exception
+// migration doesnt seem to scaffold CREATE TABLE IF NOT EXISTS
+// and throws error on CertificateContacts already existing...
+try
+{
+    var migrations = await db.Database.GetPendingMigrationsAsync();
+
+    if (migrations.Any())
+        await db.Database.MigrateAsync();
+}
+catch { }
 
 app.UseAuthentication();
 app.UseAuthorization();

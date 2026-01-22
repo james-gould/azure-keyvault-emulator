@@ -3,7 +3,6 @@ using AzureKeyVaultEmulator.Shared.Models.Certificates;
 using AzureKeyVaultEmulator.Shared.Models.Certificates.Requests;
 using AzureKeyVaultEmulator.Shared.Models.Keys;
 using AzureKeyVaultEmulator.Shared.Models.Secrets;
-using AzureKeyVaultEmulator.Shared.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -65,7 +64,9 @@ public sealed class VaultContext(DbContextOptions<VaultContext> opt) : DbContext
 
             e.OwnsOne(x => x.CertificateProperties, props =>
             {
-                props.OwnsOne(x => x.SubjectAlternativeNames);
+                props.HasAnnotation("Relational:JsonPropertyName", "x509_props");
+
+                props.OwnsOne(x => x.SubjectAlternativeNames, sans => sans.HasAnnotation("Relational:JsonPropertyName", "sans"));
                 props.Navigation(x => x.SubjectAlternativeNames).AutoInclude();
             });
 
@@ -88,23 +89,6 @@ public sealed class VaultContext(DbContextOptions<VaultContext> opt) : DbContext
 public static class ModelBuilderExtensions
 {
     /// <summary>
-    /// Creates the FK relationship and navigation between 2 <see cref="DbSet{TEntity}"/>, where <typeparamref name="TDependent"/> is a child object of <typeparamref name="TEntity"/>.
-    /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
-    /// <typeparam name="TDependent"></typeparam>
-    /// <param name="builder"></param>
-    /// <param name="navigation"></param>
-    public static void HasForeignKeyNavigation<TEntity, TDependent>(
-        this EntityTypeBuilder<TEntity> builder,
-        Expression<Func<TEntity, TDependent?>> navigation)
-        where TEntity : class
-        where TDependent : class, IPersistedItem
-    {
-        builder.HasOne(navigation).WithOne().HasForeignKey<TDependent>(x => x.PersistedId);
-        builder.Navigation(navigation).AutoInclude();
-    }
-
-    /// <summary>
     /// Creates the owned relationship between a <see cref="DbSet{TEntity}"/> of <typeparamref name="TEntity"/> and <typeparamref name="TDependent"/> without a <see cref="DbSet{TEntity}"/>.
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
@@ -117,7 +101,7 @@ public static class ModelBuilderExtensions
         where TEntity : class
         where TDependent : class
     {
-        builder.OwnsOne(navigation);
+        builder.OwnsOne(navigation, b => b.ToJson());
         builder.Navigation(navigation).AutoInclude();
     }
 }

@@ -312,7 +312,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("Certificates");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1
+                                .ToJson("Attributes")
+                                .HasAnnotation("Relational:JsonPropertyName", "attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -384,7 +386,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("CertificatePolicies");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1
+                                .ToJson("CertificateAttributes")
+                                .HasAnnotation("Relational:JsonPropertyName", "attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -480,7 +484,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("CertificatePolicies");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "key_props");
+                            b1
+                                .ToJson("KeyProperties")
+                                .HasAnnotation("Relational:JsonPropertyName", "key_props");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -500,7 +506,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("CertificatePolicies");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "secret_props");
+                            b1
+                                .ToJson("SecretProperies")
+                                .HasAnnotation("Relational:JsonPropertyName", "secret_props");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -559,7 +567,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("Issuers");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1
+                                .ToJson("Attributes")
+                                .HasAnnotation("Relational:JsonPropertyName", "attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -584,7 +594,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("Issuers");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "credentials");
+                            b1
+                                .ToJson("Credentials")
+                                .HasAnnotation("Relational:JsonPropertyName", "credentials");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -608,7 +620,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("Issuers");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "org_details");
+                            b1
+                                .ToJson("OrganisationDetails")
+                                .HasAnnotation("Relational:JsonPropertyName", "org_details");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -711,7 +725,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("Keys");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "key");
+                            b1
+                                .ToJson("Key")
+                                .HasAnnotation("Relational:JsonPropertyName", "key");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -754,7 +770,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("Keys");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1
+                                .ToJson("Attributes")
+                                .HasAnnotation("Relational:JsonPropertyName", "attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
@@ -806,7 +824,9 @@ namespace AzureKeyVaultEmulator.Shared.Migrations
 
                             b1.ToTable("Secrets");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "attributes");
+                            b1
+                                .ToJson("Attributes")
+                                .HasAnnotation("Relational:JsonPropertyName", "attributes");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersistedId");
