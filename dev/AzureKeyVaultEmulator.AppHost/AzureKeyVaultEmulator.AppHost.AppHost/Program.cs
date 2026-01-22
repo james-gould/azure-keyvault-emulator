@@ -3,7 +3,9 @@ using AzureKeyVaultEmulator.Shared.Constants.Orchestration;
 
 var builder = DistributedApplication.CreateBuilder();
 
-var keyVault = builder.AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName);
+var keyVault = builder
+    .AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName)
+    .WithEnvironment("Persist", "true");
 
 //var keyVault = builder
 //    .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
