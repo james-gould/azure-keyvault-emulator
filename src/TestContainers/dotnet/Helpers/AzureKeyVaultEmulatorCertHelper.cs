@@ -108,7 +108,7 @@ namespace AzureKeyVaultEmulator.TestContainers.Helpers
                 var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
 
                 if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
-                    throw new KeyVaultEmulatorException("CRT is required for a Linux host machine but was missing at path: {pfxPath}.");
+                    throw new KeyVaultEmulatorException($"CRT is required for a Linux host machine but was missing at path: {pfxPath}.");
 
                 return (pfx, pem);
 #else
