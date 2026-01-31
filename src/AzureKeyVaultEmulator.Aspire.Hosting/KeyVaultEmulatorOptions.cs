@@ -47,14 +47,6 @@ public sealed class KeyVaultEmulatorOptions
     public bool UseDotnetDevCerts { get; set; } = false;
 
     /// <summary>
-    /// <para>Cleans up the generated SSL certificates on application shutdown.</para>
-    /// <para>If you do not set a value for <see cref="LocalCertificatePath"/>, the default local user directory will be used for your OS.</para>
-    /// <para>Default: <see langword="false"/></para>
-    /// </summary>
-    [Obsolete("This option will be removed in future releases, please remove your usage.")]
-    public bool ForceCleanupOnShutdown { get; set; } = false;
-
-    /// <summary>
     /// Used to internally validate the configuration of the emulator before performing any IO.
     /// </summary>
     internal bool IsValidCustomisable
@@ -67,10 +59,10 @@ public sealed class KeyVaultEmulatorOptions
     /// <summary>
     /// Used to carry the PFX through the generation and installation lifetime. Not passed as an option.
     /// </summary>
-    internal X509Certificate2? PFX { get; set; }
+    internal X509Certificate2? PFX { get; set; } = null;
 
     /// <summary>
     /// Used to carry the CRT through the generation and installation lifetime. Not passed as an option.
     /// </summary>
-    internal string? CRT { get; set; }
+    internal string CRT { get; set; } = string.Empty;
 }
