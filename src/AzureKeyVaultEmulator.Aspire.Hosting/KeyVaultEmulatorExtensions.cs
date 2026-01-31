@@ -133,10 +133,6 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                 await eventing.PublishAsync(new ResourceReadyEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
             });
 
-            // Something has to be set before the endpoint is available to ensure the Bicep validation passes.
-            // Will *not* resolve correctly, but when the host machine endpoint is available it will override this and resolve.
-            builder.Resource.Outputs.Add("vaultUri", "https://localhost:7994");
-
             return builder;
         }
 
