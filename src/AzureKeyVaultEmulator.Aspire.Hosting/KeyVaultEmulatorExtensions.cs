@@ -103,7 +103,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         if (string.IsNullOrEmpty(endpoint.Url))
                             throw new InvalidOperationException($"Failed to find endpoint URL for {nameof(AzureKeyVaultEmulatorResource)}");
 
-                        builder.Resource.Outputs.Clear();
+                        if(builder.Resource.Outputs.Any())
+                            builder.Resource.Outputs.Clear();
 
                         builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
 
@@ -120,18 +121,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     .WithHttpHealthCheck("/token")
                     .WithAnnotation(new EmulatorResourceAnnotation());
 
-            // We need to forward events from the real Azure Key Vault resource to the emulator resource
-            var eventing = builder.ApplicationBuilder.Eventing;
-
-            eventing.Subscribe<BeforeResourceStartedEvent>(builder.Resource, async (resourceEvent, ct) =>
-            {
-                await eventing.PublishAsync(new BeforeResourceStartedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
-            });
-
-            eventing.Subscribe<ResourceReadyEvent>(builder.Resource, async (resourceEvent, ct) =>
-            {
-                await eventing.PublishAsync(new ResourceReadyEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
-            });
+            builder.MapResourceEvents(keyVaultResourceBuilder);
 
             return builder;
         }
@@ -178,6 +168,34 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             catch { }
 
             return options ?? new();
+        }
+
+        /// <summary>
+        /// Configures event propagation from the Azure Key Vault resource to the associated Key Vault emulator resource
+        /// within the application builder pipeline.
+        /// </summary>
+        /// <remarks>This method ensures that lifecycle events such as resource startup and readiness are
+        /// forwarded from the Azure Key Vault resource to the emulator resource. This is useful for scenarios where
+        /// emulator state must remain synchronized with the main resource during application initialization.</remarks>
+        /// <param name="builder">The resource builder for the Azure Key Vault resource to which event subscriptions will be added.</param>
+        /// <param name="keyVaultResourceBuilder">The resource builder for the Azure Key Vault emulator resource that will receive propagated events.</param>
+        /// <returns>The original resource builder for the Azure Key Vault resource, enabling method chaining.</returns>
+        private static IResourceBuilder<AzureKeyVaultResource> MapResourceEvents
+            (this IResourceBuilder<AzureKeyVaultResource> builder, IResourceBuilder<AzureKeyVaultEmulatorResource> keyVaultResourceBuilder)
+        {
+            var eventing = builder.ApplicationBuilder.Eventing;
+
+            eventing.Subscribe<BeforeResourceStartedEvent>(builder.Resource, async (resourceEvent, ct) =>
+            {
+                await eventing.PublishAsync(new BeforeResourceStartedEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
+            });
+
+            eventing.Subscribe<ResourceReadyEvent>(builder.Resource, async (resourceEvent, ct) =>
+            {
+                await eventing.PublishAsync(new ResourceReadyEvent(keyVaultResourceBuilder.Resource, resourceEvent.Services), ct);
+            });
+
+            return builder;
         }
 
         private static IEnumerable<AzureKeyVaultSecretResource> ExtractSecrets(this ResourceReadyEvent resourceEvent)
