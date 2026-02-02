@@ -125,7 +125,7 @@ The base of the image is `jamesgoulddev/azure-keyvault-emulator`, with the tag d
 There is support for both `x86` and `ARM` architectures, both versioned identically, however `ARM` support will have `-arm` appended to the version. For example, `2.0.0` would be structured as:
 
 | Architecture | tag |
-----------------------
+|---------------|-------|
 | `x86` | `2.0.0` |
 | `ARM` | `2.0.0-arm` |
 
