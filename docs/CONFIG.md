@@ -118,6 +118,19 @@ You do not need to use `.NET Aspire` to run the emulator, but you will have to g
 >
 > This is **opt-in** behaviour, without persistence the Emulator data will be stored internally at `/tmp/{guid}.db` and destroyed on shutdown.
 
+### Images
+
+The base of the image is `jamesgoulddev/azure-keyvault-emulator`, with the tag denoting which version to use. Generally the latest release will be the most stable, any known issues will see the problematic version deprecated and delisted. 
+
+There is support for both `x86` and `ARM` architectures, both versioned identically, however `ARM` support will have `-arm` appended to the version. For example, `2.0.0` would be structured as:
+
+| Architecture | tag |
+----------------------
+| `x86` | `2.0.0` |
+| `ARM` | `2.0.0-arm` |
+
+This configuration is applicable to `Docker` (or alternative container runtimes) and also `TestContainers`.
+
 ### Installing Certificates
 
 The certificates must be installed as a **Trusted Root CA** to achieve SSL:
