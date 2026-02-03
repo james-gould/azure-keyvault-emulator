@@ -287,6 +287,17 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             return Ok(result);
         }
 
+        [HttpPost("{name}/wrapkey")]
+        public async Task<IActionResult> WrapKey(
+            [FromRoute] string name,
+            [FromBody] KeyOperationParameters para,
+            [ApiVersion] string apiVersion)
+        {
+            var result = await keyService.WrapKeyAsync(name, string.Empty, para);
+
+            return Ok(result);
+        }
+
         [HttpPost("{name}/{version}/unwrapkey")]
         public async Task<IActionResult> UnwrapKey(
             [FromRoute] string name,

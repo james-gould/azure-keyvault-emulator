@@ -328,7 +328,6 @@ namespace AzureKeyVaultEmulator.Keys.Services
         public async Task<KeyOperationResult> WrapKeyAsync(string name, string version, KeyOperationParameters para)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
             var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
