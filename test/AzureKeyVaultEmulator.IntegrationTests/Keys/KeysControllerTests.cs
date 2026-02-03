@@ -616,6 +616,24 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
     }
 
     [Fact]
+    public async Task WrapKeyWillExecuteCorrectly()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var key = await client.CreateRsaKeyAsync(new CreateRsaKeyOptions("test"));
+
+        var crypto = client.GetCryptographyClient("test");
+
+        var unwrappedKey = "testingkey"u8.ToArray();
+
+        var wrapAlgo = KeyWrapAlgorithm.RsaOaep;
+
+        var wrappedResult = await crypto.WrapKeyAsync(wrapAlgo, unwrappedKey);
+
+        Assert.NotEqual(unwrappedKey, wrappedResult.EncryptedKey);
+    }
+
+    [Fact]
     public async Task DeletedKeyWillBeMissedInAllKeys()
     {
         var client = await fixture.GetClientAsync();
