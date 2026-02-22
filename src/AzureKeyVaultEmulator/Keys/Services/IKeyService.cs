@@ -27,7 +27,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
         Task<ValueModel<string>> ReleaseKeyAsync(string name, string version);
         Task<KeyBundle> ImportKeyAsync(string name, JsonWebKey key, KeyAttributes attributes, Dictionary<string, string> tags);
         Task<KeyOperationResult> SignWithKeyAsync(string name, string version, string algo, string value);
-        Task<ValueModel<bool>> VerifyDigestAsync(string name, string version, string digest, string signature);
+        Task<ValueModel<bool>> VerifyDigestAsync(string name, string version, string algo, string digest, string signature);
 
         Task<KeyOperationResult> WrapKeyAsync(string name, string version, KeyOperationParameters para);
         Task<KeyOperationResult> UnwrapKeyAsync(string name, string version, KeyOperationParameters para);

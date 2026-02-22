@@ -260,7 +260,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string version,
             [FromBody] VerifyHashRequest req)
         {
-            var result = await keyService.VerifyDigestAsync(name, version, req.Digest, req.Value);
+            var result = await keyService.VerifyDigestAsync(name, version, req.Algorithm, req.Digest, req.Value);
 
             return Ok(result);
         }
@@ -270,7 +270,7 @@ namespace AzureKeyVaultEmulator.Keys.Controllers
             [FromRoute] string name,
             [FromBody] VerifyHashRequest req)
         {
-            var result = await keyService.VerifyDigestAsync(name, string.Empty, req.Digest, req.Value);
+            var result = await keyService.VerifyDigestAsync(name, string.Empty, req.Algorithm, req.Digest, req.Value);
 
             return Ok(result);
         }

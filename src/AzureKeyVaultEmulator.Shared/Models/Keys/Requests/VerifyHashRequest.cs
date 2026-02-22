@@ -5,7 +5,7 @@ namespace AzureKeyVaultEmulator.Shared.Models.Keys.RequestModels;
 public sealed class VerifyHashRequest
 {
     [JsonPropertyName("alg")]
-    public required string Algorith { get; set; }
+    public required string Algorithm { get; set; }
 
     [JsonPropertyName("digest")]
     public required string Digest { get; set; }

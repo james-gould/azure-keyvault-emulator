@@ -6,16 +6,13 @@ namespace AzureKeyVaultEmulator.Emulator.Services
     {
         string CreateKeyVaultJwe(object value);
         T DecryptFromKeyVaultJwe<T>(string jwe) where T : notnull;
-        string SignWithKey(RSA key, string data);
-        bool VerifyData(RSA key, string hash, string signature);
+        string SignWithKey(RSA key, string hashAlgo, string data);
+        bool VerifyData(RSA key, string hashAlgo, string hash, string signature);
     }
 
     public class EncryptionService : IEncryptionService
     {
         private readonly RSA _rsa;
-
-        private readonly RSASignaturePadding _padding = RSASignaturePadding.Pkcs1;
-        private readonly HashAlgorithmName _hashingAlgorithm = HashAlgorithmName.SHA256;
 
         public EncryptionService()
         {
@@ -23,21 +20,21 @@ namespace AzureKeyVaultEmulator.Emulator.Services
             _rsa.ImportFromPem(RsaPem.FullPem);
         }
 
-        public string SignWithKey(RSA key, string data)
+        public string SignWithKey(RSA key, string hashAlgo, string data)
         {
             var bytes = data.Base64UrlDecode();
 
-            var signedBytes = key.SignHash(bytes, _hashingAlgorithm, _padding);
+            var signedBytes = key.SignHash(bytes, GetHashAlgo(hashAlgo), GetPadding(hashAlgo));
 
             return signedBytes.Base64UrlEncode();
         }
 
-        public bool VerifyData(RSA key, string digest, string signature)
+        public bool VerifyData(RSA key, string hashAlgo, string digest, string signature)
         {
             var hashBytes = digest.Base64UrlDecode();
             var sigBytes = signature.Base64UrlDecode();
 
-            return key.VerifyHash(hashBytes, sigBytes, _hashingAlgorithm, _padding);
+            return key.VerifyHash(hashBytes, sigBytes, GetHashAlgo(hashAlgo), GetPadding(hashAlgo));
         }
 
         public T DecryptFromKeyVaultJwe<T>(string jweToken)
@@ -107,6 +104,43 @@ namespace AzureKeyVaultEmulator.Emulator.Services
         public void Dispose()
         {
             _rsa.Dispose();
+        }
+        
+        /// <summary>
+        /// Converts a string name of a hashing algorithm to a <see cref="HashAlgorithmName"/>.
+        /// </summary>
+        /// <param name="algo">The signature algorithm name (e.g., RS256, PS384, ES512).</param>
+        /// <returns>contains the corresponding hash algorithm if the conversion succeeded.</returns>
+        /// <remarks>
+        /// Based on https://github.com/Azure/azure-sdk-for-net/blob/c8964dc0d3101c9f34157c3db99e169e784ee08c/sdk/keyvault/Azure.Security.KeyVault.Keys/src/Cryptography/SignatureAlgorithm.cs#L209-L235
+        /// </remarks>
+        private HashAlgorithmName GetHashAlgo(string algo)
+        {
+            return algo switch
+            {
+                "RS256" or "PS256" => HashAlgorithmName.SHA256,
+                "RS384" or "PS384" => HashAlgorithmName.SHA384,
+                "RS512" or "PS512" => HashAlgorithmName.SHA512,
+                _ => throw new ArgumentException($"Invalid signing algorithm: '{algo}'.")
+            };
+        }
+        
+        /// <summary>
+        /// Get the padding for a <see cref="HashAlgorithmName"/> 
+        /// </summary>
+        /// <param name="algo"><see cref="HashAlgorithmName"/> to get the padding for</param>
+        /// <returns>The <see cref="RSASignaturePadding"/> for the given <see cref="HashAlgorithmName"/></returns>
+        /// <remarks>
+        /// Based on https://github.com/Azure/azure-sdk-for-net/blob/c8964dc0d3101c9f34157c3db99e169e784ee08c/sdk/keyvault/Azure.Security.KeyVault.Keys/src/Cryptography/SignatureAlgorithm.cs#L258-L275
+        /// </remarks>
+        private RSASignaturePadding GetPadding(string algo)
+        {
+            return algo switch
+            {
+                "RS256" or "RS384" or "RS512" => RSASignaturePadding.Pkcs1,
+                "PS256" or "PS384" or "PS512" => RSASignaturePadding.Pss,
+                _ => throw new ArgumentException($"Invalid signing algorithm: '{algo}'.")
+            };
         }
     }
 }

@@ -302,7 +302,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, version);
 
-            var signature = encryptionService.SignWithKey(key.Key.RSAKey, digest);
+            var signature = encryptionService.SignWithKey(key.Key.RSAKey, algo, digest);
 
             return new KeyOperationResult
             {
@@ -311,9 +311,10 @@ namespace AzureKeyVaultEmulator.Keys.Services
             };
         }
 
-        public async Task<ValueModel<bool>> VerifyDigestAsync(string name, string version, string digest, string signature)
+        public async Task<ValueModel<bool>> VerifyDigestAsync(string name, string version, string algo, string digest, string signature)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(algo);
             ArgumentException.ThrowIfNullOrWhiteSpace(digest);
             ArgumentException.ThrowIfNullOrWhiteSpace(signature);
 
@@ -321,7 +322,7 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             return new ValueModel<bool>
             {
-                Value = encryptionService.VerifyData(key.Key.RSAKey, digest, signature)
+                Value = encryptionService.VerifyData(key.Key.RSAKey, algo, digest, signature)
             };
         }
 
