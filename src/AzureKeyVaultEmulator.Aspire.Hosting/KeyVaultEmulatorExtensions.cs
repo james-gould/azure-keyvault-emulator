@@ -1,5 +1,7 @@
 ﻿using Aspire.Hosting.Azure;
 using Azure.Security.KeyVault.Secrets;
+using Azure.Security.KeyVault.Keys;
+using Azure.Security.KeyVault.Certificates;
 using AzureKeyVaultEmulator.Aspire.Hosting.Constants;
 using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
@@ -10,6 +12,10 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     public static class KeyVaultEmulatorExtensions
     {
+        private static List<KeyVaultSecret> _seedingSecrets = new();
+        private static List<(string keyName, CreateKeyOptions options, KeyType type)> _seedingKeys = new();
+        private static List<(string certificateName, CertificatePolicy policy)> _seedingCertificates = new();
+
         /// <summary>
         /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
         /// </summary>
@@ -124,6 +130,71 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             builder.MapResourceEvents(keyVaultResourceBuilder);
 
             return builder;
+        }
+
+        /// <summary>
+        /// Adds a secret to be seeded into the specified Azure Key Vault Emulator resource at runtime.
+        /// </summary>
+        /// <remarks>This method registers the secret for seeding but does not immediately create it in
+        /// Azure Key Vault. The secret will be created when the container is running in a healthy state.</remarks>
+        /// <param name="keyVault">The resource builder for the Azure Key Vault to which the secret will be added. Cannot be null.</param>
+        /// <param name="secretName">The name of the secret to add. Cannot be null.</param>
+        /// <param name="secretValue">The value of the secret to add. Cannot be null.</param>
+        /// <returns>The same resource builder instance for the Azure Key Vault, enabling method chaining.</returns>
+        public static IResourceBuilder<AzureKeyVaultResource> SeedWithSecret(
+            this IResourceBuilder<AzureKeyVaultResource> keyVault, string secretName, string secretValue)
+        {
+            ArgumentNullException.ThrowIfNull(keyVault);
+            ArgumentNullException.ThrowIfNull(secretName);
+            ArgumentNullException.ThrowIfNull(secretValue);
+
+            var secret = new KeyVaultSecret(secretName, secretValue);
+
+            _seedingSecrets.Add(secret);
+
+            return keyVault;
+        }
+
+        /// <summary>
+        /// Adds a key to be seeded into the specified Azure Key Vault Emulator resource at runtime.
+        /// </summary>
+        /// <remarks>This method registers the specified key to be created in the Key Vault when the
+        /// resource is provisioned. It does not immediately create the key in Azure Key Vault; the key will be created
+        /// when the container is running in a healthy state.</remarks>
+        /// <param name="keyVault">The resource builder for the Azure Key Vault to which the key will be added. Cannot be null.</param>
+        /// <param name="keyName">The name of the key to seed into the Key Vault. Cannot be null.</param>
+        /// <param name="options">The options used to configure the creation of the key.</param>
+        /// <param name="keyType">The type of key to create in the Key Vault.</param>
+        /// <returns>The same resource builder instance for the Azure Key Vault, enabling method chaining.</returns>
+        public static IResourceBuilder<AzureKeyVaultResource> SeedWithKey(
+            this IResourceBuilder<AzureKeyVaultResource> keyVault, string keyName, CreateKeyOptions options, KeyType keyType)
+        {
+            ArgumentNullException.ThrowIfNull(keyVault);
+            ArgumentNullException.ThrowIfNull(keyName);
+
+            _seedingKeys.Add((keyName, options, keyType));
+
+            return keyVault;
+        }
+
+        /// <summary>
+        /// Adds a certificate to be seeded into the specified Azure Key Vault resource at runtime.
+        /// </summary>
+        /// <remarks>This method is typically used as part of a resource definition chain to ensure that
+        /// the specified certificate is created in the Key Vault when the container is running in a healthy state.</remarks>
+        /// <param name="keyVault">The resource builder for the Azure Key Vault to which the certificate will be added. Cannot be null.</param>
+        /// <param name="certificateName">The name of the certificate to seed. Cannot be null.</param>
+        /// <param name="policy">An optional certificate policy to apply when creating the certificate. If null, the default policy is used.</param>
+        /// <returns>The original resource builder for the Azure Key Vault, enabling method chaining.</returns>
+        public static IResourceBuilder<AzureKeyVaultResource> SeedWithCertificate(
+            this IResourceBuilder<AzureKeyVaultResource> keyVault, string certificateName, CertificatePolicy? policy = null)
+        {
+            ArgumentNullException.ThrowIfNull(keyVault);
+            ArgumentNullException.ThrowIfNull(certificateName);
+
+            _seedingCertificates.Add((certificateName, policy ?? CertificatePolicy.Default));
+
+            return keyVault;
         }
 
         /// <summary>
