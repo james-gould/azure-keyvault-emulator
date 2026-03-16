@@ -535,6 +535,32 @@ public sealed class KeysControllerTests(KeysTestingFixture fixture) : IClassFixt
         //var imported = (await client.ImportKeyAsync(null)).Value;
     }
 
+    [Fact]
+    public async Task KeyOperationsWillPersist()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var options = new CreateKeyOptions();
+
+        var operations = new List<KeyOperation> { KeyOperation.WrapKey, KeyOperation.UnwrapKey };
+
+        foreach (var item in operations)
+            options.KeyOperations.Add(item);
+
+        var createKeyResponse = await client.CreateKeyAsync(keyName, KeyType.Rsa, options);
+
+        Assert.NotNull(createKeyResponse.Value);
+
+        var keyFromLookup = await client.GetKeyAsync(keyName);
+
+        var persistedKey = keyFromLookup?.Value;
+
+        Assert.NotNull(persistedKey);
+        Assert.Equal(persistedKey?.Key.KeyOps, operations);
+    }
+
     public static TheoryData<Func<HashAlgorithm>, SignatureAlgorithm> TestSignAndVerifyData => 
         new() 
         {
