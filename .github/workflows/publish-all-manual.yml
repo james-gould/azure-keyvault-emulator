@@ -2,7 +2,7 @@ name: Publish NuGet Packages and Docker Images
 
 on:
   workflow_run:
-    workflows: ["Build and Test"]
+    workflows: ["Release Version Update"]
     types:
       - completed
     branches:
