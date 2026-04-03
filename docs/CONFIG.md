@@ -124,8 +124,6 @@ You do not need to use `.NET Aspire` to run the emulator, but you will have to g
 > [!TIP]
 > To use `DefaultAzureCredential` with the Emulator, pass your Azure AD tenant ID using `-e TENANT_ID=your-tenant-id`.
 >
-> This configures the emulator's `WWW-Authenticate` response header with the correct authorization URL, allowing the Azure SDK to acquire tokens from the correct Azure AD tenant.
->
 > Without `TENANT_ID`, use the `EmulatedTokenCredential` from the `AzureKeyVaultEmulator.Client` package instead.
 
 ### Images

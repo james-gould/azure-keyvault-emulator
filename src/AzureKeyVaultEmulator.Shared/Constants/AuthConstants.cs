@@ -21,11 +21,6 @@ namespace AzureKeyVaultEmulator.Shared.Constants
         /// </summary>
         public const string TenantIdEnvVar = "TENANT_ID";
 
-        /// <summary>
-        /// The base URL for the Azure AD authorization endpoint used in the WWW-Authenticate header.
-        /// </summary>
-        public const string AzureAdAuthorityBase = "https://login.microsoftonline.com";
-
         public static readonly SymmetricSecurityKey SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_issuerSigningKey));
     }
 }

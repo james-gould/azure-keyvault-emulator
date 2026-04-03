@@ -40,7 +40,7 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
 
                             var authorization = string.IsNullOrEmpty(_tenantId)
                                 ? $"{AuthConstants.EmulatorUri}{context.Request.Path}"
-                                : $"{AuthConstants.AzureAdAuthorityBase}/{_tenantId}";
+                                : $"{AuthConstants.EmulatorUri}/{_tenantId}";
 
                             context.Response.Headers.Remove("WWW-Authenticate");
                             context.Response.Headers.WWWAuthenticate = $"Bearer authorization=\"{authorization}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
