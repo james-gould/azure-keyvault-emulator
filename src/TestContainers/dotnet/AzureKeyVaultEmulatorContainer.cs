@@ -53,12 +53,16 @@ namespace AzureKeyVaultEmulator.TestContainers
 
             var containerTag = AzureKeyVaultEnvHelper.GetContainerTag();
 
-            _container = new ContainerBuilder($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{_options.Tag ?? containerTag}")
+            var containerBuilder = new ContainerBuilder($"{AzureKeyVaultEmulatorContainerConstants.Registry}/{AzureKeyVaultEmulatorContainerConstants.Image}:{_options.Tag ?? containerTag}")
                 .WithPortBinding(AzureKeyVaultEmulatorContainerConstants.Port, _options.AssignRandomHostPort)
                 .WithBindMount(_options.LocalCertificatePath, AzureKeyVaultEmulatorCertConstants.CertMountTarget)
                 .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.PersistData, $"{_options.Persist}")
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(AzureKeyVaultEmulatorContainerConstants.Port))
-                .Build();
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(AzureKeyVaultEmulatorContainerConstants.Port));
+
+            if (!string.IsNullOrEmpty(_options.TenantId))
+                containerBuilder = containerBuilder.WithEnvironment(AzureKeyVaultEmulatorContainerConstants.TenantId, _options.TenantId);
+
+            _container = containerBuilder.Build();
         }
 
         /// <summary>

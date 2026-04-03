@@ -47,6 +47,7 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
 | `ForceCleanupOnShutdown`     | `bool`               | `false`     | Tries to delete certificates at `LocalCertificatePath` on shutdown. Unstable and marked `Obselete` pending removal. |
 | `Lifetime`                   | `ContainerLifetime`  | `Session`   | Controls container behavior on shutdown:<br>• `Session`: Destroys container<br>• `Persistent`: Stops container without destroying it.<br><br>This will not remove the certificates from your host machine. |
 | `UseDotnetDevCerts` | `bool` | `false` | Instructs the hosting runtime to generate and install SSL certificates via `dotnet dev-certs`. Useful if you have 3rd party dependencies which utilise/require the ASP.NET Core dev-cert. |
+| `TenantId` | `string?` | `null` | The Azure AD tenant ID to pass to the emulator, enabling `DefaultAzureCredential` support. If not set, the Aspire hosting will attempt to auto-detect from the `AZURE_TENANT_ID` environment variable on the host machine. |
 
 
 
@@ -63,7 +64,8 @@ With `User Secrets` you can create a configuration section with the following op
     "ShouldGenerateCertificates": false,
     "Lifetime": "Persistent",
     "ForceCleanupOnShutdown": false,
-    "UseDotnetDevCerts": false
+    "UseDotnetDevCerts": false,
+    "TenantId": "your-azure-ad-tenant-id"
   }
 }
 ```
@@ -92,7 +94,8 @@ Or you can pass in the same values directly as an `object`:
         ShouldGenerateCertificates = false,
         Lifetime = ContainerLifetime.Persistent,
         ForceCleanupOnShutdown = false,
-        UseDotnetDevCerts = false
+        UseDotnetDevCerts = false,
+        TenantId = "your-azure-ad-tenant-id"
     });
 ```
 
@@ -117,6 +120,11 @@ You do not need to use `.NET Aspire` to run the emulator, but you will have to g
 > This will create an `emulator.db` in the mount next to your certificates; shareable, re-usable, updated in real-time and loaded in at runtime.
 >
 > This is **opt-in** behaviour, without persistence the Emulator data will be stored internally at `/tmp/{guid}.db` and destroyed on shutdown.
+
+> [!TIP]
+> To use `DefaultAzureCredential` with the Emulator, pass your Azure AD tenant ID using `-e TENANT_ID=your-tenant-id`.
+>
+> Without `TENANT_ID`, use the `EmulatedTokenCredential` from the `AzureKeyVaultEmulator.Client` package instead.
 
 ### Images
 

@@ -5,6 +5,8 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
 {
     public static class AuthenticationSetup
     {
+        private static readonly string? _tenantId = Environment.GetEnvironmentVariable(AuthConstants.TenantIdEnvVar);
+
         /// <summary>
         /// We just want to force requests through, the client libraries expect auth but we don't care about it here.
         /// </summary>
@@ -35,8 +37,13 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
                         {
                             var requestHostSplit = context.Request.Host.ToString().Split(".", 2);
                             var scope = $"https://{requestHostSplit[^1]}/.default";
+
+                            var authorization = string.IsNullOrEmpty(_tenantId)
+                                ? $"{AuthConstants.EmulatorUri}{context.Request.Path}"
+                                : $"{AuthConstants.EmulatorUri}/{_tenantId}";
+
                             context.Response.Headers.Remove("WWW-Authenticate");
-                            context.Response.Headers.WWWAuthenticate = $"Bearer authorization=\"{AuthConstants.EmulatorUri}{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
+                            context.Response.Headers.WWWAuthenticate = $"Bearer authorization=\"{authorization}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
 
                             return Task.CompletedTask;
                         }

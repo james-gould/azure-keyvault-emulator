@@ -16,6 +16,11 @@ namespace AzureKeyVaultEmulator.Shared.Constants
 
         public const string EmulatorIss = "localazurekeyvault.localhost.com";
 
+        /// <summary>
+        /// The environment variable name used to pass the Azure AD tenant ID to the emulator.
+        /// </summary>
+        public const string TenantIdEnvVar = "TENANT_ID";
+
         public static readonly SymmetricSecurityKey SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_issuerSigningKey));
     }
 }
