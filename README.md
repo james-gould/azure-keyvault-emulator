@@ -44,6 +44,7 @@ A break down of the command:
 | `-p {host-port}:4997`    | Specifies the port to run on. The host port is configurable, but must map to container port `4997`. | ✅ |
 | `-v {/host/path/to/certs}:/certs` | Binds the directory containing the SSL `PFX` and `CRT` files, required for the Azure SDK. | ❌ |
 | `-e Persist=true` | Instructs the emulator to create an `SQLite` database, written to your mounted volume/directory alongside the certificate files. | ✅ |
+| `-e TENANT_ID={your-tenant-id}` | Sets your Azure AD tenant ID, required for `DefaultAzureCredential` support. | ✅ |
 | `jamesgoulddev/azure-keyvault-emulator:latest` | The container image name and tag. Always use `latest`. | ❌ |
 
 You can read more about configuration [here.](docs/CONFIG.md#local-docker)

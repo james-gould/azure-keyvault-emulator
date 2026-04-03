@@ -35,8 +35,14 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
                         {
                             var requestHostSplit = context.Request.Host.ToString().Split(".", 2);
                             var scope = $"https://{requestHostSplit[^1]}/.default";
+
+                            var tenantId = Environment.GetEnvironmentVariable(AuthConstants.TenantIdEnvVar);
+                            var authorization = string.IsNullOrEmpty(tenantId)
+                                ? $"{AuthConstants.EmulatorUri}{context.Request.Path}"
+                                : $"{AuthConstants.AzureAdAuthorityBase}/{tenantId}";
+
                             context.Response.Headers.Remove("WWW-Authenticate");
-                            context.Response.Headers.WWWAuthenticate = $"Bearer authorization=\"{AuthConstants.EmulatorUri}{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
+                            context.Response.Headers.WWWAuthenticate = $"Bearer authorization=\"{authorization}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
 
                             return Task.CompletedTask;
                         }

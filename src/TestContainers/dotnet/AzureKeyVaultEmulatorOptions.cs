@@ -56,6 +56,13 @@ namespace AzureKeyVaultEmulator.TestContainers
         public bool AssignRandomHostPort { get; set; } = true;
 
         /// <summary>
+        /// <para>The Azure AD tenant ID to pass to the emulator container, enabling <c>DefaultAzureCredential</c> support.</para>
+        /// <para>When provided, the emulator returns a valid <c>authorization</c> URL in its <c>WWW-Authenticate</c> header,
+        /// allowing the Azure SDK to acquire tokens from the correct Azure AD tenant.</para>
+        /// </summary>
+        public string? TenantId { get; set; }
+
+        /// <summary>
         /// Used to internally validate the configuration of the emulator before performing any IO.
         /// </summary>
         internal bool IsValidCustomisable

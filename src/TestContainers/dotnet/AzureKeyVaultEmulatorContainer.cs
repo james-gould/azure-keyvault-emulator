@@ -57,6 +57,7 @@ namespace AzureKeyVaultEmulator.TestContainers
                 .WithPortBinding(AzureKeyVaultEmulatorContainerConstants.Port, _options.AssignRandomHostPort)
                 .WithBindMount(_options.LocalCertificatePath, AzureKeyVaultEmulatorCertConstants.CertMountTarget)
                 .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.PersistData, $"{_options.Persist}")
+                .WithEnvironment(AzureKeyVaultEmulatorContainerConstants.TenantId, _options.TenantId ?? string.Empty)
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(AzureKeyVaultEmulatorContainerConstants.Port))
                 .Build();
         }

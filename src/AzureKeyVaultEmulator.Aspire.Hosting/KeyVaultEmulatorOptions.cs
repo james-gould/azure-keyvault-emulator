@@ -47,6 +47,14 @@ public sealed class KeyVaultEmulatorOptions
     public bool UseDotnetDevCerts { get; set; } = false;
 
     /// <summary>
+    /// <para>The Azure AD tenant ID to pass to the emulator container, enabling <c>DefaultAzureCredential</c> support.</para>
+    /// <para>If not set, the Aspire hosting will attempt to auto-detect the tenant ID from the <c>AZURE_TENANT_ID</c> environment variable on the host machine.</para>
+    /// <para>When provided, the emulator returns a valid <c>authorization</c> URL in its <c>WWW-Authenticate</c> header,
+    /// allowing the Azure SDK to acquire tokens from the correct Azure AD tenant.</para>
+    /// </summary>
+    public string? TenantId { get; set; }
+
+    /// <summary>
     /// Used to internally validate the configuration of the emulator before performing any IO.
     /// </summary>
     internal bool IsValidCustomisable

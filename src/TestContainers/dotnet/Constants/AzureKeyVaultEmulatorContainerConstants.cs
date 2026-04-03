@@ -17,5 +17,6 @@ namespace AzureKeyVaultEmulator.TestContainers.Constants
         // Environment Variables
 
         public const string PersistData = "Persist";
+        public const string TenantId = "TENANT_ID";
     }
 }

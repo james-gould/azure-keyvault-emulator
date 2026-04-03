@@ -95,6 +95,12 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     .WithEnvironment(ctx =>
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");
+
+                        var tenantId = options.TenantId
+                            ?? Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
+
+                        if (!string.IsNullOrEmpty(tenantId))
+                            ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.TenantId, tenantId);
                     })
                     .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
                     {
