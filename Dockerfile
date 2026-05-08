@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
 COPY AzureKeyVaultEmulator.sln ./ 
+COPY Directory.Packages.props ./
 COPY src/AzureKeyVaultEmulator/*.csproj src/AzureKeyVaultEmulator/
 COPY src/AzureKeyVaultEmulator.Shared/*.csproj src/AzureKeyVaultEmulator.Shared/
 RUN dotnet restore src/AzureKeyVaultEmulator/AzureKeyVaultEmulator.csproj
