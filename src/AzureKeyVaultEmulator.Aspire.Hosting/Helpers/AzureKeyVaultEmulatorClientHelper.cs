@@ -1,4 +1,6 @@
 ﻿using Azure.Core;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
@@ -14,6 +16,28 @@ internal static class AzureKeyVaultEmulatorClientHelper
         var credential = new EmulatedTokenCredential(uri);
 
         return new SecretClient(uri, credential, opt);
+    }
+
+    internal static CertificateClient GetCertificateClient(string vaultUri)
+    {
+        var opt = new CertificateClientOptions { DisableChallengeResourceVerification = true };
+
+        var uri = new Uri(vaultUri);
+
+        var credential = new EmulatedTokenCredential(uri);
+
+        return new CertificateClient(uri, credential, opt);
+    }
+
+    internal static KeyClient GetKeyClient(string vaultUri)
+    {
+        var opt = new KeyClientOptions { DisableChallengeResourceVerification = true };
+
+        var uri = new Uri(vaultUri);
+
+        var credential = new EmulatedTokenCredential(uri);
+
+        return new KeyClient(uri, credential, opt);
     }
 
     private class EmulatedTokenCredential(Uri vaultUri) : TokenCredential

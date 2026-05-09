@@ -3,19 +3,25 @@ using Aspire.Hosting.Azure;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
+using AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting;
 
 public static partial class KeyVaultEmulatorExtensions
 {
-    private static List<KeyVaultSecret> _seedingSecrets = new();
-    private static List<(string keyName, CreateKeyOptions options, KeyType type)> _seedingKeys = new();
+    private static readonly List<KeyVaultSecret> _seedingSecrets = [];
+
+    // New, blank keys
+    private static readonly List<(string keyName, CreateKeyOptions options, KeyType type)> _seedingKeys = [];
+
+    // Existing keys being imported
+    private static readonly List<ImportKeyOptions> _seedingExistingKeys = [];
 
     // New, blank x509 certs
-    private static List<(string certificateName, CertificatePolicy policy)> _seedingCertificates = new();
+    private static readonly List<(string certificateName, CertificatePolicy policy)> _seedingCertificates = [];
 
     // existing certs from bytes
-    private static List<ImportCertificateOptions> _seedingExistingCertificates = new();
+    private static readonly List<ImportCertificateOptions> _seedingExistingCertificates = [];
 
     /// <summary>
     /// Adds a secret to be seeded into the specified Azure Key Vault Emulator resource at runtime.
@@ -52,12 +58,38 @@ public static partial class KeyVaultEmulatorExtensions
     /// <param name="keyType">The type of key to create in the Key Vault.</param>
     /// <returns>The same resource builder instance for the Azure Key Vault, enabling method chaining.</returns>
     public static IResourceBuilder<AzureKeyVaultResource> SeedWithKey(
-        this IResourceBuilder<AzureKeyVaultResource> keyVault, string keyName, CreateKeyOptions options, KeyType keyType)
+        this IResourceBuilder<AzureKeyVaultResource> keyVault, string keyName,
+        CreateKeyOptions options, KeyType keyType)
     {
         ArgumentNullException.ThrowIfNull(keyVault);
-        ArgumentNullException.ThrowIfNull(keyName);
+        ArgumentException.ThrowIfNullOrEmpty(keyName);
 
         _seedingKeys.Add((keyName, options, keyType));
+
+        return keyVault;
+    }
+
+    /// <summary>
+    /// Adds a key to be seeded into the specified Azure Key Vault Emulator resource at runtime.
+    /// </summary>
+    /// <remarks>This method registers the specified key to be created in the Key Vault when the
+    /// resource is provisioned. It does not immediately create the key in Azure Key Vault; the key will be created
+    /// when the container is running in a healthy state.</remarks>
+    /// <param name="keyVault">The resource builder for the Azure Key Vault to which the key will be added. Cannot be null.</param>
+    /// <param name="keyName">The name of the key to seed into the Key Vault. Cannot be null.</param>
+    /// <param name="jsonWebKey">The key to import.</param>
+    /// <param name="keyType">The type of key to create in the Key Vault.</param>
+    /// <returns>The same resource builder instance for the Azure Key Vault, enabling method chaining.</returns>
+    public static IResourceBuilder<AzureKeyVaultResource> SeedWithKey(
+        this IResourceBuilder<AzureKeyVaultResource> keyVault, string keyName,
+        JsonWebKey jsonWebKey, KeyType keyType)
+    {
+        ArgumentNullException.ThrowIfNull(keyVault);
+        ArgumentException.ThrowIfNullOrEmpty(keyName);
+
+        var options = new ImportKeyOptions(keyName, jsonWebKey);
+
+        _seedingExistingKeys.Add(options);
 
         return keyVault;
     }
@@ -156,5 +188,44 @@ public static partial class KeyVaultEmulatorExtensions
         _seedingExistingCertificates.Add(options);
 
         return keyVault;
+    }
+
+    internal static async ValueTask SeedSecretsFromApphostAsync(string vaultUri, CancellationToken ct)
+    {
+        if (_seedingSecrets.Count == 0)
+            return;
+
+        var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri);
+
+        foreach (var secret in _seedingSecrets)
+            await client.SetSecretAsync(secret, ct);
+    }
+
+    internal static async ValueTask SeedCertificatesFromAppHostAsync(string vaultUri, CancellationToken ct)
+    {
+        if (_seedingCertificates.Count == 0 || _seedingExistingCertificates.Count == 0)
+            return;
+
+        var client = AzureKeyVaultEmulatorClientHelper.GetCertificateClient(vaultUri);
+
+        foreach(var (certificateName, policy) in _seedingCertificates)
+            await client.StartCreateCertificateAsync(certificateName, policy, cancellationToken: ct);
+
+        foreach (var importOptions in _seedingExistingCertificates)
+            await client.ImportCertificateAsync(importOptions, ct);
+    }
+
+    internal static async ValueTask SeedKeysFromAppHostAsync(string vaultUri, CancellationToken ct)
+    {
+        if (_seedingKeys.Count == 0 || _seedingExistingKeys.Count == 0)
+            return;
+
+        var client = AzureKeyVaultEmulatorClientHelper.GetKeyClient(vaultUri);
+
+        foreach (var (keyName, options, type) in _seedingKeys)
+            await client.CreateKeyAsync(keyName, type, options, ct);
+
+        foreach (var options in _seedingExistingKeys)
+            await client.ImportKeyAsync(options, ct);
     }
 }
