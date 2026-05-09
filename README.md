@@ -106,21 +106,7 @@ var keyVault = builder
     .SeedWithCertificate("myCertificateFromBytes", certBytes);
 ```
 
-The full set of seeding methods available on `IResourceBuilder<AzureKeyVaultResource>`:
-
-| Method | Description |
-|--------|-------------|
-| `SeedWithSecret(name, value)` | Creates a secret with the given name and value. |
-| `SeedWithKey(name, KeyType, CreateKeyOptions?)` | Creates a new key of the specified type. `CreateKeyOptions` is optional. |
-| `SeedWithKey(name, JsonWebKey, KeyType)` | Imports an existing `JsonWebKey` into the Emulator. |
-| `SeedWithCertificate(name, CertificatePolicy?)` | Creates a new certificate using the supplied policy, or `CertificatePolicy.Default` if omitted. |
-| `SeedWithCertificate(name, byte[], CertificatePolicy?)` | Imports an existing certificate from a `byte[]`. |
-| `SeedWithCertificate(name, string path, CertificatePolicy?)` | Imports an existing certificate from a file on disk. |
-
-All `SeedWith*` methods return the same `IResourceBuilder<AzureKeyVaultResource>` so they can be chained together with each other and with `WithReference`, `RunAsEmulator`, etc.
-
-> [!NOTE]
-> Seeding is performed against the running Emulator using the standard Azure SDK clients, so the values are persisted to the `emulator.db` file when `Persist = true` is enabled.
+For the full set of `SeedWith*` overloads and configuration details, see the [Seeding the Emulator section in CONFIG.md](docs/CONFIG.md#seeding-the-emulator).
 
 [Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
