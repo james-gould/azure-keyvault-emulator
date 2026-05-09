@@ -84,6 +84,44 @@ var keyVault = builder
     .RunAsEmulator(new KeyVaultEmulatorOptions { Persist = true }); // Add this option
 ```
 
+### 3. (Optional) Seed secrets, keys and certificates from your `AppHost`
+
+You can pre-populate the Emulator with secrets, keys and certificates directly from your `AppHost` using the fluent `SeedWith*` extension methods. The seeded data is created automatically once the Emulator container reports a healthy state, so it's available the moment your dependent projects start consuming it.
+
+```csharp
+using Azure.Security.KeyVault.Keys;
+
+var keyVault = builder
+    .AddAzureKeyVault("keyvault")
+    .RunAsEmulator()
+    // Secrets
+    .SeedWithSecret("mySecret", "secretValue")
+    // Keys: create a brand new key
+    .SeedWithKey("myKey", KeyType.Rsa)
+    // Certificates: create a new self-signed certificate using the default policy
+    .SeedWithCertificate("myCertificate")
+    // Certificates: import from a file path
+    .SeedWithCertificate("myImportedCertificate", "/path/to/cert.pfx")
+    // Certificates: import from an in-memory byte array
+    .SeedWithCertificate("myCertificateFromBytes", certBytes);
+```
+
+The full set of seeding methods available on `IResourceBuilder<AzureKeyVaultResource>`:
+
+| Method | Description |
+|--------|-------------|
+| `SeedWithSecret(name, value)` | Creates a secret with the given name and value. |
+| `SeedWithKey(name, KeyType, CreateKeyOptions?)` | Creates a new key of the specified type. `CreateKeyOptions` is optional. |
+| `SeedWithKey(name, JsonWebKey, KeyType)` | Imports an existing `JsonWebKey` into the Emulator. |
+| `SeedWithCertificate(name, CertificatePolicy?)` | Creates a new certificate using the supplied policy, or `CertificatePolicy.Default` if omitted. |
+| `SeedWithCertificate(name, byte[], CertificatePolicy?)` | Imports an existing certificate from a `byte[]`. |
+| `SeedWithCertificate(name, string path, CertificatePolicy?)` | Imports an existing certificate from a file on disk. |
+
+All `SeedWith*` methods return the same `IResourceBuilder<AzureKeyVaultResource>` so they can be chained together with each other and with `WithReference`, `RunAsEmulator`, etc.
+
+> [!NOTE]
+> Seeding is performed against the running Emulator using the standard Azure SDK clients, so the values are persisted to the `emulator.db` file when `Persist = true` is enabled.
+
 [Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
 ## Using The Emulator in your applications.

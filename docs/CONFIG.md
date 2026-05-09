@@ -12,6 +12,7 @@ The Azure SDK enforces `SSL` which requires a Trusted Root Certificate Authority
 1. [Using .NET Aspire](#using-aspire)
     1. [Automatic SSL](#automatic-ssl)
     2. [(Optional) Granular Configuration](#aspire-config)
+    3. [Seeding the Emulator](#seeding-the-emulator)
 2. [Manual With Docker](#local-docker)
     1. [Installing Manual Certificates](#installing-certificates)
 3. [FAQ](#FAQ)
@@ -99,6 +100,39 @@ Or you can pass in the same values directly as an `object`:
 If you run into SSL Connection issues, ie `UntrustedRoot`, your configuration is incorrect or the certificates in your specified directory aren't installed on your machine.
 
 If your configuration is the default and you're still experiencing SSL issues, 3rd party dependencies may be causing a certificate clash; set `UseDotnetDevCerts = true` and try again. [Wiremock.Net is known to cause this issue](https://github.com/james-gould/azure-keyvault-emulator/issues/293) and can be resolved with the `dev-cert` option.
+
+### Seeding the Emulator
+
+When using `.NET Aspire` you can pre-populate the Emulator with secrets, keys and certificates from your `AppHost` via the `SeedWith*` extension methods exposed on `IResourceBuilder<AzureKeyVaultResource>`. Seeding occurs once the Emulator container is healthy, so the values are available before any dependent projects begin consuming the vault.
+
+```csharp
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
+
+var keyVault = builder
+    .AddAzureKeyVault("keyvault")
+    .RunAsEmulator()
+    .SeedWithSecret("mySecret", "secretValue")
+    .SeedWithKey("myKey", KeyType.Rsa)
+    .SeedWithKey("myImportedKey", existingJsonWebKey, KeyType.Rsa)
+    .SeedWithCertificate("myCertificate")
+    .SeedWithCertificate("myImportedCertificate", "/path/to/cert.pfx")
+    .SeedWithCertificate("myCertificateFromBytes", certBytes, CertificatePolicy.Default);
+```
+
+| Method | Description |
+|--------|-------------|
+| `SeedWithSecret(string name, string value)` | Creates a secret with the supplied name and value. |
+| `SeedWithKey(string name, KeyType type, CreateKeyOptions? options = null)` | Creates a new key of the supplied type. `CreateKeyOptions` is optional. |
+| `SeedWithKey(string name, JsonWebKey jwk, KeyType type)` | Imports an existing `JsonWebKey`. |
+| `SeedWithCertificate(string name, CertificatePolicy? policy = null)` | Creates a new self-signed certificate. Falls back to `CertificatePolicy.Default` when `policy` is `null`. |
+| `SeedWithCertificate(string name, byte[] bytes, CertificatePolicy? policy = null)` | Imports an existing certificate from a byte array. |
+| `SeedWithCertificate(string name, string path, CertificatePolicy? policy = null)` | Imports an existing certificate from a file on disk. |
+
+All `SeedWith*` methods return the same `IResourceBuilder<AzureKeyVaultResource>`, so they can be freely chained with each other and with `WithReference`, `RunAsEmulator`, and the rest of the Aspire fluent API.
+
+> [!NOTE]
+> Seeding uses the standard Azure SDK clients against the running Emulator, so when `Persist = true` is enabled the seeded data is written to `emulator.db` and survives between sessions.
 
 ## Local Docker
 
