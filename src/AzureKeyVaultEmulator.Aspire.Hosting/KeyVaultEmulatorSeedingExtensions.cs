@@ -59,10 +59,12 @@ public static partial class KeyVaultEmulatorExtensions
     /// <returns>The same resource builder instance for the Azure Key Vault, enabling method chaining.</returns>
     public static IResourceBuilder<AzureKeyVaultResource> SeedWithKey(
         this IResourceBuilder<AzureKeyVaultResource> keyVault, string keyName,
-        CreateKeyOptions options, KeyType keyType)
+        KeyType keyType, CreateKeyOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(keyVault);
         ArgumentException.ThrowIfNullOrEmpty(keyName);
+
+        options ??= new CreateKeyOptions();
 
         _seedingKeys.Add((keyName, options, keyType));
 
