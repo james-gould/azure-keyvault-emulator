@@ -86,7 +86,7 @@ var keyVault = builder
 
 ### 3. (Optional) Seed secrets, keys and certificates from your `AppHost`
 
-You can pre-populate the Emulator with secrets, keys and certificates directly from your `AppHost` using the fluent `SeedWith*` extension methods. The seeded data is created automatically once the Emulator container reports a healthy state, so it's available the moment your dependent projects start consuming it.
+You can pre-populate the Emulator with secrets, keys and certificates directly from your `AppHost` using the fluent `SeedWith*` extension methods. The seeded data is created automatically once the emulator is running, so it's available the moment your dependent projects start consuming it.
 
 ```csharp
 using Azure.Security.KeyVault.Keys;
@@ -106,7 +106,7 @@ var keyVault = builder
     .SeedWithCertificate("myCertificateFromBytes", certBytes);
 ```
 
-For the full set of `SeedWith*` overloads and configuration details, see the [Seeding the Emulator section in CONFIG.md](docs/CONFIG.md#seeding-the-emulator).
+For the full set of `SeedWith*` overloads and configuration details, read the [Seeding the Emulator section](docs/CONFIG.md#seeding-the-emulator).
 
 [Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
