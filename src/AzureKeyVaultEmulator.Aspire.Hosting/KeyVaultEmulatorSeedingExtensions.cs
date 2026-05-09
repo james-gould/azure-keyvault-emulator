@@ -223,7 +223,7 @@ public static partial class KeyVaultEmulatorExtensions
 
     internal static async ValueTask SeedKeysFromAppHostAsync(string vaultUri, CancellationToken ct)
     {
-        if (_seedingKeys.Count == 0 || _seedingExistingKeys.Count == 0)
+        if (_seedingKeys.Count == 0 && _seedingExistingKeys.Count == 0)
             return;
 
         var client = AzureKeyVaultEmulatorClientHelper.GetKeyClient(vaultUri);
