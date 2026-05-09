@@ -20,6 +20,8 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" />
     <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Azure.Security.KeyVault.Certificates" />
+    <PackageReference Include="Azure.Security.KeyVault.Keys" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />

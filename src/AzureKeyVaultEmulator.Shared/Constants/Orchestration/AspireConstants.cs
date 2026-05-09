@@ -7,4 +7,5 @@ public sealed class AspireConstants
     public const string Wiremock = "wiremock";
 
     public const string IntegrationTest = "integration";
+    public const string SeedingTest = "seeding";
 }

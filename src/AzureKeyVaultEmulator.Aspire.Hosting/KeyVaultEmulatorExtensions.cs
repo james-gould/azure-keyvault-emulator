@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
-    public static class KeyVaultEmulatorExtensions
+    public static partial class KeyVaultEmulatorExtensions
     {
         /// <summary>
         /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
@@ -116,7 +116,11 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     {
                         var secrets = resourceEvent.ExtractSecrets();
 
-                        await MapSecretsToEmulatorAsync(emulatedResource.VaultUri, secrets);
+                        await SeedSecretsFromParametersAsync(emulatedResource.VaultUri, secrets, ct);
+
+                        await SeedSecretsFromApphostAsync(emulatedResource.VaultUri, ct);
+                        await SeedCertificatesFromAppHostAsync(emulatedResource.VaultUri, ct);
+                        await SeedKeysFromAppHostAsync(emulatedResource.VaultUri, ct);
                     })
                     .WithHttpHealthCheck("/token")
                     .WithAnnotation(new EmulatorResourceAnnotation());
@@ -205,9 +209,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             return model.Resources.OfType<AzureKeyVaultSecretResource>() ?? [];
         }
 
-        private static async ValueTask MapSecretsToEmulatorAsync(
-            string vaultUri,
-            IEnumerable<AzureKeyVaultSecretResource> secrets)
+        private static async ValueTask SeedSecretsFromParametersAsync(
+            string vaultUri, IEnumerable<AzureKeyVaultSecretResource> secrets, CancellationToken ct)
         {
             ArgumentException.ThrowIfNullOrEmpty(vaultUri);
 
@@ -216,19 +219,20 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 
             var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri);
 
-            var tasks = secrets.Select(s => SetSecretAsync(client, s));
+            var tasks = secrets.Select(s => SetSecretFromParameterAsync(client, s, ct));
 
             await Task.WhenAll(tasks);
         }
 
-        private static async Task SetSecretAsync(SecretClient client, AzureKeyVaultSecretResource secretResource)
+        private static async Task SetSecretFromParameterAsync(SecretClient client,
+            AzureKeyVaultSecretResource secretResource, CancellationToken ct)
         {
             var param = secretResource.Value as ParameterResource
                 ?? throw new KeyVaultEmulatorException($"Failed to cast secret {secretResource.Name} to {typeof(ParameterResource)}");
 
             var value = await param.GetValueAsync(default);
 
-            await client.SetSecretAsync(secretResource.SecretName, value);
+            await client.SetSecretAsync(secretResource.SecretName, value, ct);
         }
 
         private class AzureKeyVaultEmulatorResource(AzureKeyVaultResource resource) : ContainerResource(resource.Name)
