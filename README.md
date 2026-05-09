@@ -106,8 +106,6 @@ var keyVault = builder
     .SeedWithCertificate("myCertificateFromBytes", certBytes);
 ```
 
-For the full set of `SeedWith*` overloads and configuration details, read the [Seeding the Emulator section](docs/CONFIG.md#seeding-the-emulator).
-
 [Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
 ## Using The Emulator in your applications.
