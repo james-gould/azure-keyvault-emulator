@@ -205,13 +205,17 @@ public static partial class KeyVaultEmulatorExtensions
 
     internal static async ValueTask SeedCertificatesFromAppHostAsync(string vaultUri, CancellationToken ct)
     {
-        if (_seedingCertificates.Count == 0 || _seedingExistingCertificates.Count == 0)
+        if (_seedingCertificates.Count == 0 && _seedingExistingCertificates.Count == 0)
             return;
 
         var client = AzureKeyVaultEmulatorClientHelper.GetCertificateClient(vaultUri);
 
         foreach(var (certificateName, policy) in _seedingCertificates)
-            await client.StartCreateCertificateAsync(certificateName, policy, cancellationToken: ct);
+        {
+            var op = await client.StartCreateCertificateAsync(certificateName, policy, cancellationToken: ct);
+
+            await op.WaitForCompletionAsync();
+        }
 
         foreach (var importOptions in _seedingExistingCertificates)
             await client.ImportCertificateAsync(importOptions, ct);
