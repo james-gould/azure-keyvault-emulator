@@ -129,8 +129,6 @@ var keyVault = builder
 | `SeedWithCertificate(string name, byte[] bytes, CertificatePolicy? policy = null)` | Imports an existing certificate from a byte array. |
 | `SeedWithCertificate(string name, string path, CertificatePolicy? policy = null)` | Imports an existing certificate from a file on disk. |
 
-All `SeedWith*` methods return the same `IResourceBuilder<AzureKeyVaultResource>`, so they can be freely chained with each other and with `WithReference`, `RunAsEmulator`, and the rest of the Aspire fluent API.
-
 > [!NOTE]
 > Seeding uses the standard Azure SDK clients against the running Emulator, so when `Persist = true` is enabled the seeded data is written to `emulator.db` and survives between sessions.
 
