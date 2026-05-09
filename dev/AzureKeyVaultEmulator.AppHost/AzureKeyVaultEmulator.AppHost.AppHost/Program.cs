@@ -22,9 +22,9 @@ else
     var keyVault = builder
         .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
         .RunAsEmulator()
-        .SeedWithSecret("first", "secretValue")
-        .SeedWithCertificate("testingCert")
-        .SeedWithKey("testingKey", KeyType.Rsa);
+        .SeedWithSecret(SeedingConstants.SeededSecretName, SeedingConstants.SeededSecretValue)
+        .SeedWithCertificate(SeedingConstants.SeededCertificateName)
+        .SeedWithKey(SeedingConstants.SeededKeyName, KeyType.Rsa);
 
     //builder.AddProject<Projects.WebApiWithEmulator_DebugHelper>("api")
     //    .WithReference(keyVault);

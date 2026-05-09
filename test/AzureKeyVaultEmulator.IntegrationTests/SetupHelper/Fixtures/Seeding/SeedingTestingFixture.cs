@@ -5,7 +5,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using AzureKeyVaultEmulator.Shared.Constants.Orchestration;
 
-namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
+namespace AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures.Seeding;
 
 /// <summary>
 /// <para>Stripped down counterpart to <see cref="KeyVaultClientTestingFixture{TClient}"/> used to verify
