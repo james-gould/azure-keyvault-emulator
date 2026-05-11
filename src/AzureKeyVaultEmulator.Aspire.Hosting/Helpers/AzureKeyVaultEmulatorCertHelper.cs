@@ -33,18 +33,30 @@ internal static class AzureKeyVaultEmulatorCertHelper
 
         var certsAlreadyExist = File.Exists(pfxPath) && File.Exists(crtPath);
 
+        // Load the existing PFX once (if present) so it can be reused for both the
+        // expiration check below and the downstream LoadExistingCertificatesToInstall call,
+        // avoiding a second read from disk.
+        var existingPfx = certsAlreadyExist ? TryLoadPfx(pfxPath) : null;
+
         // The certs may expire; if the existing PFX is at/near (within 1 day of) expiration
         // we must regenerate to keep SSL connections to the Emulator working.
-        if (certsAlreadyExist && options.ShouldGenerateCertificates && CertificateIsExpiringOrExpired(pfxPath))
+        var certIsExpiringOrExpired = existingPfx is null || CertificateIsExpiringOrExpired(existingPfx);
+
+        if (certsAlreadyExist && options.ShouldGenerateCertificates && certIsExpiringOrExpired)
         {
             Debug.WriteLine($"Existing {KeyVaultEmulatorCertConstants.HostParentDirectory} certificate at {pfxPath} is expired or expiring within 1 day. Regenerating.");
+            existingPfx?.Dispose();
+            existingPfx = null;
             TryRemovePreviousCerts(pfxPath, crtPath);
             certsAlreadyExist = false;
         }
 
         // Both required certs exist so noop.
         if (certsAlreadyExist && !options.LoadCertificatesIntoTrustStore)
+        {
+            existingPfx?.Dispose();
             return new(certPath);
+        }
 
         // One has been deleted, try to remove them both and regenerate.
         // Only if users allow us to conduct IO on the certificates for the Emulator.
@@ -57,6 +69,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
             options.LoadCertificatesIntoTrustStore = false;
             options.LocalCertificatePath = certPath;
 
+            existingPfx?.Dispose();
             InstallViaDotnetDevCerts(certPath);
 
             return new(certPath);
@@ -65,7 +78,7 @@ internal static class AzureKeyVaultEmulatorCertHelper
         // Create files and place at {path}.
         var (pfx, pem) = options.ShouldGenerateCertificates && !certsAlreadyExist
                             ? GenerateAndSaveCert(pfxPath, crtPath)
-                            : LoadExistingCertificatesToInstall(pfxPath, crtPath);
+                            : LoadExistingCertificatesToInstall(existingPfx ?? TryLoadPfx(pfxPath), pfxPath, crtPath);
 
         return new(certPath) { Pfx = pfx, pem = pem };
     }
@@ -98,48 +111,31 @@ internal static class AzureKeyVaultEmulatorCertHelper
     }
 
     /// <summary>
-    /// Attempts to find and read the contents of the certificates used for SSL.
+    /// Validates the supplied <paramref name="pfx"/> (or, if null, loads from <paramref name="pfxPath"/>)
+    /// and pairs it with its associated PEM/CRT contents.
     /// </summary>
-    /// <param name="pfxPath">The path to the PFX.</param>
+    /// <param name="pfx">An already-loaded PFX, or <c>null</c> to load from <paramref name="pfxPath"/>.</param>
+    /// <param name="pfxPath">The path the PFX was (or should be) loaded from. Used for error reporting.</param>
     /// <param name="pemPath">The path to the PEM.</param>
     /// <returns>A full <see cref="X509Certificate2"/> and associated PEM from the RawData.</returns>
     /// <exception cref="KeyVaultEmulatorException"></exception>
     private static (X509Certificate2 pfx, string pem) LoadExistingCertificatesToInstall(
+        X509Certificate2? pfx,
         string pfxPath,
         string? pemPath = null)
     {
         ArgumentNullException.ThrowIfNull(pfxPath);
 
-        if (!File.Exists(pfxPath))
+        if (pfx is null)
             throw new KeyVaultEmulatorException($"PFX not found at path: {pfxPath}");
 
         var shouldWritePem = string.IsNullOrEmpty(pemPath) || !File.Exists(pemPath);
+        var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
 
-        try
-        {
+        if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
+            throw new KeyVaultEmulatorException($"CRT is required for a Linux host machine but was missing at path: {pfxPath}.");
 
-#if NET9_0_OR_GREATER
-            var pfx = X509CertificateLoader.LoadPkcs12FromFile(pfxPath, KeyVaultEmulatorCertConstants.Pword);
-            var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
-
-            if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
-                throw new KeyVaultEmulatorException("CRT is required for a Linux host machine but was missing at path: {pfxPath}.");
-
-            return (pfx, pem);
-#elif NET8_0
-            var pfx = new X509Certificate2(pfxPath, KeyVaultEmulatorCertConstants.Pword);
-            var pem = shouldWritePem ? ExportToPem(pfx) : File.ReadAllText(pemPath!);
-
-            if (OperatingSystem.IsLinux() && string.IsNullOrEmpty(pem))
-                throw new KeyVaultEmulatorException("PEM/CRT is required for a Linux host machine but was missing.");
-
-            return (pfx, pem);
-#endif
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        return (pfx, pem);
     }
 
     /// <summary>
@@ -306,33 +302,36 @@ internal static class AzureKeyVaultEmulatorCertHelper
     }
 
     /// <summary>
-    /// Checks whether the existing PFX certificate at <paramref name="pfxPath"/> is expired
-    /// or will expire within the next day. Defaults to <c>true</c> (forcing regeneration)
-    /// if the file cannot be read.
+    /// Attempts to load the PFX at <paramref name="pfxPath"/>. Returns <c>null</c> when the
+    /// file is missing or cannot be read.
     /// </summary>
     /// <param name="pfxPath">Path to the PFX certificate on disk.</param>
-    /// <returns><c>true</c> if the certificate should be regenerated, otherwise <c>false</c>.</returns>
-    private static bool CertificateIsExpiringOrExpired(string pfxPath)
+    /// <returns>The loaded <see cref="X509Certificate2"/>, or <c>null</c>.</returns>
+    private static X509Certificate2? TryLoadPfx(string pfxPath)
     {
         if (string.IsNullOrEmpty(pfxPath) || !File.Exists(pfxPath))
-            return true;
+            return null;
 
         try
         {
 #if NET9_0_OR_GREATER
-            using var cert = X509CertificateLoader.LoadPkcs12FromFile(pfxPath, KeyVaultEmulatorCertConstants.Pword);
+            return X509CertificateLoader.LoadPkcs12FromFile(pfxPath, KeyVaultEmulatorCertConstants.Pword);
 #elif NET8_0
-            using var cert = new X509Certificate2(pfxPath, KeyVaultEmulatorCertConstants.Pword);
+            return new X509Certificate2(pfxPath, KeyVaultEmulatorCertConstants.Pword);
 #endif
-            // Regenerate when within 1 day of expiry (or already past NotAfter).
-            return cert.NotAfter.ToUniversalTime() <= DateTime.UtcNow.AddDays(1);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to read existing certificate at {pfxPath} to check expiration: {ex.Message}. Treating as expired.");
-            return true;
+            Debug.WriteLine($"Failed to load existing certificate at {pfxPath}: {ex.Message}.");
+            return null;
         }
     }
+
+    /// <summary>
+    /// Returns <c>true</c> when <paramref name="cert"/> is expired or will expire within the next day.
+    /// </summary>
+    private static bool CertificateIsExpiringOrExpired(X509Certificate2 cert)
+        => cert.NotAfter.ToUniversalTime() <= DateTime.UtcNow.AddDays(1);
 
     /// <summary>
     /// Attempts to remove lingering certificates if they need to be regenerated.
