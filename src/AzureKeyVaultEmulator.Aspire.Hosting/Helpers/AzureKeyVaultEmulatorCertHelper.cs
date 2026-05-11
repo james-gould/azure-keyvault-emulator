@@ -31,13 +31,18 @@ internal static class AzureKeyVaultEmulatorCertHelper
         var pfxPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Pfx);
         var crtPath = Path.Combine(certPath, KeyVaultEmulatorCertConstants.Crt);
 
-        // The certs may expire, the expiration date in the crt should be validated,
-        // when close to expiration (1 day before end??), certificates should be regenerated.
         var certsAlreadyExist = File.Exists(pfxPath) && File.Exists(crtPath);
 
+        // The certs may expire; if the existing PFX is at/near (within 1 day of) expiration
+        // we must regenerate to keep SSL connections to the Emulator working.
+        if (certsAlreadyExist && options.ShouldGenerateCertificates && CertificateIsExpiringOrExpired(pfxPath))
+        {
+            Debug.WriteLine($"Existing {KeyVaultEmulatorCertConstants.HostParentDirectory} certificate at {pfxPath} is expired or expiring within 1 day. Regenerating.");
+            TryRemovePreviousCerts(pfxPath, crtPath);
+            certsAlreadyExist = false;
+        }
+
         // Both required certs exist so noop.
-        // Will also require a cert check for expiration
-        // Out of scope for now
         if (certsAlreadyExist && !options.LoadCertificatesIntoTrustStore)
             return new(certPath);
 
@@ -298,6 +303,35 @@ internal static class AzureKeyVaultEmulatorCertHelper
 
         Debug.WriteLine("To install on macOS trust store, run:");
         Debug.WriteLine($"sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \"{pfxPath}\"");
+    }
+
+    /// <summary>
+    /// Checks whether the existing PFX certificate at <paramref name="pfxPath"/> is expired
+    /// or will expire within the next day. Defaults to <c>true</c> (forcing regeneration)
+    /// if the file cannot be read.
+    /// </summary>
+    /// <param name="pfxPath">Path to the PFX certificate on disk.</param>
+    /// <returns><c>true</c> if the certificate should be regenerated, otherwise <c>false</c>.</returns>
+    private static bool CertificateIsExpiringOrExpired(string pfxPath)
+    {
+        if (string.IsNullOrEmpty(pfxPath) || !File.Exists(pfxPath))
+            return true;
+
+        try
+        {
+#if NET9_0_OR_GREATER
+            using var cert = X509CertificateLoader.LoadPkcs12FromFile(pfxPath, KeyVaultEmulatorCertConstants.Pword);
+#elif NET8_0
+            using var cert = new X509Certificate2(pfxPath, KeyVaultEmulatorCertConstants.Pword);
+#endif
+            // Regenerate when within 1 day of expiry (or already past NotAfter).
+            return cert.NotAfter.ToUniversalTime() <= DateTime.UtcNow.AddDays(1);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to read existing certificate at {pfxPath} to check expiration: {ex.Message}. Treating as expired.");
+            return true;
+        }
     }
 
     /// <summary>
