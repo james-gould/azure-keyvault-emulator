@@ -864,6 +864,40 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         Assert.Equal(createdCount, existingCount);
     }
 
+    [Fact]
+    public async Task ImportingCertificateWillPersistLifetimeActions()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var certName = fixture.FreshlyGeneratedGuid;
+        var cert = await fixture.CreateCertificateAsync(certName);
+
+        var policy = fixture.BasicPolicy;
+
+        var expectedDaysBeforeExpiry = 100;
+        var expectedPolicyAction = CertificatePolicyAction.AutoRenew;
+
+        policy.LifetimeActions.Add(
+            new LifetimeAction(expectedPolicyAction)
+            {
+                DaysBeforeExpiry = expectedDaysBeforeExpiry
+            }
+        );
+
+        var options = new ImportCertificateOptions(certName, cert.Cer) { Policy = policy };
+
+        var importedCertificate = await client.ImportCertificateAsync(options);
+
+        Assert.Equal(certName, importedCertificate.Value.Name);
+
+        var certFromStore = await client.GetCertAsync(certName);
+
+        Assert.CertificatesAreEqual(importedCertificate.Value, certFromStore);
+        Assert.Single(certFromStore.Policy.LifetimeActions);
+        Assert.Equal(expectedDaysBeforeExpiry, certFromStore.Policy.LifetimeActions[0].DaysBeforeExpiry);
+        Assert.Equal(expectedPolicyAction, certFromStore.Policy.LifetimeActions[0].Action);
+    }
+
     [Fact(Skip = @"
         Certificate Operations are currently hardcoded to work in a specific way,
         this functionality requires a refactor of the CertificateOperation class and

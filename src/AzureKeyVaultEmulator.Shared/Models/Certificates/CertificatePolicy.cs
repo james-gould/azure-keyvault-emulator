@@ -41,6 +41,7 @@ public sealed class CertificatePolicy : INamedItem
     [JsonPropertyName("x509_props")]
     public X509CertificateProperties? CertificateProperties { get; set; } = new();
 
+    [JsonIgnore]
     public string BackingLifetimeActions { get; set; } = "[]";
 
     [JsonPropertyName("lifetime_actions")]
@@ -48,6 +49,7 @@ public sealed class CertificatePolicy : INamedItem
     public IEnumerable<LifetimeActions> LifetimeActions
     {
         get => JsonSerializer.Deserialize<IEnumerable<LifetimeActions>>(BackingLifetimeActions) ?? [];
+        set => BackingLifetimeActions = JsonSerializer.Serialize(value);
     }
 
     [JsonPropertyName("key_props")]

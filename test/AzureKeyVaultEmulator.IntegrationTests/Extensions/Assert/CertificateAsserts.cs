@@ -26,16 +26,17 @@ public partial class Assert
         Equal(sourceOfTruth.Name, comparativeCertificate.Name);
         Equal(sourceOfTruth.Cer, comparativeCertificate.Cer);
 
-        if (fromGet)
-        {
-            Equal(sourceOfTruth.Id, comparativeCertificate.Id);
+        // Early exit from comparison
+        if (!fromGet)
+            return;
 
-            if (!string.IsNullOrEmpty(sourceOfTruth.SecretId.ToString()) || !string.IsNullOrEmpty(comparativeCertificate.SecretId.ToString()))
-                Equal(sourceOfTruth.SecretId, comparativeCertificate.SecretId);
+        Equal(sourceOfTruth.Id, comparativeCertificate.Id);
 
-            if (!string.IsNullOrEmpty(sourceOfTruth.KeyId.ToString()) || !string.IsNullOrEmpty(comparativeCertificate.KeyId.ToString()))
-                Equal(sourceOfTruth.KeyId, comparativeCertificate.KeyId);
-        }
+        if (!string.IsNullOrEmpty(sourceOfTruth.SecretId.ToString()) || !string.IsNullOrEmpty(comparativeCertificate.SecretId.ToString()))
+            Equal(sourceOfTruth.SecretId, comparativeCertificate.SecretId);
+
+        if (!string.IsNullOrEmpty(sourceOfTruth.KeyId.ToString()) || !string.IsNullOrEmpty(comparativeCertificate.KeyId.ToString()))
+            Equal(sourceOfTruth.KeyId, comparativeCertificate.KeyId);
     }
 
     /// <summary>
