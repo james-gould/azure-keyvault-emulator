@@ -47,6 +47,11 @@ public sealed class KeyVaultEmulatorOptions
     public bool UseDotnetDevCerts { get; set; } = false;
 
     /// <summary>
+    /// Used to override the container tag during test runs, not publicly exposed.
+    /// </summary>
+    internal string? ImageTag { get; set; } = null;
+
+    /// <summary>
     /// Used to internally validate the configuration of the emulator before performing any IO.
     /// </summary>
     internal bool IsValidCustomisable

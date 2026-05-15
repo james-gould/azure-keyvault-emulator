@@ -21,7 +21,7 @@ else
 {
     var keyVault = builder
         .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
-        .RunAsEmulator()
+        .RunAsEmulator(new KeyVaultEmulatorOptions { ImageTag = "3.0.0" })
         .SeedWithSecret(SeedingConstants.SeededSecretName, SeedingConstants.SeededSecretValue)
         .SeedWithCertificate(SeedingConstants.SeededCertificateName)
         .SeedWithKey(SeedingConstants.SeededKeyName, KeyType.Rsa);

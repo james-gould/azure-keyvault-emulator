@@ -81,7 +81,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 
             ArgumentException.ThrowIfNullOrEmpty(hostCertificatePath);
 
-            var containerTag = AzureKeyVaultEnvHelper.GetContainerTag();
+            var containerTag = options.ImageTag ?? AzureKeyVaultEnvHelper.GetContainerTag();
 
             var keyVaultResourceBuilder = builder.ApplicationBuilder.CreateResourceBuilder(new AzureKeyVaultEmulatorResource(builder.Resource))
                    .WithImage(KeyVaultEmulatorContainerConstants.Image)
