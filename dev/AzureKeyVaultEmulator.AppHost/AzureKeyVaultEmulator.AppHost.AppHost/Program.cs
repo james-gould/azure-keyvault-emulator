@@ -15,7 +15,7 @@ if (!seedingTestRun)
     //.WithEnvironment("Persist", "true");
 
     builder.AddProject<Projects.WebApiWithEmulator_DebugHelper>("api")
-        .WithReference(keyVault);
+        .WithEnvironment($"ConnectionStrings__{AspireConstants.EmulatorServiceName}", keyVault.GetEndpoint("https"));
 }
 else
 {

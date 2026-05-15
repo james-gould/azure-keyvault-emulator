@@ -14,11 +14,14 @@ public sealed class TriggerAction
 {
     [JsonPropertyName("timeAfterCreate")]
     public string TimeAfterCreate { get; set; } = string.Empty;
+
+    [JsonPropertyName("days_before_expiry")]
+    public int? DaysBeforeExpiry { get; set; } = null;
 }
 
 public sealed class ActionType
 {
-    [JsonPropertyName("type")]
+    [JsonPropertyName("action_type")]
     public string Type { get; set; } = string.Empty;
 }
 
