@@ -870,7 +870,9 @@ public class CertificatesControllerTests(CertificatesTestingFixture fixture)
         var client = await fixture.GetClientAsync();
 
         var certName = fixture.FreshlyGeneratedGuid;
-        var cert = await fixture.CreateCertificateAsync(certName);
+
+        // throwaway cert with a different name to not conflict versions within test
+        var cert = await fixture.CreateCertificateAsync(fixture.FreshlyGeneratedGuid);
 
         var policy = fixture.BasicPolicy;
 
