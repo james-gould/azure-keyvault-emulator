@@ -3,7 +3,7 @@
 > Tracking issue: [#316](https://github.com/james-gould/azure-keyvault-emulator/issues/316)
 > Prerequisite PR (merged): [#446](https://github.com/james-gould/azure-keyvault-emulator/pull/446) — *Permit `DefaultAzureCredential` against the emulator*
 >
-> Status: **Feasible.** The auth surface added in #446 is sufficient for the token-acquisition half of the ESO + Azure Workload Identity flow. The remaining work is k8s integration plumbing (sample/MVP, TLS trust, env wiring) plus validating one Go-SDK challenge knob.
+> Status: **Proven (SDK level).** The auth surface added in #446 is sufficient for ESO + Azure Workload Identity. A runnable PoC using `azidentity.WorkloadIdentityCredential` + `azsecrets.Client` lives at [`samples/external-secrets/workload-identity-poc/`](../samples/external-secrets/workload-identity-poc/) and round-trips a secret end-to-end (see §7). An in-cluster sample is the only remaining work, and it does not require emulator-side changes.
 
 ---
 
@@ -79,9 +79,24 @@ These are the items not yet covered by #446 — none are blockers, all are integ
 5. **`vaultUrl` schema validation**. The `azurekv` provider's `vaultUrl` field accepts any URL; smoke-test against `https://kv-emulator.<ns>.svc.cluster.local:4997` to confirm no implicit `*.vault.azure.net` regex.
 6. **Federated identity setup is a no-op against the emulator**. Because the emulator never inspects `client_assertion`, there is no AAD app registration, federated credential, or trust relationship to configure. The workload-identity webhook just needs to inject *some* projected SA token at `AZURE_FEDERATED_TOKEN_FILE` (the default behaviour given the right SA annotations).
 
-## 5. Proposed MVP
+## 5. MVP — SDK-level PoC (done in this branch) and proposed in-cluster sample
 
-A minimal end-to-end sample that lives under `samples/external-secrets/` (new directory) with:
+### 5a. SDK-level PoC (committed in this PR)
+
+Lives at [`samples/external-secrets/workload-identity-poc/`](../samples/external-secrets/workload-identity-poc/).
+A single Go file that instantiates `azidentity.WorkloadIdentityCredential` —
+the *exact* credential ESO's `azurekv` provider uses — and drives
+`azsecrets.Client` against the emulator. See §7 for the captured run.
+
+This proves the auth half of ESO's flow in isolation, without standing up a
+cluster. If this passes (it does), ESO will get the same successful response
+from the emulator that it gets from a real Entra tenant, modulo the
+challenge-resource knob noted in §4.4.
+
+### 5b. Proposed in-cluster sample (follow-up)
+
+A minimal end-to-end sample under `samples/external-secrets/` (extension of
+the directory created in §5a) with:
 
 ```
 samples/external-secrets/
@@ -106,10 +121,71 @@ The smoke test exercises exactly the auth path #446 unblocked plus the AKV REST 
 
 ## 6. Recommended follow-ups
 
-1. **Open a follow-up issue** ("MVP: External Secrets sample") owned by this repo, to land `samples/external-secrets/` and the matching README.
-2. **Open an upstream ESO issue** ("Expose `DisableChallengeResourceVerification` for azurekv against emulators") referencing this writeup. This is the most likely real-world blocker once the sample is wired up.
+1. **In-cluster sample (kind/k3d) follow-up** — the SDK-level PoC in §5a proves the auth path; an in-cluster sample under `samples/external-secrets/` (as sketched in §5b) is what's still needed to demonstrate the operator-side wiring end-to-end. Worth a separate, focused PR.
+2. **Open an upstream ESO issue** ("Expose `DisableChallengeResourceVerification` for azurekv against emulators") referencing this writeup. This is the most likely real-world blocker once the in-cluster sample is wired up.
 3. **No emulator API rework is required** for ESO's stated needs. The OAuth surface introduced in #446 is sufficient; we should resist the temptation to start parsing `client_assertion` form values, because the emulator's value proposition is *exactly* that it accepts every credential type without configuration.
 
-## 7. TL;DR
+## 7. Proof — PoC results
 
-> *"With the recent changes in #446 this may now be possible…"* — confirmed yes. The emulator now hosts the AAD-shaped token endpoint that `WorkloadIdentityCredential` requires, and because that endpoint and the JwtBearer pipeline both intentionally skip validation, ESO's workload-identity auth flow will transparently succeed against the emulator. What's left is a sample/MVP and a small upstream ESO knob for challenge-resource verification, neither of which require changes to the emulator itself.
+The full PoC lives at
+[`samples/external-secrets/workload-identity-poc/`](../samples/external-secrets/workload-identity-poc/).
+It uses `azidentity.WorkloadIdentityCredential` (the *exact* credential ESO's
+`azurekv` provider instantiates) + `azsecrets.Client` (the Go AKV SDK) against
+the emulator built from this branch.
+
+Captured run output (`go run .`):
+
+```
+[step 1] wrote fake k8s SA JWT to /tmp/sa-token-349077622.jwt
+[step 2] constructed azidentity.WorkloadIdentityCredential
+[step 3] got bearer token (head=eyJhbGciOiJIUzI1NiIsInR5...), expires 2026-05-16T20:38:38Z
+[step 4] constructed azsecrets.Client (DisableChallengeResourceVerification=true)
+[step 5] SetSecret OK
+[step 6] GetSecret OK: value="hello-from-external-secrets-flow"
+
+=========================================================
+ PoC PASSED
+ WorkloadIdentityCredential -> azsecrets round-trip
+ succeeded against the emulator. This is the exact code
+ path External Secrets Operator's azurekv provider uses.
+=========================================================
+```
+
+Steps 3 and 5/6 are the two things that had to work for the answer to flip
+from "theoretically possible" to "proven":
+
+- **Step 3** is the workload-identity-shaped POST to
+  `https://localhost:4997/{tenantId}/oauth2/v2.0/token` carrying
+  `grant_type=client_credentials` + `client_assertion_type=…:jwt-bearer` +
+  `client_assertion=<fake SA JWT>`. The emulator returns a bearer token, as
+  predicted by §3.
+- **Steps 5 and 6** confirm that the JwtBearer pipeline accepts that token on
+  the real AKV REST surface — the SDK's `SetSecret`/`GetSecret` calls
+  succeed and the round-trip value matches.
+
+For completeness, a `list secrets` call (which is what an `ExternalSecret`
+refresh effectively triggers) using a fresh workload-identity-acquired token
+returned the secret we just wrote:
+
+```
+GET /secrets?api-version=7.5
+{
+    "value": [
+        {
+            "id": "https://localhost:4997/secrets/eso-poc-secret",
+            "attributes": { "enabled": true, ... },
+            ...
+        }
+    ]
+}
+```
+
+### Reproducing
+
+See [`samples/external-secrets/workload-identity-poc/README.md`](../samples/external-secrets/workload-identity-poc/README.md).
+Short version: `dotnet dev-certs` to mint the cert, run the emulator image on
+:4997, then `go run .` in the sample directory.
+
+## 8. TL;DR
+
+> *"With the recent changes in #446 this may now be possible…"* — **confirmed and demonstrated.** The emulator now hosts the AAD-shaped token endpoint that `WorkloadIdentityCredential` requires, and because that endpoint and the JwtBearer pipeline both intentionally skip validation, ESO's workload-identity auth flow transparently succeeds against the emulator. The PoC above runs the literal credential ESO uses end-to-end and round-trips a secret. What's left is the in-cluster sample/MVP and a small upstream ESO knob for challenge-resource verification, neither of which require changes to the emulator itself.
