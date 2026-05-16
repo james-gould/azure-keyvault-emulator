@@ -108,6 +108,39 @@ var keyVault = builder
 
 [Read more about configuration here.](docs/CONFIG.md#aspire-config)
 
+### 4. (Optional) Authenticate with `DefaultAzureCredential`
+
+If your consumer uses `Azure.Identity.DefaultAzureCredential` (and you'd rather not take a
+dependency on the [client library](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client)),
+call `WithAzureKeyVaultEmulatorCredentials` in the AppHost. Everything is wired up
+automatically — credentials, tenant, and authority all flow into the consumer for you
+(the host machine's `AZURE_TENANT_ID` is picked up automatically when set):
+
+```csharp
+// AppHost
+var keyVault = builder.AddAzureKeyVaultEmulator("keyvault");
+
+builder.AddProject<Projects.MyApi>("api")
+    .WithAzureKeyVaultEmulatorCredentials(keyVault)
+    .WithReference(keyVault);
+```
+
+The only consumer-side settings the SDK still requires are `DisableInstanceDiscovery = true`
+on `DefaultAzureCredentialOptions` and `DisableChallengeResourceVerification = true` on the
+Key Vault client options (the emulator runs on `localhost` rather than `*.vault.azure.net`):
+
+```csharp
+var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+{
+    DisableInstanceDiscovery = true,
+});
+
+builder.Services.AddSingleton(_ => new SecretClient(
+    new Uri(vaultUri),
+    credential,
+    new SecretClientOptions { DisableChallengeResourceVerification = true }));
+```
+
 ## Using The Emulator in your applications.
 
 ### 1. Permit requests to the Emulator using the Azure SDK:
@@ -146,7 +179,7 @@ var options = new SecretClientOptions { DisableChallengeResourceVerification = t
 builder.Services.AddTransient(s => new SecretClient(new Uri(vaultUri), new DefaultAzureCredential(), options));
 ```
 
-[You can use this code from the client library](src/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs#L26-L51) replacing `EmulatedCredential` with `DefaultAzureCredential`.
+[You can use this code from the client library](src/AzureKeyVaultEmulator.Client/AddEmulatorSupport.cs).
 
 ### 2. Use your `AzureClients` as normal dependency injected services:
 

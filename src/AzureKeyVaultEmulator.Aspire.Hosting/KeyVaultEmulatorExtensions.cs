@@ -95,6 +95,11 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     .WithEnvironment(ctx =>
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");
+
+                        // Forward host AZURE_TENANT_ID (if set) so the WWW-Authenticate challenge advertises the user's real tenant.
+                        var tenantId = Environment.GetEnvironmentVariable(KeyVaultEmulatorContainerConstants.AzureTenantId);
+                        if (!string.IsNullOrWhiteSpace(tenantId))
+                            ctx.EnvironmentVariables[KeyVaultEmulatorContainerConstants.AzureTenantId] = tenantId;
                     })
                     .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
                     {

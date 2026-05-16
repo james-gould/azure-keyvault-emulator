@@ -1,4 +1,5 @@
 using System;
+using Azure.Identity;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
@@ -20,10 +21,7 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(nameof(vaultEndpoint));
 
-            var credential = new EmulatedTokenCredential(vaultEndpoint);
-            var uri = new Uri(vaultEndpoint);
-
-            return new SecretClient(uri, credential, new SecretClientOptions { DisableChallengeResourceVerification = true });
+            return new SecretClient(new Uri(vaultEndpoint), CreateCredential(), new SecretClientOptions { DisableChallengeResourceVerification = true });
         }
 
         /// <summary>
@@ -36,10 +34,7 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(nameof(vaultEndpoint));
 
-            var credential = new EmulatedTokenCredential(vaultEndpoint);
-            var uri = new Uri(vaultEndpoint);
-
-            return new KeyClient(uri, credential, new KeyClientOptions { DisableChallengeResourceVerification = true });
+            return new KeyClient(new Uri(vaultEndpoint), CreateCredential(), new KeyClientOptions { DisableChallengeResourceVerification = true });
         }
 
         /// <summary>
@@ -52,10 +47,13 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(nameof(vaultEndpoint));
 
-            var credential = new EmulatedTokenCredential(vaultEndpoint);
-            var uri = new Uri(vaultEndpoint);
-
-            return new CertificateClient(uri, credential, new CertificateClientOptions { DisableChallengeResourceVerification = true });
+            return new CertificateClient(new Uri(vaultEndpoint), CreateCredential(), new CertificateClientOptions { DisableChallengeResourceVerification = true });
         }
+
+        private static DefaultAzureCredential CreateCredential() =>
+            new DefaultAzureCredential(new DefaultAzureCredentialOptions
+            {
+                DisableInstanceDiscovery = true,
+            });
     }
 }

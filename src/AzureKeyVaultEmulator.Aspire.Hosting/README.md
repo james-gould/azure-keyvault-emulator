@@ -39,3 +39,36 @@ var keyVault = builder.AddAzureKeyVaultEmulator(keyVaultServiceName);
 You will then have a feature complete, emulated `Azure Key Vault` running locally:
 
 ![Azure Key Vault Emulator in .NET Aspire](https://i.imgur.com/gMpfwrN.png)
+
+# Using `DefaultAzureCredential`
+
+If your consumer authenticates with `Azure.Identity.DefaultAzureCredential` (so it doesn't need
+to depend on the emulator-specific [client library](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client)),
+add `WithAzureKeyVaultEmulatorCredentials` in the AppHost. Everything is wired up automatically —
+credentials, tenant, and authority all flow into the consumer for you (the host machine's
+`AZURE_TENANT_ID` is picked up automatically when set):
+
+```csharp
+// AppHost
+var keyVault = builder.AddAzureKeyVaultEmulator("keyvault");
+
+builder.AddProject<Projects.MyApi>("api")
+    .WithAzureKeyVaultEmulatorCredentials(keyVault)
+    .WithReference(keyVault);
+```
+
+The only consumer-side settings the SDK still requires are `DisableInstanceDiscovery = true` and
+`DisableChallengeResourceVerification = true` (the emulator runs on `localhost` rather than
+`*.vault.azure.net`):
+
+```csharp
+var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+{
+    DisableInstanceDiscovery = true,
+});
+
+builder.Services.AddSingleton(_ => new SecretClient(
+    new Uri(vaultUri),
+    credential,
+    new SecretClientOptions { DisableChallengeResourceVerification = true }));
+```

@@ -33,10 +33,16 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
                     {
                         OnChallenge = context =>
                         {
-                            var requestHostSplit = context.Request.Host.ToString().Split(".", 2);
-                            var scope = $"https://{requestHostSplit[^1]}/.default";
+                            // Point Azure SDK challenge-based auth at the emulator's own OAuth2 surface (see OAuthController).
+                            var tenantId = Environment.GetEnvironmentVariable(AuthConstants.HostMachineTenantId);
+                            if (string.IsNullOrWhiteSpace(tenantId))
+                                tenantId = AuthConstants.EmulatorTenantId;
+
+                            var authority = $"{context.Request.Scheme}://{context.Request.Host}/{tenantId}";
+
                             context.Response.Headers.Remove("WWW-Authenticate");
-                            context.Response.Headers.WWWAuthenticate = $"Bearer authorization=\"{AuthConstants.EmulatorUri}{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
+                            context.Response.Headers.WWWAuthenticate =
+                                $"Bearer authorization=\"{authority}\", scope=\"https://vault.azure.net/.default\", resource=\"https://vault.azure.net\"";
 
                             return Task.CompletedTask;
                         }

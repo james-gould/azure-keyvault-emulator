@@ -6,6 +6,12 @@ using Azure.Core;
 
 namespace AzureKeyVaultEmulator.Aspire.Client
 {
+    /// <summary>
+    /// Legacy <see cref="TokenCredential"/> that fetches a bearer token from the emulator's
+    /// <c>/token</c> endpoint. The emulator now self-hosts an Entra-compatible OAuth2 authority,
+    /// so <see cref="Azure.Identity.DefaultAzureCredential"/> can be used directly instead.
+    /// </summary>
+    [Obsolete("EmulatedTokenCredential is no longer required. The emulator now exposes an Entra-compatible OAuth2 surface, so use Azure.Identity.DefaultAzureCredential (with DefaultAzureCredentialOptions { DisableInstanceDiscovery = true }) instead. This type will be removed in a future major version.")]
     public sealed class EmulatedTokenCredential : TokenCredential
     {
         public EmulatedTokenCredential(string vaultUri)
@@ -32,10 +38,6 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             return new AccessToken(token, _expiry);
         }
 
-        /// <summary>
-        /// Worth revisiting this as a typed client or similar, the wiring is a nightmare.
-        /// Alternatively we could attempt to patch this in using Aspire events, requires research.
-        /// </summary>
         private async ValueTask<string> GetBearerToken()
         {
             if (!string.IsNullOrEmpty(_token))
@@ -56,13 +58,9 @@ namespace AzureKeyVaultEmulator.Aspire.Client
 
                 return _token = await response.Content.ReadAsStringAsync();
             }
-            catch
-            {
-                throw;
-            }
             finally
             {
-                client.Dispose();
+                client?.Dispose();
             }
         }
     }
