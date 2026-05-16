@@ -33,10 +33,26 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
                     {
                         OnChallenge = context =>
                         {
-                            var requestHostSplit = context.Request.Host.ToString().Split(".", 2);
-                            var scope = $"https://{requestHostSplit[^1]}/.default";
+                            // Challenge-based authentication policy in the Azure SDK for .NET parses the
+                            // WWW-Authenticate response header from an unauthenticated request to discover
+                            //   1. the authority URL it should request a token from
+                            //      (the LAST path segment is interpreted as the tenant id), and
+                            //   2. the resource / scope the token should be issued for.
+                            //
+                            // For DefaultAzureCredential to work, the authority URL must therefore be a
+                            // valid OAuth2 authority. We point clients at this emulator instance itself
+                            // (it exposes a minimal Entra-compatible OAuth2 surface, see OAuthController),
+                            // with a tenant id taken from AZURE_TENANT_ID if the host provides one, falling
+                            // back to a fixed placeholder GUID otherwise.
+                            var tenantId = Environment.GetEnvironmentVariable(AuthConstants.TenantIdEnvironmentVariable);
+                            if (string.IsNullOrWhiteSpace(tenantId))
+                                tenantId = AuthConstants.EmulatorTenantId;
+
+                            var authority = $"{context.Request.Scheme}://{context.Request.Host}/{tenantId}";
+
                             context.Response.Headers.Remove("WWW-Authenticate");
-                            context.Response.Headers.WWWAuthenticate = $"Bearer authorization=\"{AuthConstants.EmulatorUri}{context.Request.Path}\", scope=\"{scope}\", resource=\"https://vault.azure.net\"";
+                            context.Response.Headers.WWWAuthenticate =
+                                $"Bearer authorization=\"{authority}\", scope=\"https://vault.azure.net/.default\", resource=\"https://vault.azure.net\"";
 
                             return Task.CompletedTask;
                         }

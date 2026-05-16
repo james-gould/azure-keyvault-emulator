@@ -95,6 +95,15 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     .WithEnvironment(ctx =>
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");
+
+                        // Propagate AZURE_TENANT_ID from the host (if set) into the emulator container so
+                        // the WWW-Authenticate challenge advertises the user's real tenant id. This makes
+                        // it possible for the official Azure SDK's DefaultAzureCredential running in a
+                        // sibling project to be served a challenge that's consistent with whatever real
+                        // (or emulated) Entra tenant it ends up authenticating against.
+                        var tenantId = Environment.GetEnvironmentVariable(KeyVaultEmulatorContainerConstants.AzureTenantId);
+                        if (!string.IsNullOrWhiteSpace(tenantId))
+                            ctx.EnvironmentVariables[KeyVaultEmulatorContainerConstants.AzureTenantId] = tenantId;
                     })
                     .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
                     {
