@@ -44,10 +44,9 @@ You will then have a feature complete, emulated `Azure Key Vault` running locall
 
 If your consumer authenticates with `Azure.Identity.DefaultAzureCredential` (so it doesn't need
 to depend on the emulator-specific [client library](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client)),
-add `WithAzureKeyVaultEmulatorCredentials` in the AppHost. It populates the standard
-`AZURE_TENANT_ID` / `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_AUTHORITY_HOST` env vars
-on the consumer pointing at the emulator (preferring `AZURE_TENANT_ID` from the host machine if
-it's set), so MSAL can acquire a token locally:
+add `WithAzureKeyVaultEmulatorCredentials` in the AppHost. Everything is wired up automatically —
+credentials, tenant, and authority all flow into the consumer for you (the host machine's
+`AZURE_TENANT_ID` is picked up automatically when set):
 
 ```csharp
 // AppHost
@@ -58,7 +57,7 @@ builder.AddProject<Projects.MyApi>("api")
     .WithReference(keyVault);
 ```
 
-In the consumer, wire the Key Vault clients with `DisableInstanceDiscovery = true` and
+The only consumer-side settings the SDK still requires are `DisableInstanceDiscovery = true` and
 `DisableChallengeResourceVerification = true` (the emulator runs on `localhost` rather than
 `*.vault.azure.net`):
 
