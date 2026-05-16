@@ -11,8 +11,8 @@ public sealed class SecretAuthenticationTests(DefaultAzureCredentialAppFixture f
     [Fact]
     public async Task DefaultAzureCredential_Can_Create_A_Secret()
     {
-        var name = $"secret-{Guid.NewGuid():N}";
-        const string value = "shh-its-a-secret";
+        var name = fixture.FreshlyGeneratedGuid;
+        var value = fixture.FreshlyGeneratedGuid;
 
         var response = await fixture.DebugApi.PostAsync($"/secrets/{name}?value={value}", content: null);
 
@@ -25,8 +25,8 @@ public sealed class SecretAuthenticationTests(DefaultAzureCredentialAppFixture f
     [Fact]
     public async Task DefaultAzureCredential_Can_Read_A_Secret()
     {
-        var name = $"secret-{Guid.NewGuid():N}";
-        const string value = "rosebud";
+        var name = fixture.FreshlyGeneratedGuid;
+        var value = fixture.FreshlyGeneratedGuid;
 
         var create = await fixture.DebugApi.PostAsync($"/secrets/{name}?value={value}", content: null);
         create.EnsureSuccessStatusCode();

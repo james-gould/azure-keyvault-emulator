@@ -10,7 +10,7 @@ public sealed class KeyAuthenticationTests(DefaultAzureCredentialAppFixture fixt
     [Fact]
     public async Task DefaultAzureCredential_Can_Create_A_Key()
     {
-        var name = $"key-{Guid.NewGuid():N}";
+        var name = fixture.FreshlyGeneratedGuid;
 
         var response = await fixture.DebugApi.PostAsync($"/keys/{name}", content: null);
         var payload = await response.ReadJsonAsync<KeyPayload>();
@@ -22,7 +22,7 @@ public sealed class KeyAuthenticationTests(DefaultAzureCredentialAppFixture fixt
     [Fact]
     public async Task DefaultAzureCredential_Can_Read_A_Key()
     {
-        var name = $"key-{Guid.NewGuid():N}";
+        var name = fixture.FreshlyGeneratedGuid;
 
         var create = await fixture.DebugApi.PostAsync($"/keys/{name}", content: null);
         create.EnsureSuccessStatusCode();

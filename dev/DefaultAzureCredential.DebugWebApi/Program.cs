@@ -23,7 +23,7 @@ var vaultUri = Environment.GetEnvironmentVariable("VAULT_URI")
 var credentialOptions = new DefaultAzureCredentialOptions
 {
     DisableInstanceDiscovery = true,
-    AdditionallyAllowedTenants = { "*" },
+    //AdditionallyAllowedTenants = { "*" },
 };
 
 var credential = new DefaultAzureCredential(credentialOptions);

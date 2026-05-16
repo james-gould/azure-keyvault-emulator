@@ -10,7 +10,7 @@ public sealed class CertificateAuthenticationTests(DefaultAzureCredentialAppFixt
     [Fact]
     public async Task DefaultAzureCredential_Can_Create_A_Certificate()
     {
-        var name = $"cert-{Guid.NewGuid():N}";
+        var name = fixture.FreshlyGeneratedGuid;
 
         var response = await fixture.DebugApi.PostAsync($"/certificates/{name}", content: null);
         var payload = await response.ReadJsonAsync<CertificatePayload>();

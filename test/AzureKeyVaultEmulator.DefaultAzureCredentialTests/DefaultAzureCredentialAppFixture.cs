@@ -9,12 +9,14 @@ namespace AzureKeyVaultEmulator.DefaultAzureCredentialTests;
 /// </summary>
 public sealed class DefaultAzureCredentialAppFixture : IAsyncLifetime
 {
-    private static readonly TimeSpan _waitPeriod = TimeSpan.FromMinutes(2);
+    private static readonly TimeSpan _waitPeriod = TimeSpan.FromSeconds(30);
 
     private const string _emulatorResource = "keyvault-emulator";
     private const string _debugApiResource = "debug-api";
 
     private DistributedApplication? _app;
+
+    public string FreshlyGeneratedGuid => Guid.NewGuid().ToString("n");
 
     public HttpClient DebugApi { get; private set; } = default!;
 
@@ -38,6 +40,7 @@ public sealed class DefaultAzureCredentialAppFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         DebugApi?.Dispose();
+
         if (_app is not null)
             await _app.DisposeAsync().ConfigureAwait(false);
     }
@@ -53,8 +56,11 @@ internal static class HttpResponseExtensions
     public static async Task<T> ReadJsonAsync<T>(this HttpResponseMessage response)
     {
         response.EnsureSuccessStatusCode();
+
         var value = await response.Content.ReadFromJsonAsync<T>();
+
         Assert.NotNull(value);
+
         return value!;
     }
 }
