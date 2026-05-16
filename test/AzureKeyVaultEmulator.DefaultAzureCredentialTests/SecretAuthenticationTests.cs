@@ -9,7 +9,7 @@ namespace AzureKeyVaultEmulator.DefaultAzureCredentialTests;
 public sealed class SecretAuthenticationTests(DefaultAzureCredentialAppFixture fixture)
 {
     [Fact]
-    public async Task DefaultAzureCredential_Can_Create_A_Secret()
+    public async Task CreateSecretViaDefaultAzureCredentialReturnsSecretTest()
     {
         var name = fixture.FreshlyGeneratedGuid;
         var value = fixture.FreshlyGeneratedGuid;
@@ -23,7 +23,7 @@ public sealed class SecretAuthenticationTests(DefaultAzureCredentialAppFixture f
     }
 
     [Fact]
-    public async Task DefaultAzureCredential_Can_Read_A_Secret()
+    public async Task GetSecretViaDefaultAzureCredentialReturnsCorrectValueTest()
     {
         var name = fixture.FreshlyGeneratedGuid;
         var value = fixture.FreshlyGeneratedGuid;

@@ -1,4 +1,5 @@
 ﻿using System;
+using Azure.Identity;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
@@ -13,15 +14,11 @@ namespace AzureKeyVaultEmulator.Aspire.Client
         /// Creates the scaffolding for AzureKeyVault support using the containerised emulator.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to inject into.</param>
-        /// <param name="vaultEndpoint">The endpoint from the for the containerised AzureKeyVaultEmulator. <br />Typically found in <see cref="IHostApplicationBuilder.Configuration"/></param>
+        /// <param name="vaultEndpoint">The endpoint for the containerised AzureKeyVaultEmulator. <br />Typically found in <see cref="IHostApplicationBuilder.Configuration"/></param>
         /// <param name="secrets">Bool to create a <see cref="SecretClient"/>, defaults to <see langword="true"/></param>
         /// <param name="keys">Bool to create a <see cref="KeyClient"/>, defaults to <see langword="false"/></param>
         /// <param name="certificates">Bool to create a <see cref="CertificateClient"/>, defaults to <see langword="false"/></param>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if you attempt to use the Emulator outside of a DEBUG environment.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// Thrown if you do not provide the BaseUrl for the KeyVaultEmulator container</exception>
+        /// <exception cref="ArgumentException">Thrown if you do not provide the BaseUrl for the KeyVaultEmulator container</exception>
         /// <returns>An updated <see cref="IServiceCollection"/></returns>
         public static IServiceCollection AddAzureKeyVaultEmulator(
             this IServiceCollection services,
@@ -31,9 +28,12 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             bool certificates = false)
         {
             if (string.IsNullOrEmpty(vaultEndpoint))
-                throw new ArgumentNullException(vaultEndpoint);
+                throw new ArgumentNullException(nameof(vaultEndpoint));
 
-            var credential = new EmulatedTokenCredential(vaultEndpoint);
+            var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+            {
+                DisableInstanceDiscovery = true,
+            });
             var uri = new Uri(vaultEndpoint);
 
             if (secrets)

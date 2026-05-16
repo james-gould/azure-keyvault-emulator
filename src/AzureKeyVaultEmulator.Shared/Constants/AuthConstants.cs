@@ -24,11 +24,10 @@ namespace AzureKeyVaultEmulator.Shared.Constants
         public const string EmulatorTenantId = "a0c2a3f5-e1b3-4d6a-9c41-2cdd1f2c7e0f";
 
         /// <summary>
-        /// Environment variable read at startup that — when set — overrides <see cref="EmulatorTenantId"/>
-        /// in the <c>WWW-Authenticate</c> challenge. Mirrors the well-known <c>AZURE_TENANT_ID</c> name
-        /// used by the Azure SDK so the Aspire integration can simply propagate the host's value.
+        /// Environment variable name read at startup that — when set — overrides <see cref="EmulatorTenantId"/>
+        /// in the <c>WWW-Authenticate</c> challenge. Mirrors the Azure SDK's well-known <c>AZURE_TENANT_ID</c>.
         /// </summary>
-        public const string TenantIdEnvironmentVariable = "AZURE_TENANT_ID";
+        public const string HostMachineTenantId = "AZURE_TENANT_ID";
 
         public static readonly SymmetricSecurityKey SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_issuerSigningKey));
     }

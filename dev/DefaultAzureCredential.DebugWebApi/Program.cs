@@ -3,34 +3,25 @@ using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
 
-// Minimal Debug Web API used to exercise the official Azure SDK's DefaultAzureCredential
-// against the Azure Key Vault Emulator. By design this project takes NO dependencies on any
-// emulator-specific client/wrapper packages — only the official Azure SDK packages.
+// Debug Web API exercising DefaultAzureCredential against the emulator. Depends only on the
+// official Azure SDK packages.
 
 var builder = WebApplication.CreateBuilder(args);
 
-// The vault URI is supplied to this process as an environment variable by the Aspire AppHost
-// orchestrating the test run.
 var vaultUri = Environment.GetEnvironmentVariable("VAULT_URI")
     ?? throw new InvalidOperationException(
         "VAULT_URI environment variable was not set. The Aspire AppHost must populate it with the emulator endpoint.");
 
-// DefaultAzureCredential is configured with options that allow it to authenticate against the
-// emulator's own OAuth2 surface in test environments. AuthorityHost / AZURE_AUTHORITY_HOST is
-// supplied via env-var by the Aspire AppHost (see WithAzureKeyVaultEmulatorCredentials); we also
-// disable instance discovery so MSAL does not insist on a known Microsoft cloud, and we
-// allow any tenant so the tenant id from the WWW-Authenticate challenge is honoured.
+// DisableInstanceDiscovery so MSAL does not insist on a known Microsoft cloud; AZURE_AUTHORITY_HOST
+// is supplied via env-var by the Aspire AppHost (see WithAzureKeyVaultEmulatorCredentials).
 var credentialOptions = new DefaultAzureCredentialOptions
 {
     DisableInstanceDiscovery = true,
-    //AdditionallyAllowedTenants = { "*" },
 };
 
 var credential = new DefaultAzureCredential(credentialOptions);
 
-// SecretClient/KeyClient/CertificateClient verify by default that the WWW-Authenticate "resource"
-// returned by the server matches the domain of the request URI. Because the emulator is hosted on
-// localhost (not *.vault.azure.net), we must opt out of that check via official SDK options.
+// The emulator is on localhost (not *.vault.azure.net), so opt out of challenge-resource domain matching.
 var secretOptions = new SecretClientOptions { DisableChallengeResourceVerification = true };
 var keyOptions = new KeyClientOptions { DisableChallengeResourceVerification = true };
 var certificateOptions = new CertificateClientOptions { DisableChallengeResourceVerification = true };

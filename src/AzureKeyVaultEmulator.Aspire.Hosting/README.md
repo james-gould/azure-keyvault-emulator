@@ -42,15 +42,15 @@ You will then have a feature complete, emulated `Azure Key Vault` running locall
 
 # Using `DefaultAzureCredential`
 
-If your application authenticates against Key Vault using `Azure.Identity.DefaultAzureCredential`
-— and you don't want to take a dependency on the emulator-specific
-[client library](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client) — call
-`WithAzureKeyVaultEmulatorCredentials` on the consumer resource. This populates the standard Azure
-SDK environment variables (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`,
-`AZURE_AUTHORITY_HOST`) on the consumer pointing at the emulator's own (Entra-compatible) OAuth2
-surface so MSAL can acquire a token locally without ever talking to a real Entra tenant:
+If your consumer authenticates with `Azure.Identity.DefaultAzureCredential` (so it doesn't need
+to depend on the emulator-specific [client library](https://www.nuget.org/packages/AzureKeyVaultEmulator.Client)),
+add `WithAzureKeyVaultEmulatorCredentials` in the AppHost. It populates the standard
+`AZURE_TENANT_ID` / `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_AUTHORITY_HOST` env vars
+on the consumer pointing at the emulator (preferring `AZURE_TENANT_ID` from the host machine if
+it's set), so MSAL can acquire a token locally:
 
 ```csharp
+// AppHost
 var keyVault = builder.AddAzureKeyVaultEmulator("keyvault");
 
 builder.AddProject<Projects.MyApi>("api")
@@ -58,11 +58,18 @@ builder.AddProject<Projects.MyApi>("api")
     .WithReference(keyVault);
 ```
 
-If `AZURE_TENANT_ID` is set on the host machine, its value is preferred so the emulator's
-`WWW-Authenticate` challenge advertises your real tenant. The emulator itself never validates inbound
-tokens, so whatever MSAL successfully acquires is accepted.
+In the consumer, wire the Key Vault clients with `DisableInstanceDiscovery = true` and
+`DisableChallengeResourceVerification = true` (the emulator runs on `localhost` rather than
+`*.vault.azure.net`):
 
-When wiring the Key Vault clients (`SecretClient`, `KeyClient`, `CertificateClient`) by hand in your
-consumer project, set `DisableChallengeResourceVerification = true` on the client options — the
-emulator runs on `localhost` rather than `*.vault.azure.net`, so the SDK's domain match would
-otherwise fail.
+```csharp
+var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+{
+    DisableInstanceDiscovery = true,
+});
+
+builder.Services.AddSingleton(_ => new SecretClient(
+    new Uri(vaultUri),
+    credential,
+    new SecretClientOptions { DisableChallengeResourceVerification = true }));
+```

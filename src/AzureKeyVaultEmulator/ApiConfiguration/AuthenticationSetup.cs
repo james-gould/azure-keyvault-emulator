@@ -33,18 +33,8 @@ namespace AzureKeyVaultEmulator.ApiConfiguration
                     {
                         OnChallenge = context =>
                         {
-                            // Challenge-based authentication policy in the Azure SDK for .NET parses the
-                            // WWW-Authenticate response header from an unauthenticated request to discover
-                            //   1. the authority URL it should request a token from
-                            //      (the LAST path segment is interpreted as the tenant id), and
-                            //   2. the resource / scope the token should be issued for.
-                            //
-                            // For DefaultAzureCredential to work, the authority URL must therefore be a
-                            // valid OAuth2 authority. We point clients at this emulator instance itself
-                            // (it exposes a minimal Entra-compatible OAuth2 surface, see OAuthController),
-                            // with a tenant id taken from AZURE_TENANT_ID if the host provides one, falling
-                            // back to a fixed placeholder GUID otherwise.
-                            var tenantId = Environment.GetEnvironmentVariable(AuthConstants.TenantIdEnvironmentVariable);
+                            // Point Azure SDK challenge-based auth at the emulator's own OAuth2 surface (see OAuthController).
+                            var tenantId = Environment.GetEnvironmentVariable(AuthConstants.HostMachineTenantId);
                             if (string.IsNullOrWhiteSpace(tenantId))
                                 tenantId = AuthConstants.EmulatorTenantId;
 

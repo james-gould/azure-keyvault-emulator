@@ -8,7 +8,7 @@ namespace AzureKeyVaultEmulator.DefaultAzureCredentialTests;
 public sealed class CertificateAuthenticationTests(DefaultAzureCredentialAppFixture fixture)
 {
     [Fact]
-    public async Task DefaultAzureCredential_Can_Create_A_Certificate()
+    public async Task CreateCertificateViaDefaultAzureCredentialReturnsCertificateTest()
     {
         var name = fixture.FreshlyGeneratedGuid;
 
@@ -19,7 +19,7 @@ public sealed class CertificateAuthenticationTests(DefaultAzureCredentialAppFixt
     }
 
     [Fact]
-    public async Task DefaultAzureCredential_Can_Read_A_Certificate()
+    public async Task GetCertificateViaDefaultAzureCredentialReturnsCorrectCertificateTest()
     {
         var name = $"cert-{Guid.NewGuid():N}";
 

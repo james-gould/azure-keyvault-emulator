@@ -3,27 +3,16 @@
 namespace AzureKeyVaultEmulator.Emulator.Controllers
 {
     /// <summary>
-    /// Exposes a minimal subset of the Microsoft Entra (Azure AD) v2.0 OAuth/OIDC surface area so that
-    /// the official Azure SDK for .NET — and in particular <c>DefaultAzureCredential</c> via
-    /// <c>EnvironmentCredential</c>/<c>ClientSecretCredential</c> — can acquire an access token from the
-    /// emulator itself instead of having to round-trip a real Entra tenant.
-    /// <para>
-    /// The emulator does not validate inbound tokens (the JwtBearer pipeline is configured to accept
-    /// any signature/issuer), so any token issued here is sufficient to satisfy the Key Vault SDK's
-    /// challenge-based authentication policy.
-    /// </para>
+    /// Minimal Entra-compatible OAuth2/OIDC endpoints so <c>DefaultAzureCredential</c> can acquire
+    /// a token from the emulator without a real Entra tenant. Tokens are unconditionally issued; the
+    /// JwtBearer pipeline does not validate them.
     /// </summary>
     [Route("")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public sealed class OAuthController(ITokenService token) : Controller
+    public sealed class OAuthController(ITokenService tokenService) : Controller
     {
         /// <summary>
-        /// MSAL Instance Discovery endpoint. Always exposed at <c>/common/discovery/instance</c>.
-        /// <para>
-        /// MSAL (used internally by <c>DefaultAzureCredential</c>) calls this endpoint to determine
-        /// whether an authority host is trusted and to discover the OpenID configuration endpoint for
-        /// a specific tenant. We return metadata that points back at the emulator itself.
-        /// </para>
+        /// MSAL Instance Discovery endpoint. Returns metadata that points back at the emulator itself.
         /// </summary>
         [HttpGet("common/discovery/instance")]
         public IActionResult InstanceDiscovery([FromQuery(Name = "authorization_endpoint")] string? authorizationEndpoint)
@@ -50,8 +39,7 @@ namespace AzureKeyVaultEmulator.Emulator.Controllers
         }
 
         /// <summary>
-        /// OpenID Connect discovery document for a given tenant. Returns the endpoints (issuer, token,
-        /// authorization, jwks) that MSAL needs to acquire a token.
+        /// OpenID Connect discovery document for a given tenant.
         /// </summary>
         [HttpGet("{tenantId}/v2.0/.well-known/openid-configuration")]
         [HttpGet("{tenantId}/.well-known/openid-configuration")]
@@ -79,18 +67,14 @@ namespace AzureKeyVaultEmulator.Emulator.Controllers
         }
 
         /// <summary>
-        /// OAuth2 v2.0 token endpoint. Accepts any credentials and unconditionally issues a JWT bearer
-        /// token signed with the emulator's signing key. The token is suitable for use against the
-        /// emulator's Key Vault API surface.
+        /// OAuth2 v2.0 token endpoint. Accepts any credentials and unconditionally issues a JWT.
         /// </summary>
         [HttpPost("{tenantId}/oauth2/v2.0/token")]
         [HttpPost("{tenantId}/oauth2/token")]
         [Consumes("application/x-www-form-urlencoded")]
         public IActionResult IssueToken([FromRoute] string tenantId)
         {
-            // Intentionally do not validate the inbound form. The emulator's purpose is to let any
-            // caller acquire a token; the protected resource (Key Vault API) likewise does not validate.
-            var jwt = token.CreateBearerToken();
+            var jwt = tokenService.CreateBearerToken();
 
             return Ok(new
             {
@@ -102,8 +86,7 @@ namespace AzureKeyVaultEmulator.Emulator.Controllers
         }
 
         /// <summary>
-        /// JWKS endpoint stub. Returned empty since the emulator's JwtBearer pipeline does not validate
-        /// signatures, but MSAL may probe this URL when validating issuer metadata.
+        /// JWKS endpoint stub. Returned empty as the JwtBearer pipeline does not validate signatures.
         /// </summary>
         [HttpGet("{tenantId}/discovery/v2.0/keys")]
         public IActionResult JsonWebKeySet([FromRoute] string tenantId)
@@ -121,7 +104,11 @@ namespace AzureKeyVaultEmulator.Emulator.Controllers
 
             // /<tenantId>/oauth2/v2.0/authorize
             var segments = parsed.AbsolutePath.Trim('/').Split('/');
-            return segments.Length > 0 ? segments[0] : null;
+
+            if (segments.Length == 0 || string.IsNullOrWhiteSpace(segments[0]))
+                return null;
+
+            return segments[0];
         }
     }
 }
