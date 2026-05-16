@@ -7,3 +7,4 @@ In lieu of a full Wiki the following documentation has been provided:
 - [Configuring the Azure Key Vault Emulator](CONFIG.md)
   - [Aspire with the Azure Key Vault Emulator](CONFIG.md#aspire-config)
   - [Docker with the Azure Key Vault Emulator](CONFIG.md#local-docker)
+- [External Secrets Operator (ESO) integration — investigation](EXTERNAL_SECRETS_INVESTIGATION.md)
