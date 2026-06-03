@@ -96,6 +96,12 @@ internal static class AzureKeyVaultEmulatorClientHelper
         if (uri.IsLoopback)
             return true;
 
-        return IPAddress.TryParse(uri.Host, out var address) && IPAddress.IsLoopback(address);
+        var host = uri.Host;
+        var zoneSeparatorIndex = host.IndexOf('%');
+
+        if (zoneSeparatorIndex >= 0)
+            host = host[..zoneSeparatorIndex];
+
+        return IPAddress.TryParse(host, out var address) && IPAddress.IsLoopback(address);
     }
 }
