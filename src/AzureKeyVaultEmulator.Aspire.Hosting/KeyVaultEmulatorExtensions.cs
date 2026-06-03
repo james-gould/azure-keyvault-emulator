@@ -5,11 +5,17 @@ using AzureKeyVaultEmulator.Aspire.Hosting.Exceptions;
 using AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Net;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting
 {
     public static partial class KeyVaultEmulatorExtensions
     {
+        private const string _keyVaultEmulatorHealthCheckEndpointName = "https";
+        private const string _keyVaultEmulatorHealthCheckPath = "/token";
+        private static readonly HttpClient _healthCheckHttpClient = new();
+
         /// <summary>
         /// Directly adds the AzureKeyVaultEmulator as a container instead of routing through an Azure resource.
         /// </summary>
@@ -82,6 +88,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             ArgumentException.ThrowIfNullOrEmpty(hostCertificatePath);
 
             var containerTag = options.ImageTag ?? AzureKeyVaultEnvHelper.GetContainerTag();
+            var healthCheckKey = $"{builder.Resource.Name}_{_keyVaultEmulatorHealthCheckEndpointName}_{_keyVaultEmulatorHealthCheckPath}_200_check";
 
             var keyVaultResourceBuilder = builder.ApplicationBuilder.CreateResourceBuilder(new AzureKeyVaultEmulatorResource(builder.Resource))
                    .WithImage(KeyVaultEmulatorContainerConstants.Image)
@@ -91,7 +98,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         source: hostCertificatePath,
                         target: KeyVaultEmulatorCertConstants.CertMountTarget)
                     .WithLifetime(options.Lifetime)
-                    .WithHttpsEndpoint(targetPort: KeyVaultEmulatorContainerConstants.Port)
+                    .WithHttpsEndpoint(targetPort: KeyVaultEmulatorContainerConstants.Port, name: _keyVaultEmulatorHealthCheckEndpointName)
                     .WithEnvironment(ctx =>
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");
@@ -101,24 +108,21 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         if (!string.IsNullOrWhiteSpace(tenantId))
                             ctx.EnvironmentVariables[KeyVaultEmulatorContainerConstants.AzureTenantId] = tenantId;
                     })
-                    .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
-                    {
-                        var endpoint = emulator.GetEndpoint("https");
-
-                        if (string.IsNullOrEmpty(endpoint.Url))
-                            throw new InvalidOperationException($"Failed to find endpoint URL for {nameof(AzureKeyVaultEmulatorResource)}");
-
-                        if(builder.Resource.Outputs.Any())
-                            builder.Resource.Outputs.Clear();
-
-                        builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
-
-                        emulator.VaultUri = endpoint.Url;
-
-                        return Task.CompletedTask;
-                    })
                     .OnResourceReady(async (emulatedResource, resourceEvent, ct) =>
                     {
+                        var endpoint = emulatedResource.GetEndpoint(_keyVaultEmulatorHealthCheckEndpointName);
+                        var endpointUrl = endpoint.Url;
+
+                        if (string.IsNullOrEmpty(endpointUrl))
+                            throw new InvalidOperationException($"Failed to find endpoint URL for {nameof(AzureKeyVaultEmulatorResource)}");
+
+                        if (builder.Resource.Outputs.Any())
+                            builder.Resource.Outputs.Clear();
+
+                        builder.Resource.Outputs.Add("vaultUri", endpointUrl);
+
+                        emulatedResource.VaultUri = endpointUrl;
+
                         var secrets = resourceEvent.ExtractSecrets();
 
                         await SeedSecretsFromParametersAsync(emulatedResource.VaultUri, secrets, ct);
@@ -127,8 +131,37 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         await SeedCertificatesFromAppHostAsync(emulatedResource.VaultUri, ct);
                         await SeedKeysFromAppHostAsync(emulatedResource.VaultUri, ct);
                     })
-                    .WithHttpHealthCheck("/token")
+                    .WithAnnotation(new HealthCheckAnnotation(healthCheckKey))
                     .WithAnnotation(new EmulatorResourceAnnotation());
+
+            builder.ApplicationBuilder.Services.AddHealthChecks()
+                .AddAsyncCheck(healthCheckKey, async ct =>
+                {
+                    var endpoint = keyVaultResourceBuilder.GetEndpoint(_keyVaultEmulatorHealthCheckEndpointName);
+                    var endpointUrl = endpoint.Url;
+
+                    if (string.IsNullOrWhiteSpace(endpointUrl))
+                        return HealthCheckResult.Unhealthy($"The HTTPS endpoint for resource '{builder.Resource.Name}' has not been allocated.");
+
+                    try
+                    {
+                        using var response = await _healthCheckHttpClient.GetAsync(
+                            new Uri(new Uri(endpointUrl), _keyVaultEmulatorHealthCheckPath),
+                            ct);
+
+                        return response.StatusCode == HttpStatusCode.OK
+                            ? HealthCheckResult.Healthy()
+                            : HealthCheckResult.Unhealthy($"Expected status code 200 but received {(int)response.StatusCode}.");
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        return HealthCheckResult.Unhealthy("Failed to call the Azure Key Vault Emulator health endpoint.", ex);
+                    }
+                    catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+                    {
+                        return HealthCheckResult.Unhealthy("Timed out calling the Azure Key Vault Emulator health endpoint.", ex);
+                    }
+                });
 
             builder.MapResourceEvents(keyVaultResourceBuilder);
 
