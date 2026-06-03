@@ -1,15 +1,23 @@
 ﻿using Azure.Core;
+using Azure.Core.Pipeline;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
+using System.Net;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
 internal static class AzureKeyVaultEmulatorClientHelper
 {
+    private static readonly HttpClient _sharedHttpClient = CreateHttpClient();
+
     internal static SecretClient GetSecretClient(string vaultUri)
     {
-        var opt = new SecretClientOptions { DisableChallengeResourceVerification = true };
+        var opt = new SecretClientOptions
+        {
+            DisableChallengeResourceVerification = true,
+            Transport = new HttpClientTransport(_sharedHttpClient)
+        };
 
         var uri = new Uri(vaultUri);
 
@@ -20,7 +28,11 @@ internal static class AzureKeyVaultEmulatorClientHelper
 
     internal static CertificateClient GetCertificateClient(string vaultUri)
     {
-        var opt = new CertificateClientOptions { DisableChallengeResourceVerification = true };
+        var opt = new CertificateClientOptions
+        {
+            DisableChallengeResourceVerification = true,
+            Transport = new HttpClientTransport(_sharedHttpClient)
+        };
 
         var uri = new Uri(vaultUri);
 
@@ -31,7 +43,11 @@ internal static class AzureKeyVaultEmulatorClientHelper
 
     internal static KeyClient GetKeyClient(string vaultUri)
     {
-        var opt = new KeyClientOptions { DisableChallengeResourceVerification = true };
+        var opt = new KeyClientOptions
+        {
+            DisableChallengeResourceVerification = true,
+            Transport = new HttpClientTransport(_sharedHttpClient)
+        };
 
         var uri = new Uri(vaultUri);
 
@@ -47,26 +63,45 @@ internal static class AzureKeyVaultEmulatorClientHelper
 
         public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            using var client = new HttpClient();
+            var response = await _sharedHttpClient.GetAsync(new Uri(vaultUri, "token"), cancellationToken);
+            response.EnsureSuccessStatusCode();
 
-            try
-            {
-                client.BaseAddress = vaultUri;
-
-                var response = await client.GetAsync("token");
-
-                var content = await response.Content.ReadAsStringAsync();
-
-                return new AccessToken(content, DateTimeOffset.Now.AddYears(1));
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                client?.Dispose();
-            }
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            return new AccessToken(content, DateTimeOffset.Now.AddYears(1));
         }
+    }
+
+    private static HttpClient CreateHttpClient()
+    {
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (request, _, _, sslErrors) =>
+            {
+                if (request?.RequestUri is null)
+                    return false;
+
+                if (sslErrors == System.Net.Security.SslPolicyErrors.None)
+                    return true;
+
+                return IsLoopback(request.RequestUri)
+                    && sslErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors;
+            }
+        };
+
+        return new HttpClient(handler, disposeHandler: true);
+    }
+
+    private static bool IsLoopback(Uri uri)
+    {
+        if (uri.IsLoopback)
+            return true;
+
+        var host = uri.Host;
+        var zoneSeparatorIndex = host.IndexOf('%');
+
+        if (zoneSeparatorIndex >= 0)
+            host = host[..zoneSeparatorIndex];
+
+        return IPAddress.TryParse(host, out var address) && IPAddress.IsLoopback(address);
     }
 }
