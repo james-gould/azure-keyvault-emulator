@@ -192,7 +192,7 @@ public static partial class KeyVaultEmulatorExtensions
         return keyVault;
     }
 
-    internal static async ValueTask SeedSecretsFromApphostAsync(string vaultUri, CancellationToken ct)
+    internal static async ValueTask SeedSecretsFromApphostAsync(Uri vaultUri, CancellationToken ct)
     {
         if (_seedingSecrets.Count == 0)
             return;
@@ -203,7 +203,7 @@ public static partial class KeyVaultEmulatorExtensions
             await client.SetSecretAsync(secret, ct);
     }
 
-    internal static async ValueTask SeedCertificatesFromAppHostAsync(string vaultUri, CancellationToken ct)
+    internal static async ValueTask SeedCertificatesFromAppHostAsync(Uri vaultUri, CancellationToken ct)
     {
         if (_seedingCertificates.Count == 0 && _seedingExistingCertificates.Count == 0)
             return;
@@ -221,7 +221,7 @@ public static partial class KeyVaultEmulatorExtensions
             await client.ImportCertificateAsync(importOptions, ct);
     }
 
-    internal static async ValueTask SeedKeysFromAppHostAsync(string vaultUri, CancellationToken ct)
+    internal static async ValueTask SeedKeysFromAppHostAsync(Uri vaultUri, CancellationToken ct)
     {
         if (_seedingKeys.Count == 0 && _seedingExistingKeys.Count == 0)
             return;
