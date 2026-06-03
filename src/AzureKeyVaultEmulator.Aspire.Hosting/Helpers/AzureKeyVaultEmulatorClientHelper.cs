@@ -9,14 +9,14 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
 internal static class AzureKeyVaultEmulatorClientHelper
 {
-    private static readonly HttpClient SharedHttpClient = CreateHttpClient();
+    private static readonly HttpClient _sharedHttpClient = CreateHttpClient();
 
     internal static SecretClient GetSecretClient(string vaultUri)
     {
         var opt = new SecretClientOptions
         {
             DisableChallengeResourceVerification = true,
-            Transport = new HttpClientTransport(SharedHttpClient)
+            Transport = new HttpClientTransport(_sharedHttpClient)
         };
 
         var uri = new Uri(vaultUri);
@@ -31,7 +31,7 @@ internal static class AzureKeyVaultEmulatorClientHelper
         var opt = new CertificateClientOptions
         {
             DisableChallengeResourceVerification = true,
-            Transport = new HttpClientTransport(SharedHttpClient)
+            Transport = new HttpClientTransport(_sharedHttpClient)
         };
 
         var uri = new Uri(vaultUri);
@@ -46,7 +46,7 @@ internal static class AzureKeyVaultEmulatorClientHelper
         var opt = new KeyClientOptions
         {
             DisableChallengeResourceVerification = true,
-            Transport = new HttpClientTransport(SharedHttpClient)
+            Transport = new HttpClientTransport(_sharedHttpClient)
         };
 
         var uri = new Uri(vaultUri);
@@ -63,7 +63,7 @@ internal static class AzureKeyVaultEmulatorClientHelper
 
         public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            var response = await SharedHttpClient.GetAsync(new Uri(vaultUri, "token"), cancellationToken);
+            var response = await _sharedHttpClient.GetAsync(new Uri(vaultUri, "token"), cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
