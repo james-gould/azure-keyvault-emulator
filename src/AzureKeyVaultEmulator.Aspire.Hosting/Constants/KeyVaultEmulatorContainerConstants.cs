@@ -21,8 +21,14 @@ internal partial class KeyVaultEmulatorContainerConstants
 
     /// <summary>
     /// Name of the environment variable read by the emulator on startup to determine the tenant id
-    /// it advertises in the <c>WWW-Authenticate</c> challenge header. Mirrors the Azure SDK's
-    /// well-known <c>AZURE_TENANT_ID</c> env var so an Aspire host can simply propagate its value.
+    /// it advertises in the <c>WWW-Authenticate</c> challenge header.
     /// </summary>
     public const string AzureTenantId = "AZURE_TENANT_ID";
+
+    /// <summary>
+    /// Placeholder tenant id used by the emulator's local OAuth2 surface. Mirrors
+    /// AzureKeyVaultEmulator.Shared.Constants.AuthConstants.EmulatorTenantId; the hosting package
+    /// targets earlier TFMs than the shared project, so the value is kept here too.
+    /// </summary>
+    public const string EmulatorTenantId = "a0c2a3f5-e1b3-4d6a-9c41-2cdd1f2c7e0f";
 }
