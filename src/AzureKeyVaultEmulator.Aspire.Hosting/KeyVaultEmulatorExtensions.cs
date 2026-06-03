@@ -127,7 +127,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         await SeedCertificatesFromAppHostAsync(emulatedResource.VaultUri, ct);
                         await SeedKeysFromAppHostAsync(emulatedResource.VaultUri, ct);
                     })
-                    .WithHttpHealthCheck("/token")
+                    .WithHttpHealthCheck("/token", endpointName: "https")
                     .WithAnnotation(new EmulatorResourceAnnotation());
 
             builder.MapResourceEvents(keyVaultResourceBuilder);
