@@ -9,12 +9,14 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
 internal static class AzureKeyVaultEmulatorClientHelper
 {
+    private static readonly HttpClient SharedHttpClient = CreateHttpClient();
+
     internal static SecretClient GetSecretClient(string vaultUri)
     {
         var opt = new SecretClientOptions
         {
             DisableChallengeResourceVerification = true,
-            Transport = new HttpClientTransport(CreateHttpClient())
+            Transport = new HttpClientTransport(SharedHttpClient)
         };
 
         var uri = new Uri(vaultUri);
@@ -29,7 +31,7 @@ internal static class AzureKeyVaultEmulatorClientHelper
         var opt = new CertificateClientOptions
         {
             DisableChallengeResourceVerification = true,
-            Transport = new HttpClientTransport(CreateHttpClient())
+            Transport = new HttpClientTransport(SharedHttpClient)
         };
 
         var uri = new Uri(vaultUri);
@@ -44,7 +46,7 @@ internal static class AzureKeyVaultEmulatorClientHelper
         var opt = new KeyClientOptions
         {
             DisableChallengeResourceVerification = true,
-            Transport = new HttpClientTransport(CreateHttpClient())
+            Transport = new HttpClientTransport(SharedHttpClient)
         };
 
         var uri = new Uri(vaultUri);
@@ -61,8 +63,7 @@ internal static class AzureKeyVaultEmulatorClientHelper
 
         public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            using var client = CreateHttpClient();
-            var response = await client.GetAsync(new Uri(vaultUri, "token"), cancellationToken);
+            var response = await SharedHttpClient.GetAsync(new Uri(vaultUri, "token"), cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -79,7 +80,11 @@ internal static class AzureKeyVaultEmulatorClientHelper
                 if (request?.RequestUri is null)
                     return false;
 
-                return IsLoopback(request.RequestUri) || sslErrors == System.Net.Security.SslPolicyErrors.None;
+                if (sslErrors == System.Net.Security.SslPolicyErrors.None)
+                    return true;
+
+                return IsLoopback(request.RequestUri)
+                    && sslErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors;
             }
         };
 
