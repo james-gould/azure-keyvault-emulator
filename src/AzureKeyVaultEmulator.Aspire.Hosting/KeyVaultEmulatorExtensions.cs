@@ -14,6 +14,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
     {
         private const string _keyVaultEmulatorHealthCheckEndpointName = "https";
         private const string _keyVaultEmulatorHealthCheckPath = "/token";
+        private const string _keyVaultEmulatorVaultUriOutputName = "vaultUri";
         private static readonly HttpClient _healthCheckHttpClient = new();
 
         /// <summary>
@@ -115,10 +116,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         if (string.IsNullOrEmpty(endpoint.Url))
                             throw new InvalidOperationException($"Failed to find endpoint URL for {nameof(AzureKeyVaultEmulatorResource)}");
 
-                        if(builder.Resource.Outputs.Any())
-                            builder.Resource.Outputs.Clear();
-
-                        builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
+                        builder.Resource.Outputs.Remove(_keyVaultEmulatorVaultUriOutputName);
+                        builder.Resource.Outputs.Add(_keyVaultEmulatorVaultUriOutputName, endpoint.Url);
 
                         emulator.VaultUri = endpoint.Url;
 
@@ -132,10 +131,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         if (string.IsNullOrEmpty(endpointUrl))
                             throw new InvalidOperationException($"Failed to find endpoint URL for {nameof(AzureKeyVaultEmulatorResource)}");
 
-                        if (builder.Resource.Outputs.Any())
-                            builder.Resource.Outputs.Clear();
-
-                        builder.Resource.Outputs.Add("vaultUri", endpointUrl);
+                        builder.Resource.Outputs.Remove(_keyVaultEmulatorVaultUriOutputName);
+                        builder.Resource.Outputs.Add(_keyVaultEmulatorVaultUriOutputName, endpointUrl);
 
                         emulatedResource.VaultUri = endpointUrl;
 
