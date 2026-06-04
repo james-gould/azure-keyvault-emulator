@@ -137,16 +137,17 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             builder.ApplicationBuilder.Services.AddHealthChecks()
                 .AddAsyncCheck(healthCheckKey, async ct =>
                 {
-                    var endpoint = keyVaultResourceBuilder.GetEndpoint(_keyVaultEmulatorHealthCheckEndpointName);
-                    var endpointUrl = endpoint.Url;
+                    var endpoint = keyVaultResourceBuilder.Resource.Annotations
+                        .OfType<EndpointAnnotation>()
+                        .FirstOrDefault(a => a.Name == _keyVaultEmulatorHealthCheckEndpointName);
 
-                    if (string.IsNullOrWhiteSpace(endpointUrl))
+                    if (endpoint?.AllocatedEndpoint is not { } allocatedEndpoint)
                         return HealthCheckResult.Unhealthy($"The HTTPS endpoint for resource '{builder.Resource.Name}' has not been allocated.");
 
                     try
                     {
                         using var response = await _healthCheckHttpClient.GetAsync(
-                            new Uri(new Uri(endpointUrl), _keyVaultEmulatorHealthCheckPath),
+                            new Uri(new Uri(allocatedEndpoint.UriString), _keyVaultEmulatorHealthCheckPath),
                             ct);
 
                         return response.StatusCode == HttpStatusCode.OK
