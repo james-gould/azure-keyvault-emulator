@@ -108,6 +108,22 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         if (!string.IsNullOrWhiteSpace(tenantId))
                             ctx.EnvironmentVariables[KeyVaultEmulatorContainerConstants.AzureTenantId] = tenantId;
                     })
+                    .OnBeforeResourceStarted((emulator, resourceEvent, ct) =>
+                    {
+                        var endpoint = emulator.GetEndpoint("https");
+
+                        if (string.IsNullOrEmpty(endpoint.Url))
+                            throw new InvalidOperationException($"Failed to find endpoint URL for {nameof(AzureKeyVaultEmulatorResource)}");
+
+                        if(builder.Resource.Outputs.Any())
+                            builder.Resource.Outputs.Clear();
+
+                        builder.Resource.Outputs.Add("vaultUri", endpoint.Url);
+
+                        emulator.VaultUri = endpoint.Url;
+
+                        return Task.CompletedTask;
+                    })
                     .OnResourceReady(async (emulatedResource, resourceEvent, ct) =>
                     {
                         var endpoint = emulatedResource.GetEndpoint(_keyVaultEmulatorHealthCheckEndpointName);
