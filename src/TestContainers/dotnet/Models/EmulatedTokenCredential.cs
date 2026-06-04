@@ -8,6 +8,8 @@ namespace AzureKeyVaultEmulator.TestContainers.Models
 {
     public sealed class EmulatedTokenCredential : TokenCredential
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
+
         public EmulatedTokenCredential(string vaultUri)
         {
             _emulatedVaultUri = vaultUri;
@@ -20,14 +22,14 @@ namespace AzureKeyVaultEmulator.TestContainers.Models
         public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
             // Hate this but someone somewhere will be using Sync methods...
-            var token = GetBearerToken().GetAwaiter().GetResult();
+            var token = GetBearerToken(cancellationToken).GetAwaiter().GetResult();
 
             return new AccessToken(token, _expiry);
         }
 
         public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            var token = await GetBearerToken();
+            var token = await GetBearerToken(cancellationToken);
 
             return new AccessToken(token, _expiry);
         }
@@ -36,7 +38,7 @@ namespace AzureKeyVaultEmulator.TestContainers.Models
         /// Worth revisiting this as a typed client or similar, the wiring is a nightmare.
         /// Alternatively we could attempt to patch this in using Aspire events, requires research.
         /// </summary>
-        private async ValueTask<string> GetBearerToken()
+        private async ValueTask<string> GetBearerToken(CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(_token))
                 return _token;
@@ -44,25 +46,13 @@ namespace AzureKeyVaultEmulator.TestContainers.Models
             if (string.IsNullOrEmpty(_emulatedVaultUri))
                 throw new ArgumentNullException(nameof(_emulatedVaultUri));
 
-            HttpClient? client = null;
-
-            try
+            using (var response = await _httpClient.GetAsync(
+                new Uri(new Uri(_emulatedVaultUri), "token"),
+                cancellationToken))
             {
-                client = new HttpClient();
-
-                var response = await client.GetAsync($"{_emulatedVaultUri}/token");
-
                 response.EnsureSuccessStatusCode();
 
                 return _token = await response.Content.ReadAsStringAsync();
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                client?.Dispose();
             }
         }
     }

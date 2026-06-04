@@ -14,6 +14,8 @@ namespace AzureKeyVaultEmulator.Aspire.Client
     [Obsolete("EmulatedTokenCredential is no longer required. The emulator now exposes an Entra-compatible OAuth2 surface, so use Azure.Identity.DefaultAzureCredential (with DefaultAzureCredentialOptions { DisableInstanceDiscovery = true }) instead. This type will be removed in a future major version.")]
     public sealed class EmulatedTokenCredential : TokenCredential
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
+
         public EmulatedTokenCredential(string vaultUri)
         {
             _emulatedVaultUri = vaultUri;
@@ -26,19 +28,19 @@ namespace AzureKeyVaultEmulator.Aspire.Client
         public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
             // Hate this but someone somewhere will be using Sync methods...
-            var token = GetBearerToken().GetAwaiter().GetResult();
+            var token = GetBearerToken(cancellationToken).GetAwaiter().GetResult();
 
             return new AccessToken(token, _expiry);
         }
 
         public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            var token = await GetBearerToken();
+            var token = await GetBearerToken(cancellationToken);
 
             return new AccessToken(token, _expiry);
         }
 
-        private async ValueTask<string> GetBearerToken()
+        private async ValueTask<string> GetBearerToken(CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(_token))
                 return _token;
@@ -46,21 +48,13 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (string.IsNullOrEmpty(_emulatedVaultUri))
                 throw new ArgumentNullException(nameof(_emulatedVaultUri));
 
-            HttpClient client = null;
-
-            try
+            using (var response = await _httpClient.GetAsync(
+                new Uri(new Uri(_emulatedVaultUri), "token"),
+                cancellationToken))
             {
-                client = new HttpClient();
-
-                var response = await client.GetAsync($"{_emulatedVaultUri}/token");
-
                 response.EnsureSuccessStatusCode();
 
                 return _token = await response.Content.ReadAsStringAsync();
-            }
-            finally
-            {
-                client?.Dispose();
             }
         }
     }

@@ -42,30 +42,20 @@ internal static class AzureKeyVaultEmulatorClientHelper
 
     private class EmulatedTokenCredential(Uri vaultUri) : TokenCredential
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
+
         public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
             => GetTokenAsync(requestContext, cancellationToken).AsTask().GetAwaiter().GetResult();
 
         public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            using var client = new HttpClient();
-
-            try
+            using (var response = await _httpClient.GetAsync(
+                new Uri(vaultUri, "token"),
+                cancellationToken))
             {
-                client.BaseAddress = vaultUri;
-
-                var response = await client.GetAsync("token");
-
                 var content = await response.Content.ReadAsStringAsync();
 
                 return new AccessToken(content, DateTimeOffset.Now.AddYears(1));
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                client?.Dispose();
             }
         }
     }
