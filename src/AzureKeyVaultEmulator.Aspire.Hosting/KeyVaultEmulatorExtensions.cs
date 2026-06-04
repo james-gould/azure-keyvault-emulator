@@ -83,6 +83,8 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 
             var containerTag = options.ImageTag ?? AzureKeyVaultEnvHelper.GetContainerTag();
 
+            builder.ApplicationBuilder.Services.AddHttpClient(AzureKeyVaultEmulatorClientHelper._httpClientName);
+
             var keyVaultResourceBuilder = builder.ApplicationBuilder.CreateResourceBuilder(new AzureKeyVaultEmulatorResource(builder.Resource))
                    .WithImage(KeyVaultEmulatorContainerConstants.Image)
                    .WithImageRegistry(KeyVaultEmulatorContainerConstants.Registry)
@@ -119,13 +121,14 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                     })
                     .OnResourceReady(async (emulatedResource, resourceEvent, ct) =>
                     {
+                        var httpClientFactory = resourceEvent.Services.GetRequiredService<IHttpClientFactory>();
                         var secrets = resourceEvent.ExtractSecrets();
 
-                        await SeedSecretsFromParametersAsync(emulatedResource.VaultUri, secrets, ct);
+                        await SeedSecretsFromParametersAsync(emulatedResource.VaultUri, secrets, httpClientFactory, ct);
 
-                        await SeedSecretsFromApphostAsync(emulatedResource.VaultUri, ct);
-                        await SeedCertificatesFromAppHostAsync(emulatedResource.VaultUri, ct);
-                        await SeedKeysFromAppHostAsync(emulatedResource.VaultUri, ct);
+                        await SeedSecretsFromApphostAsync(emulatedResource.VaultUri, httpClientFactory, ct);
+                        await SeedCertificatesFromAppHostAsync(emulatedResource.VaultUri, httpClientFactory, ct);
+                        await SeedKeysFromAppHostAsync(emulatedResource.VaultUri, httpClientFactory, ct);
                     })
                     .WithHttpHealthCheck("/token")
                     .WithAnnotation(new EmulatorResourceAnnotation());
@@ -215,14 +218,18 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         }
 
         private static async ValueTask SeedSecretsFromParametersAsync(
-            string vaultUri, IEnumerable<AzureKeyVaultSecretResource> secrets, CancellationToken ct)
+            string vaultUri,
+            IEnumerable<AzureKeyVaultSecretResource> secrets,
+            IHttpClientFactory httpClientFactory,
+            CancellationToken ct)
         {
             ArgumentException.ThrowIfNullOrEmpty(vaultUri);
+            ArgumentNullException.ThrowIfNull(httpClientFactory);
 
             if (!secrets.Any())
                 return;
 
-            var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri);
+            var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri, httpClientFactory);
 
             var tasks = secrets.Select(s => SetSecretFromParameterAsync(client, s, ct));
 

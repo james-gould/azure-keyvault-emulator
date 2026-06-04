@@ -192,23 +192,33 @@ public static partial class KeyVaultEmulatorExtensions
         return keyVault;
     }
 
-    internal static async ValueTask SeedSecretsFromApphostAsync(string vaultUri, CancellationToken ct)
+    internal static async ValueTask SeedSecretsFromApphostAsync(
+        string vaultUri,
+        IHttpClientFactory httpClientFactory,
+        CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+
         if (_seedingSecrets.Count == 0)
             return;
 
-        var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri);
+        var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri, httpClientFactory);
 
         foreach (var secret in _seedingSecrets)
             await client.SetSecretAsync(secret, ct);
     }
 
-    internal static async ValueTask SeedCertificatesFromAppHostAsync(string vaultUri, CancellationToken ct)
+    internal static async ValueTask SeedCertificatesFromAppHostAsync(
+        string vaultUri,
+        IHttpClientFactory httpClientFactory,
+        CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+
         if (_seedingCertificates.Count == 0 && _seedingExistingCertificates.Count == 0)
             return;
 
-        var client = AzureKeyVaultEmulatorClientHelper.GetCertificateClient(vaultUri);
+        var client = AzureKeyVaultEmulatorClientHelper.GetCertificateClient(vaultUri, httpClientFactory);
 
         foreach(var (certificateName, policy) in _seedingCertificates)
         {
@@ -221,12 +231,17 @@ public static partial class KeyVaultEmulatorExtensions
             await client.ImportCertificateAsync(importOptions, ct);
     }
 
-    internal static async ValueTask SeedKeysFromAppHostAsync(string vaultUri, CancellationToken ct)
+    internal static async ValueTask SeedKeysFromAppHostAsync(
+        string vaultUri,
+        IHttpClientFactory httpClientFactory,
+        CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+
         if (_seedingKeys.Count == 0 && _seedingExistingKeys.Count == 0)
             return;
 
-        var client = AzureKeyVaultEmulatorClientHelper.GetKeyClient(vaultUri);
+        var client = AzureKeyVaultEmulatorClientHelper.GetKeyClient(vaultUri, httpClientFactory);
 
         foreach (var (keyName, options, type) in _seedingKeys)
             await client.CreateKeyAsync(keyName, type, options, ct);
