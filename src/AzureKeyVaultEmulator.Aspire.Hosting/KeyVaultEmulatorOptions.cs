@@ -26,7 +26,12 @@ public sealed class KeyVaultEmulatorOptions
     public int? Port { get; set; } = null;
 
     /// <summary>
-    /// Allows the Emulator to persist data beyond temporary storage for multi-session use.
+    /// <para>Allows the Emulator to persist data beyond temporary storage for multi-session use.</para>
+    /// <para>
+    /// A static <see cref="Port"/> must be supplied when this is enabled; otherwise the container is
+    /// exposed on a random host port each run and the persisted data (which embeds the vault URI) becomes
+    /// unreachable after a restart.
+    /// </para>
     /// </summary>
     public bool Persist { get; set; } = false;
 
@@ -73,6 +78,16 @@ public sealed class KeyVaultEmulatorOptions
             ? ShouldGenerateCertificates && LoadCertificatesIntoTrustStore
             // Validates the host machine has provided a local path containing preconfigured certificates
             : !string.IsNullOrEmpty(LocalCertificatePath);
+
+    /// <summary>
+    /// <para>Validates that a static <see cref="Port"/> is supplied whenever <see cref="Persist"/> is enabled.</para>
+    /// <para>
+    /// Persisted secrets, keys and certificates store the vault URI - including the host port - inside their
+    /// identifiers, so a randomly assigned port would leave that data unreachable after a restart. A fixed
+    /// <see cref="Port"/> keeps the vault URI stable so persistence actually works across runs.
+    /// </para>
+    /// </summary>
+    internal bool PersistHasStaticPort => !Persist || Port is not null;
 
     /// <summary>
     /// Used to carry the PFX through the generation and installation lifetime. Not passed as an option.

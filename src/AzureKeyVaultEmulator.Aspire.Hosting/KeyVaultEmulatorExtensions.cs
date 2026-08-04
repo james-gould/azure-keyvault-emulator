@@ -77,6 +77,13 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             if (!options.IsValidCustomisable)
                 throw new KeyVaultEmulatorException($"The configuration of {nameof(KeyVaultEmulatorOptions)} is not valid.");
 
+            if (!options.PersistHasStaticPort)
+                throw new KeyVaultEmulatorException(
+                    $"{nameof(KeyVaultEmulatorOptions)}.{nameof(KeyVaultEmulatorOptions.Persist)} is enabled without a static " +
+                    $"{nameof(KeyVaultEmulatorOptions.Port)}. Persisted secrets, keys and certificates embed the vault URI - " +
+                    $"including the host port - in their identifiers, so a randomly assigned port would leave that data unreachable " +
+                    $"after a restart. Set a fixed {nameof(KeyVaultEmulatorOptions.Port)} (for example 4997) when enabling {nameof(KeyVaultEmulatorOptions.Persist)}.");
+
             var hostCertificatePath = GetOrCreateLocalCertificates(options);
 
             ArgumentException.ThrowIfNullOrEmpty(hostCertificatePath);

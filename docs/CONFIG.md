@@ -42,7 +42,7 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
 | Key                           | Type                 | Default     | Description |
 |------------------------------|----------------------|-------------|-------------|
 | `Persist`                    | `bool`               | `false`     | Persist the key vault data in an `emulator.db` file between sessions. |
-| `Port`                       | `int?`               | `null`      | Pins the host port the emulator container is exposed on so the vault URI (`https://localhost:{Port}`) stays the same between runs. When `null` a random host port is assigned each run. Recommended alongside `Persist` so previously created data stays reachable. |
+| `Port`                       | `int?`               | `null`      | Pins the host port the emulator container is exposed on so the vault URI (`https://localhost:{Port}`) stays the same between runs. When `null` a random host port is assigned each run. **Required when `Persist` is enabled** (the hosting package throws at startup otherwise) so previously created data stays reachable. |
 | `LocalCertificatePath`       | `string`             | `""`        | Path to SSL certificates. If unset, defaults to user's local directory (e.g., `C:/Users/Name/keyvaultemulator/certs` on Windows). |
 | `ShouldGenerateCertificates` | `bool`               | `true`      | Whether to auto-generate SSL certificates. |
 | `LoadCertificatesIntoTrustStore` | `bool`          | `true`      | Attempts to install generated certs into the OS trust store. Installs to `User Trusted Root CA` |
@@ -52,8 +52,8 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
 
 
 
-> [!TIP]
-> By default the container is exposed on a random host port, so the vault URI (`https://localhost:{port}`) changes on every run. If you rely on `Persist = true` to keep data between sessions, set a fixed `Port` (for example `4997`) so the URI stays constant and your previously created secrets, keys and certificates remain reachable.
+> [!IMPORTANT]
+> `Persist` requires a static `Port`. Persisted secrets, keys and certificates embed the vault URI (`https://localhost:{Port}`) in their identifiers, so a random host port would leave that data unreachable after a restart. The `AzureKeyVaultEmulator.Aspire.Hosting` package enforces this - enabling `Persist` without a `Port` throws at startup - so just pick any free port (for example `4997`).
 
 There are two ways to utilise this configuration, all of them are **optional** and will default to allow automatic SSL on your machine.
 
