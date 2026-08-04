@@ -7,8 +7,23 @@ using AzureKeyVaultEmulator.Shared.Utilities;
 var builder = DistributedApplication.CreateBuilder();
 
 var seedingTestRun = args.GetFlag(AspireConstants.SeedingTest);
+var staticPortTestRun = args.GetFlag(AspireConstants.StaticPortTest);
 
-if (!seedingTestRun)
+if (staticPortTestRun)
+{
+    // Runs the emulator as a container exposed on a fixed host port with persistence enabled.
+    // This mirrors the scenario the static-port option fixes: the vault URI (and the URIs embedded
+    // within persisted secrets, keys and certificates) stays constant so a subsequent run can reach
+    // data created by a prior run.
+    builder
+        .AddAzureKeyVault(AspireConstants.EmulatorServiceName)
+        .RunAsEmulator(new KeyVaultEmulatorOptions
+        {
+            Port = AspireConstants.StaticPortTestPort,
+            Persist = true,
+        });
+}
+else if (!seedingTestRun)
 {
     var keyVault = builder
     .AddProject<Projects.AzureKeyVaultEmulator>(AspireConstants.EmulatorServiceName);

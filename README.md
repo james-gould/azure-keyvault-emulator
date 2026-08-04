@@ -74,15 +74,18 @@ var webApi = builder
     .WithReference(keyVault); // reference as normal
 ```
 
-You can also toggle on persisted data, which creates an `emulator.db` loaded at runtime and updated in real-time. 
+You can also toggle on persisted data, which creates an `emulator.db` loaded at runtime and updated in real-time. Persisted data embeds the vault URI (including the host port), so pair `Persist` with a fixed `Port` to keep that URI stable between runs:
 
 ```csharp
 var keyVaultServiceName = "keyvault";
 
 var keyVault = builder
     .AddAzureKeyVault(keyVaultServiceName)
-    .RunAsEmulator(new KeyVaultEmulatorOptions { Persist = true }); // Add this option
+    .RunAsEmulator(new KeyVaultEmulatorOptions { Persist = true, Port = 4997 }); // Add this option
 ```
+
+> [!IMPORTANT]
+> Enabling `Persist` requires a fixed `Port`. Aspire hands out a random host port each run, which would change the vault URI baked into your persisted secrets, keys and certificates and leave them unreachable after a restart. The hosting package enforces this, so `Persist` without a `Port` stops the app at startup - just pick any free port (for example `4997`).
 
 ### 3. (Optional) Seed secrets, keys and certificates from your `AppHost`
 
@@ -125,9 +128,9 @@ builder.AddProject<Projects.MyApi>("api")
     .WithReference(keyVault);
 ```
 
-The only consumer-side settings the SDK still requires are `DisableInstanceDiscovery = true`
-on `DefaultAzureCredentialOptions` and `DisableChallengeResourceVerification = true` on the
-Key Vault client options (the emulator runs on `localhost` rather than `*.vault.azure.net`):
+That leaves just two settings on the consumer side, and then you're good to go: set
+`DisableInstanceDiscovery = true` on `DefaultAzureCredentialOptions`, and
+`DisableChallengeResourceVerification = true` on your Key Vault client options.
 
 ```csharp
 var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
