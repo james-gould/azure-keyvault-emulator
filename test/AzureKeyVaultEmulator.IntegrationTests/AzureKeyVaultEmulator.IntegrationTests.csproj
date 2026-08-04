@@ -21,6 +21,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
     
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>

@@ -12,6 +12,7 @@
     <PackageReference Include="Azure.Security.KeyVault.Keys" />
     <PackageReference Include="Azure.Security.KeyVault.Secrets" />
     <PackageReference Include="Microsoft.Extensions.Azure" />
+    <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
 

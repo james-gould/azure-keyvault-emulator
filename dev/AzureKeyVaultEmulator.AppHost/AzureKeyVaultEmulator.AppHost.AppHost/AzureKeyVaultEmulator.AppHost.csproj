@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.Azure.KeyVault" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\AzureKeyVaultEmulator.Aspire.Hosting\AzureKeyVaultEmulator.Aspire.Hosting.csproj" IsAspireProjectResource="false" />
