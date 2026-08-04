@@ -13,6 +13,19 @@ public sealed class KeyVaultEmulatorOptions
     public ContainerLifetime Lifetime { get; set; } = ContainerLifetime.Session;
 
     /// <summary>
+    /// <para>Sets a static host port that the Azure Key Vault Emulator container is exposed on.</para>
+    /// <para>
+    /// When <see langword="null"/> (the default) the container runtime assigns a random host port on
+    /// each run, so the emulator's vault URI (<c>https://localhost:{port}</c>) changes between sessions.
+    /// </para>
+    /// <para>
+    /// Providing a fixed value keeps the vault URI stable across runs, which is required when persisting
+    /// data via <see cref="Persist"/> so previously created secrets, keys and certificates remain reachable.
+    /// </para>
+    /// </summary>
+    public int? Port { get; set; } = null;
+
+    /// <summary>
     /// Allows the Emulator to persist data beyond temporary storage for multi-session use.
     /// </summary>
     public bool Persist { get; set; } = false;

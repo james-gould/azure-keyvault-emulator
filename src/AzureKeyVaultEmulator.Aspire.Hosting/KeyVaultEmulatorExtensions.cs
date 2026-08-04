@@ -91,7 +91,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
                         source: hostCertificatePath,
                         target: KeyVaultEmulatorCertConstants.CertMountTarget)
                     .WithLifetime(options.Lifetime)
-                    .WithHttpsEndpoint(targetPort: KeyVaultEmulatorContainerConstants.Port)
+                    .WithHttpsEndpoint(port: options.Port, targetPort: KeyVaultEmulatorContainerConstants.Port)
                     .WithEnvironment(ctx =>
                     {
                         ctx.EnvironmentVariables.Add(KeyVaultEmulatorContainerConstants.PersistData, $"{options.Persist}");

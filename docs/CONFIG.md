@@ -42,6 +42,7 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
 | Key                           | Type                 | Default     | Description |
 |------------------------------|----------------------|-------------|-------------|
 | `Persist`                    | `bool`               | `false`     | Persist the key vault data in an `emulator.db` file between sessions. |
+| `Port`                       | `int?`               | `null`      | Pins the host port the emulator container is exposed on so the vault URI (`https://localhost:{Port}`) stays the same between runs. When `null` a random host port is assigned each run. Recommended alongside `Persist` so previously created data stays reachable. |
 | `LocalCertificatePath`       | `string`             | `""`        | Path to SSL certificates. If unset, defaults to user's local directory (e.g., `C:/Users/Name/keyvaultemulator/certs` on Windows). |
 | `ShouldGenerateCertificates` | `bool`               | `true`      | Whether to auto-generate SSL certificates. |
 | `LoadCertificatesIntoTrustStore` | `bool`          | `true`      | Attempts to install generated certs into the OS trust store. Installs to `User Trusted Root CA` |
@@ -51,6 +52,9 @@ The following configuration changes how the `AzureKeyVaultEmulator.Aspire.Hostin
 
 
 
+> [!TIP]
+> By default the container is exposed on a random host port, so the vault URI (`https://localhost:{port}`) changes on every run. If you rely on `Persist = true` to keep data between sessions, set a fixed `Port` (for example `4997`) so the URI stays constant and your previously created secrets, keys and certificates remain reachable.
+
 There are two ways to utilise this configuration, all of them are **optional** and will default to allow automatic SSL on your machine.
 
 With `User Secrets` you can create a configuration section with the following options:
@@ -59,6 +63,7 @@ With `User Secrets` you can create a configuration section with the following op
 {
   "KeyVaultEmulator": {
     "Persist": true,
+    "Port": 4997,
     "LocalCertificatePath": "C:/Users/MyName/keyvaultemulator/certs",
     "LoadCertificatesIntoTrustStore": false,
     "ShouldGenerateCertificates": false,
@@ -88,6 +93,7 @@ Or you can pass in the same values directly as an `object`:
     .RunAsEmulator(new KeyVaultEmulatorOptions
     {
         Persist = true,
+        Port = 4997,
         LocalCertificatePath = "C:/Users/MyName/keyvaultemulator/certs",
         LoadCertificatesIntoTrustStore = false,
         ShouldGenerateCertificates = false,
