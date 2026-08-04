@@ -1,6 +1,7 @@
+using Aspire.Hosting;
 using AzureKeyVaultEmulator.Aspire.Hosting;
 
-namespace AzureKeyVaultEmulator.DefaultAzureCredentialTests;
+namespace AzureKeyVaultEmulator.IntegrationTests.Emulator;
 
 /// <summary>
 /// Verifies that <see cref="KeyVaultEmulatorOptions.Port"/> controls the host port the emulator

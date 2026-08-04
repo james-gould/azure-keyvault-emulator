@@ -84,6 +84,9 @@ var keyVault = builder
     .RunAsEmulator(new KeyVaultEmulatorOptions { Persist = true }); // Add this option
 ```
 
+> [!TIP]
+> Aspire assigns a random host port each run, so the vault URI (`https://localhost:{port}`) — which is embedded in your persisted secrets, keys and certificates — changes between sessions. When using `Persist`, also pin a fixed `Port` (e.g. `new KeyVaultEmulatorOptions { Persist = true, Port = 4997 }`) so the URI stays stable and previously created data remains reachable after a restart.
+
 ### 3. (Optional) Seed secrets, keys and certificates from your `AppHost`
 
 You can pre-populate the Emulator with secrets, keys and certificates directly from your `AppHost` using the fluent `SeedWith*` extension methods. The seeded data is created automatically once the emulator is running, so it's available the moment your dependent projects start consuming it.
