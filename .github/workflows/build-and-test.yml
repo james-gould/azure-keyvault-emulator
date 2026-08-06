@@ -12,6 +12,35 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate container tag versions match git tag
+        run: |
+          set -euo pipefail
+
+          GIT_TAG=$(git describe --tags --abbrev=0)
+          VERSION=${GIT_TAG#v}
+
+          echo "Latest git tag: $GIT_TAG (version: $VERSION)"
+
+          FILES=(
+            "src/AzureKeyVaultEmulator.Aspire.Hosting/Constants/KeyVaultEmulatorContainerConstants.cs"
+            "src/TestContainers/dotnet/Constants/AzureKeyVaultEmulatorContainerConstants.cs"
+          )
+
+          FAILED=0
+
+          for FILE in "${FILES[@]}"; do
+            if ! grep -q "public const string Tag = \"$VERSION\";" "$FILE"; then
+              echo "::error file=$FILE::Tag constant does not match the latest git tag '$VERSION'."
+              FAILED=1
+            else
+              echo "$FILE is up to date."
+            fi
+          done
+
+          exit $FAILED
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
