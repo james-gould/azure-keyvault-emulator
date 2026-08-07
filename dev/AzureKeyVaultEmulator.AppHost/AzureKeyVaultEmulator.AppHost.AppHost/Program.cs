@@ -21,6 +21,7 @@ if (staticPortTestRun)
         {
             Port = AspireConstants.StaticPortTestPort,
             Persist = true,
+            ImageTag = "latest",
         });
 }
 else if (!seedingTestRun)
