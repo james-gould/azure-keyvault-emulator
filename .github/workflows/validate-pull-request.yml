@@ -21,7 +21,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-
       - name: Authenticate Azure CLI
         uses: azure/login@v2
         with:
