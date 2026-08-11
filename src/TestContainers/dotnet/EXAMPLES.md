@@ -13,7 +13,9 @@ using AzureKeyVaultEmulator.TestContainers;
 
 // Use system temp directory for CI/CD environments
 var certificatesPath = Path.GetTempPath();
-await using var container = new AzureKeyVaultEmulatorContainer(certificatesPath);
+await using var container = new AzureKeyVaultEmulatorBuilder()
+    .WithCertificates(certificatesPath)
+    .Build();
 
 // The container will automatically generate certificates in the temp directory
 await container.StartAsync();
@@ -33,7 +35,7 @@ On GitHub Actions, the temp directory is automatically cleaned between runs, mak
 using AzureKeyVaultEmulator.TestContainers;
 
 // Create container with certificate directory and persistence
-await using var container = new AzureKeyVaultEmulatorContainer();
+await using var container = new AzureKeyVaultEmulatorBuilder().Build();
 
 // Start the container
 await container.StartAsync();
@@ -66,7 +68,7 @@ public class KeyVaultTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _container = new AzureKeyVaultEmulatorContainer();
+        _container = new AzureKeyVaultEmulatorBuilder().Build();
         await _container.StartAsync();
 
         _secretClient = _container.GetSecretClient();
@@ -107,7 +109,7 @@ public class KeyVaultTests
     [OneTimeSetUp]
     public async Task SetUp()
     {
-        _container = new AzureKeyVaultEmulatorContainer();
+        _container = new AzureKeyVaultEmulatorBuilder().Build();
         await _container.StartAsync();
 
         _secretClient = _container.GetSecretClient();
@@ -149,7 +151,7 @@ public class KeyVaultTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        _container = new AzureKeyVaultEmulatorContainer();
+        _container = new AzureKeyVaultEmulatorBuilder().Build();
         await _container.StartAsync();
 
         _secretClient = _container.GetSecretClient();

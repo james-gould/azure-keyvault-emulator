@@ -18,7 +18,8 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         // Will default image + path depending on execution context.
-        _container = new(tag: "latest");
+        _container = new AzureKeyVaultEmulatorBuilder("jamesgoulddev/azure-keyvault-emulator:latest")
+            .Build();
 
         await _container.StartAsync();
     }
@@ -95,14 +96,16 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         Assert.Equal(keyName, fromStore.Value.Name);
     }
 
-    [Fact(Skip = "Flaky, needs a rework")]
+    [Fact]
     public async Task CreatingSetupDatabaseWillPersistBetweenRuns()
     {
         var secretName = Guid.NewGuid().ToString();
         var secretValue = Guid.NewGuid().ToString();
 
         // Marks with -e Persist=true to create an SQLite Database
-        await using var container = new AzureKeyVaultEmulatorContainer(persist: true);
+        await using var container = new AzureKeyVaultEmulatorBuilder("jamesgoulddev/azure-keyvault-emulator:latest")
+            .WithPersistence(true)
+            .Build();
 
         await container.StartAsync();
 
@@ -124,7 +127,10 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
         await container.StopAsync();
 
         // Create another with -e Persist=true so it uses the existing SQLite Database.
-        await using var secondaryContainer = new AzureKeyVaultEmulatorContainer(persist: true);
+        await using var secondaryContainer =
+            new AzureKeyVaultEmulatorBuilder("jamesgoulddev/azure-keyvault-emulator:latest")
+                .WithPersistence(true)
+                .Build();
 
         await secondaryContainer.StartAsync();
 
@@ -143,7 +149,10 @@ public class AzureKeyVaultEmulatorContainerIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task RandomPortWontBeAssignedWhenSpecificPortProvided()
     {
-        await using var container = new AzureKeyVaultEmulatorContainer(assignRandomHostPort: false, tag: "latest");
+        await using var container = new AzureKeyVaultEmulatorBuilder("jamesgoulddev/azure-keyvault-emulator:latest")
+            .WithPortBinding(AzureKeyVaultEmulatorBuilder.AzureKeyVaultEmulatorPort)
+            .Build();
+
         await container.StartAsync();
 
         var mappedPort = container.GetMappedPublicPort();
