@@ -56,7 +56,7 @@ You can read more about configuration [here.](docs/CONFIG.md#local-docker)
 dotnet add package AzureKeyVaultEmulator.Aspire.Hosting
 ```
 
-### 2. Override an existing Aspire resource or directly include the `AzureKeyVaultEmulator`: 
+### 2. Override an existing Aspire resource or directly include the `AzureKeyVaultEmulator`:
 
 ```csharp
 var keyVaultServiceName = "keyvault"; // Remember this string, you'll need it to get the vaultUri!
@@ -167,7 +167,7 @@ builder.Services.AddAzureKeyVaultEmulator(vaultUri);
 builder.Services.AddAzureKeyVaultEmulator(vaultUri, secrets: true, keys: true, certificates: false);
 ```
 
-Or if you don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`. 
+Or if you don't want to introduce a new dependency you can achieve the same behaviour with `ClientOptions`.
 
 Setting up a `SecretClient` for example:
 
@@ -228,7 +228,7 @@ else
 
 ## TestContainers Module
 
-There is a readily available [TestContainers](./src/TestContainers/dotnet/README.md) module too, which fully supports all CI/CD pipelines. 
+There is a readily available [TestContainers](./src/TestContainers/dotnet/README.md) module too, which fully supports all CI/CD pipelines.
 
 The same testing setup can be used in your local environment and CI/CD pipelines, no need to set flags or configuration.
 
@@ -238,7 +238,7 @@ The same testing setup can be used in your local environment and CI/CD pipelines
 using AzureKeyVaultEmulator.TestContainers;
 
 // Create container with certificate directory and persistence
-await using var container = new AzureKeyVaultEmulatorContainer();
+await using var container = new AzureKeyVaultEmulatorBuilder().Build();
 
 // Start the container
 await container.StartAsync();
