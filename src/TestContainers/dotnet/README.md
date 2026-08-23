@@ -55,7 +55,7 @@ Using the container can be done without configuration or heavy setup requirement
 using AzureKeyVaultEmulator.TestContainers;
 
 // Create container with certificate directory and persistence
-await using var container = new AzureKeyVaultEmulatorContainer();
+await using var container = new AzureKeyVaultEmulatorBuilder().Build();
 
 // Start the container
 await container.StartAsync();
@@ -78,63 +78,30 @@ var secret = await secretClient.SetSecretAsync("mySecretName", "mySecretValue");
 If you wish to alter the default behaviour of the [Azure Key Vault Emulator](https://github.com/james-gould/azure-keyvault-emulator) you can do so with the following:
 
 ```csharp
-public sealed class AzureKeyVaultEmulatorOptions
-{
-    /// <summary>
-    /// Allows the Emulator to persist data beyond temporary storage for multi-session use.
-    /// </summary>
-    public bool Persist { get; set; } = false;
-
-    /// <summary>
-    /// <para>Specify the directory to be used as a mount for the Azure Key Vault Emulator.</para>
-    /// <para>Warning: your container runtime must have read access to this directory.</para>
-    /// </summary>
-    public string LocalCertificatePath { get; set; } = string.Empty;
-
-    /// <summary>
-    /// <para>Determines if the Emulator should attempt to load the certificates into the host machine's trust store.</para>
-    /// <para>Warning: this requires Administration rights.</para>
-    /// <para>Unused if the certificates are already present, removing the administration privilege requirement.</para>
-    /// </summary>
-    public bool LoadCertificatesIntoTrustStore { get; set; } = true;
-
-    /// <summary>
-    /// <para>Disables the Azure Key Vault Emulator creating a self signed SSL certificate for you at runtime.</para>
-    /// <para>
-    /// Using this option will require you to provide a certificate in PFX (and optionally a CRT) format within the same directory.
-    /// The directory must also be set via <see cref="LocalCertificatePath"/>.
-    /// </para>
-    /// <para>The PFX password MUST be "emulator" - all lowercase without the double quotes. This limitation is being looked into.</para>
-    /// </summary>
-    public bool ShouldGenerateCertificates { get; set; } = true;
-
-    /// <summary>
-    /// <para>Cleans up the generated SSL certificates on application shutdown.</para>
-    /// <para>If you do not set a value for <see cref="LocalCertificatePath"/>, the default local user directory will be used for your OS.</para>
-    /// <para>Default: <see langword="false"/></para>
-    /// </summary>
-    public bool ForceCleanupOnShutdown { get; set; } = false;
-}
-
-// In your test class
-
-var options = new AzureKeyVaultEmulatorOptions { LocalCertificatePath = "my/custom/path/for/ssl/certs" };
-
-await using var container = new AzureKeyVaultEmulatorContainer(options);
+await using var container = new AzureKeyVaultEmulatorBuilder()
+    .WithCertificates(
+        certificatesDirectory: "my/custom/path/for/ssl/certs",
+        generateCertificates: false,
+        forceCleanupCertificates: true,
+        loadCertificatesIntoTrustStore: false
+    )
+    .WithPersistence(true)
+    .Build();
 ```
 
-Alternatively you can specify singluar options to keep your test code terse:
+Alternatively you can specify singular options to keep your test code terse:
 
 ```csharp
-// The container constructor
-public AzureKeyVaultEmulatorContainer(
+// The configuration constructor
+public AzureKeyVaultEmulatorConfiguration(
     string? certificatesDirectory = null,
     bool persist = false,
     bool generateCertificates = true,
-    bool forceCleanupCertificates = false) { ... }
+    bool forceCleanupCertificates = false,
+    bool loadCertificatesIntoTrustStore = true) { ... }
 
 // In your test class
-await using var container = new AzureKeyVaultEmulatorContainer(persist: true);
+await using var container = new AzureKeyVaultEmulatorContainer(new AzureKeyVaultEmulatorConfiguration(persist: true));
 ```
 
 [You can find more complete examples in different test frameworks here.](./EXAMPLES.md)

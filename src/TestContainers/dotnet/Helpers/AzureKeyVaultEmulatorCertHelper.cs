@@ -18,7 +18,7 @@ namespace AzureKeyVaultEmulator.TestContainers.Helpers
         /// </summary>
         /// <param name="options">The granular options for configuring the Azure Key Vault Emulator.</param>
         /// <returns>The base directory containing certificates.</returns>
-        internal static CertificateLoaderVM ValidateOrGenerateCertificate(AzureKeyVaultEmulatorOptions options)
+        internal static CertificateLoaderVM ValidateOrGenerateCertificate(AzureKeyVaultEmulatorConfiguration options)
         {
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
@@ -213,7 +213,7 @@ namespace AzureKeyVaultEmulator.TestContainers.Helpers
         /// <param name="pem">The raw data or loaded PEM from <paramref name="pfx"/></param>
         /// <exception cref="KeyVaultEmulatorException"></exception>
         internal static void TryWriteToStore(
-            AzureKeyVaultEmulatorOptions options,
+            AzureKeyVaultEmulatorConfiguration options,
             X509Certificate2? pfx,
             string pfxPath,
             string pem)
