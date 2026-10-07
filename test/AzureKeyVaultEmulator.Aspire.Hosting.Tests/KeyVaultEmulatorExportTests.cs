@@ -86,24 +86,31 @@ public class KeyVaultEmulatorExportTests
             "vault", new KeyVaultEmulatorExportOptions { ShouldGenerateCertificates = false }));
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void OmittedOptionsKeepConfigurationBinding(bool redirect)
+    [Fact]
+    public void AddExportBindsResourceConfigurationWhenOptionsAreOmitted()
     {
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { DisableDashboard = true });
-        var section = redirect ? "emulator" : "vault";
-        builder.Configuration[$"{section}:Persist"] = "true";
+        builder.Configuration["vault:Persist"] = "true";
 
+        // Persistence without a port proves binding occurred and fails before certificate or trust-store IO.
         var exception = Assert.Throws<KeyVaultEmulatorException>(() =>
-        {
-            if (redirect)
-                builder.AddAzureKeyVault("vault").RunAsEmulatorForExport(configSectionName: section);
-            else
-                builder.AddAzureKeyVaultEmulatorForExport("vault");
-        });
+            builder.AddAzureKeyVaultEmulatorForExport("vault"));
 
-        Assert.Contains("static Port", exception.Message);
+        Assert.Contains("Persist is enabled without a static Port", exception.Message);
+    }
+
+    [Fact]
+    public void RunAsExportBindsNamedConfigurationWhenOptionsAreOmitted()
+    {
+        var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { DisableDashboard = true });
+        builder.Configuration["vault:Persist"] = "false";
+        builder.Configuration["emulator:Persist"] = "true";
+
+        // The distinct section must supply the invalid combination, not the resource-name section.
+        var exception = Assert.Throws<KeyVaultEmulatorException>(() =>
+            builder.AddAzureKeyVault("vault").RunAsEmulatorForExport(configSectionName: "emulator"));
+
+        Assert.Contains("Persist is enabled without a static Port", exception.Message);
     }
 
     [Fact]
