@@ -40,6 +40,40 @@ You will then have a feature complete, emulated `Azure Key Vault` running locall
 
 ![Azure Key Vault Emulator in .NET Aspire](https://i.imgur.com/gMpfwrN.png)
 
+# TypeScript AppHosts
+
+Add `AzureKeyVaultEmulator.Aspire.Hosting` to your TypeScript AppHost's integration
+packages and run `aspire restore` to generate the bindings.
+
+To use the emulator directly:
+
+```typescript
+import { createBuilder } from './.aspire/modules/aspire.mjs';
+
+const builder = await createBuilder();
+
+const keyVault = await builder.addAzureKeyVaultEmulator('keyvault', {
+    port: 4997,
+    persist: true,
+});
+
+await builder.build().run();
+```
+
+To redirect an existing Azure Key Vault resource:
+
+```typescript
+const keyVault = await builder.addAzureKeyVault('keyvault').runAsEmulator({
+    options: { port: 4997, persist: true },
+});
+```
+
+Both methods can be called without options. `runAsEmulator` also accepts
+`configSectionName` alongside `options`. Omitting the options object retains
+configuration-section lookup; supplying it uses the existing C# defaults for
+omitted fields. Certificate setup and validation are unchanged, including the
+requirement for a fixed `port` when `persist` is enabled.
+
 # Using `DefaultAzureCredential`
 
 If your consumer authenticates with `Azure.Identity.DefaultAzureCredential` (so it doesn't need
