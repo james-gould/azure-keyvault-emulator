@@ -72,7 +72,8 @@ Both methods can be called without options. `runAsEmulator` also accepts
 `configSectionName` alongside `options`. Omitting the options object retains
 configuration-section lookup; supplying it uses the existing C# defaults for
 omitted fields. Certificate setup and validation are unchanged, including the
-requirement for a fixed `port` when `persist` is enabled.
+requirement for a fixed `port` when `persist` is enabled. Otherwise, `port` is
+optional; omitting it lets Aspire assign a random host port.
 
 # Using `DefaultAzureCredential`
 
