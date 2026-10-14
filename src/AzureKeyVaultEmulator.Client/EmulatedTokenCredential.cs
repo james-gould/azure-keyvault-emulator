@@ -11,7 +11,6 @@ namespace AzureKeyVaultEmulator.Aspire.Client
     /// <c>/token</c> endpoint. The emulator now self-hosts an Entra-compatible OAuth2 authority,
     /// so <see cref="Azure.Identity.DefaultAzureCredential"/> can be used directly instead.
     /// </summary>
-    [Obsolete("EmulatedTokenCredential is no longer required. The emulator now exposes an Entra-compatible OAuth2 surface, so use Azure.Identity.DefaultAzureCredential (with DefaultAzureCredentialOptions { DisableInstanceDiscovery = true }) instead. This type will be removed in a future major version.")]
     public sealed class EmulatedTokenCredential : TokenCredential
     {
         public EmulatedTokenCredential(string vaultUri)

@@ -1,5 +1,5 @@
 using System;
-using Azure.Identity;
+using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
@@ -21,7 +21,7 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(nameof(vaultEndpoint));
 
-            return new SecretClient(new Uri(vaultEndpoint), CreateCredential(), new SecretClientOptions { DisableChallengeResourceVerification = true });
+            return new SecretClient(new Uri(vaultEndpoint), CreateCredential(vaultEndpoint), new SecretClientOptions { DisableChallengeResourceVerification = true });
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(nameof(vaultEndpoint));
 
-            return new KeyClient(new Uri(vaultEndpoint), CreateCredential(), new KeyClientOptions { DisableChallengeResourceVerification = true });
+            return new KeyClient(new Uri(vaultEndpoint), CreateCredential(vaultEndpoint), new KeyClientOptions { DisableChallengeResourceVerification = true });
         }
 
         /// <summary>
@@ -47,13 +47,10 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(nameof(vaultEndpoint));
 
-            return new CertificateClient(new Uri(vaultEndpoint), CreateCredential(), new CertificateClientOptions { DisableChallengeResourceVerification = true });
+            return new CertificateClient(new Uri(vaultEndpoint), CreateCredential(vaultEndpoint), new CertificateClientOptions { DisableChallengeResourceVerification = true });
         }
 
-        private static DefaultAzureCredential CreateCredential() =>
-            new DefaultAzureCredential(new DefaultAzureCredentialOptions
-            {
-                DisableInstanceDiscovery = true,
-            });
+        private static TokenCredential CreateCredential(string vaultUri) =>
+            new EmulatedTokenCredential(vaultUri);
     }
 }
