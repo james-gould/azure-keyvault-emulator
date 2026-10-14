@@ -10,8 +10,8 @@ jobs:
   run-integration-tests:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      id-token: write
+      # contents: read
+      # id-token: write
 
     steps:
       - name: Checkout PR branch (from fork or same repo)
@@ -19,15 +19,14 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Authenticate Azure CLI
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          auth-type: IDENTITY
+      # - name: Authenticate Azure CLI
+      #   uses: azure/login@v2
+      #   with:
+      #     client-id: ${{ vars.AZURE_CLIENT_ID }}
+      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      #     auth-type: IDENTITY
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3

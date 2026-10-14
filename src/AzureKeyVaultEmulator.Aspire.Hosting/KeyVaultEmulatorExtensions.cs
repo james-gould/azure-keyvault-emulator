@@ -132,9 +132,11 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
 
                         await SeedSecretsFromParametersAsync(emulatedResource.VaultUri, secrets, ct);
 
-                        await SeedSecretsFromApphostAsync(emulatedResource.VaultUri, ct);
-                        await SeedCertificatesFromAppHostAsync(emulatedResource.VaultUri, ct);
-                        await SeedKeysFromAppHostAsync(emulatedResource.VaultUri, ct);
+                        var uri = new Uri(emulatedResource.VaultUri);
+
+                        await SeedSecretsFromApphostAsync(uri, ct);
+                        await SeedCertificatesFromAppHostAsync(uri, ct);
+                        await SeedKeysFromAppHostAsync(uri, ct);
                     })
                     .WithHttpHealthCheck("/token")
                     .WithAnnotation(new EmulatorResourceAnnotation());
@@ -231,7 +233,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
             if (!secrets.Any())
                 return;
 
-            var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(vaultUri);
+            var client = AzureKeyVaultEmulatorClientHelper.GetSecretClient(new Uri(vaultUri));
 
             var tasks = secrets.Select(s => SetSecretFromParameterAsync(client, s, ct));
 
