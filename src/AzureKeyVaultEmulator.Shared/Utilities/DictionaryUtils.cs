@@ -56,7 +56,10 @@ public static class DictionaryUtils
         ArgumentNullException.ThrowIfNull(set);
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var query = set.Where(x => x.PersistedName == name && x.Deleted == deleted);
+        var query = set.Where(x =>
+            x.PersistedName.Equals(name, StringComparison.InvariantCultureIgnoreCase)
+            && x.Deleted == deleted
+        );
 
         if (!string.IsNullOrEmpty(version))
             query = query.Where(x => x.PersistedVersion == version);
@@ -86,7 +89,10 @@ public static class DictionaryUtils
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(value);
 
-        var existing = await set.FirstOrDefaultAsync(x => x.PersistedName == name && x.PersistedVersion == version);
+        var existing = await set.FirstOrDefaultAsync(x =>
+            x.PersistedName.Equals(name, StringComparison.InvariantCultureIgnoreCase)
+            && x.PersistedVersion == version
+        );
 
         if (existing != null)
             return;

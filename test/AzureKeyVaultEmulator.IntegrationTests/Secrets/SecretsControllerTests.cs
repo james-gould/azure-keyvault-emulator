@@ -468,10 +468,10 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             var secretNameToDelete = fixture.FreshlyGeneratedGuid;
 
-            var key = await fixture.CreateSecretAsync(secretNameToDelete, "val1");
+            var secret = await fixture.CreateSecretAsync(secretNameToDelete, "val1");
 
-            Assert.NotNull(key);
-            Assert.Equal(secretNameToDelete, key.Name);
+            Assert.NotNull(secret);
+            Assert.Equal(secretNameToDelete, secret.Name);
 
             var deletedkeyOp = await client.StartDeleteSecretAsync(secretNameToDelete);
 
@@ -488,20 +488,40 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
         {
             var client = await fixture.GetClientAsync();
 
-            var keyNameToDelete = fixture.FreshlyGeneratedGuid;
+            var secretName = fixture.FreshlyGeneratedGuid;
 
-            var key = await fixture.CreateSecretAsync(keyNameToDelete, "val1");
+            var secret = await fixture.CreateSecretAsync(secretName, "val1");
 
-            Assert.NotNull(key);
-            Assert.Equal(keyNameToDelete, key.Name);
+            Assert.NotNull(secret);
+            Assert.Equal(secretName, secret.Name);
 
-            var deletedkeyOp = await client.StartDeleteSecretAsync(keyNameToDelete);
+            var deletedkeyOp = await client.StartDeleteSecretAsync(secretName);
 
             await deletedkeyOp.WaitForCompletionAsync();
 
-            var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.SetSecretAsync(keyNameToDelete, "val2"));
+            var exception = await Assert.ThrowsAsync<RequestFailedException>(() => client.SetSecretAsync(secretName, "val2"));
 
             Assert.Equal((int)HttpStatusCode.Conflict, exception.Status);
+        }
+
+        [Fact]
+        public async Task GettingCasedSecretIgnoresCaseVariance()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = "cAsE-sEnSiTiVe";
+
+            var secret = await fixture.CreateSecretAsync(secretName, "vAlUe");
+
+            Assert.NotNull(secret);
+            Assert.Equal(secret.Name, secretName);
+
+            var caseInsensitiveSecretName = "case-sensitive";
+
+            var secretFromStore = await client.GetSecretAsync(caseInsensitiveSecretName);
+
+            Assert.NotNull(secretFromStore.Value);
+            Assert.Equal(secret.Value, secretFromStore.Value.Value);
         }
     }
 }
