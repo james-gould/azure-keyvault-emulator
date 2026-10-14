@@ -56,8 +56,11 @@ public static class DictionaryUtils
         ArgumentNullException.ThrowIfNull(set);
         ArgumentException.ThrowIfNullOrEmpty(name);
 
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+        // comparisonType: InvariantCultureIgnoreCase) && s.PersistedVersion == @version)' could not be translated.
+
         var query = set.Where(x =>
-            x.PersistedName.Equals(name, StringComparison.InvariantCultureIgnoreCase)
+            x.PersistedName.ToLower() == name.ToLower()
             && x.Deleted == deleted
         );
 
@@ -90,7 +93,7 @@ public static class DictionaryUtils
         ArgumentNullException.ThrowIfNull(value);
 
         var existing = await set.FirstOrDefaultAsync(x =>
-            x.PersistedName.Equals(name, StringComparison.InvariantCultureIgnoreCase)
+            x.PersistedName.ToLower() == name.ToLower()
             && x.PersistedVersion == version
         );
 
@@ -108,11 +111,18 @@ public static class DictionaryUtils
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        var range = await set.Where(x => x.PersistedName == name && x.Deleted == deleted).ToListAsync();
+        // comparisonType: InvariantCultureIgnoreCase) && s.PersistedVersion == @version)' could not be translated.
+        var range = await set.Where(x =>
+            x.PersistedName.ToLower() == name.ToLower()
+            && x.Deleted == deleted
+        ).ToListAsync();
 
         if (range == null || range.Count == 0)
             throw new MissingItemException($"Cannot find objects with the name {name} in the vault.");
 
         set.RemoveRange(range);
     }
+
+    // Feels like a crime just covering the file like this :-)
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 }
