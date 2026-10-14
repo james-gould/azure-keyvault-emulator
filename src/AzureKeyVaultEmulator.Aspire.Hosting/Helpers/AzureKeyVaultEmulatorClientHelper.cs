@@ -1,8 +1,8 @@
 ﻿using Azure.Core;
-using Azure.Identity;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Secrets;
+using AzureKeyVaultEmulator.Aspire.Client;
 
 namespace AzureKeyVaultEmulator.Aspire.Hosting.Helpers;
 
@@ -12,7 +12,7 @@ internal static class AzureKeyVaultEmulatorClientHelper
     {
         var opt = new SecretClientOptions { DisableChallengeResourceVerification = true };
 
-        var credential = GetCredential();
+        var credential = GetCredential(uri);
 
         return new SecretClient(uri, credential, opt);
     }
@@ -21,7 +21,7 @@ internal static class AzureKeyVaultEmulatorClientHelper
     {
         var opt = new CertificateClientOptions { DisableChallengeResourceVerification = true };
 
-        var credential = GetCredential();
+        var credential = GetCredential(uri);
 
         return new CertificateClient(uri, credential, opt);
     }
@@ -30,18 +30,11 @@ internal static class AzureKeyVaultEmulatorClientHelper
     {
         var opt = new KeyClientOptions { DisableChallengeResourceVerification = true };
 
-        var credential = GetCredential();
+        var credential = GetCredential(uri);
 
         return new KeyClient(uri, credential, opt);
     }
 
-    internal static TokenCredential GetCredential()
-    {
-        var opt = new DefaultAzureCredentialOptions
-        {
-            DisableInstanceDiscovery = true
-        };
-
-        return new DefaultAzureCredential(opt);
-    }
+    internal static TokenCredential GetCredential(Uri uri)
+        => new EmulatedTokenCredential(uri.AbsoluteUri);
 }

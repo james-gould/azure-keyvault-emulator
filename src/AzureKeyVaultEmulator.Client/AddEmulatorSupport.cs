@@ -30,10 +30,8 @@ namespace AzureKeyVaultEmulator.Aspire.Client
             if (string.IsNullOrEmpty(vaultEndpoint))
                 throw new ArgumentNullException(nameof(vaultEndpoint));
 
-            var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
-            {
-                DisableInstanceDiscovery = true,
-            });
+            var credential = new EmulatedTokenCredential(vaultEndpoint);
+
             var uri = new Uri(vaultEndpoint);
 
             if (secrets)

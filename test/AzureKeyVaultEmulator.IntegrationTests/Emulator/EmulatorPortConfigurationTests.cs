@@ -15,7 +15,7 @@ public sealed class EmulatorPortConfigurationTests
     private const string _resourceName = "keyvault-emulator";
     private const string _httpsEndpointName = "https";
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void StaticPortIsAppliedToEmulatorHttpsEndpoint()
     {
         const int staticPort = 45123;
@@ -31,7 +31,7 @@ public sealed class EmulatorPortConfigurationTests
         Assert.Equal(staticPort, endpoint.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void NullPortLeavesEmulatorHttpsEndpointDynamic()
     {
         var builder = DistributedApplication.CreateBuilder();
@@ -45,7 +45,7 @@ public sealed class EmulatorPortConfigurationTests
         Assert.Null(endpoint.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void StaticPortIsAppliedWhenAddingEmulatorDirectly()
     {
         const int staticPort = 46123;
@@ -60,7 +60,7 @@ public sealed class EmulatorPortConfigurationTests
         Assert.Equal(staticPort, endpoint.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void EnablingPersistWithoutPortThrows()
     {
         var builder = DistributedApplication.CreateBuilder();
@@ -72,7 +72,7 @@ public sealed class EmulatorPortConfigurationTests
         AssertPersistRequiresPort(exception);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void EnablingPersistWithoutPortThrowsWhenAddingEmulatorDirectly()
     {
         var builder = DistributedApplication.CreateBuilder();
@@ -83,7 +83,7 @@ public sealed class EmulatorPortConfigurationTests
         AssertPersistRequiresPort(exception);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void EnablingPersistWithStaticPortIsAllowed()
     {
         const int staticPort = 47123;

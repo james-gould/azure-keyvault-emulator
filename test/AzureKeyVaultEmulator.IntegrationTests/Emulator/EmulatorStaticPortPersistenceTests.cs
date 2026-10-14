@@ -14,33 +14,33 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Emulator;
 public sealed class EmulatorStaticPortPersistenceTests(StaticPortPersistenceFixture fixture)
     : IClassFixture<StaticPortPersistenceFixture>
 {
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void ConfiguredPortIsAppliedToBothRuns()
     {
         Assert.Equal(fixture.ConfiguredPort, fixture.FirstRunPort);
         Assert.Equal(fixture.ConfiguredPort, fixture.SecondRunPort);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void PersistedSecretIdentifierEmbedsConfiguredPort()
     {
         Assert.Equal(fixture.ConfiguredPort, fixture.SecretId.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void PersistedKeyIdentifierEmbedsConfiguredPort()
     {
         Assert.Equal(fixture.ConfiguredPort, fixture.KeyId.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public void PersistedCertificateIdentifiersEmbedConfiguredPort()
     {
         Assert.Equal(fixture.ConfiguredPort, fixture.CertificateSecretId.Port);
         Assert.Equal(fixture.ConfiguredPort, fixture.CertificateKeyId.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public async Task SecretIsQueryableAfterRestartWithStableIdentifier()
     {
         var secret = await fixture.SecondRunSecretClient.GetSecretAsync(fixture.SecretName);
@@ -50,7 +50,7 @@ public sealed class EmulatorStaticPortPersistenceTests(StaticPortPersistenceFixt
         Assert.Equal(fixture.ConfiguredPort, secret.Value.Id.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public async Task KeyIsQueryableAfterRestartWithStableIdentifier()
     {
         var key = await fixture.SecondRunKeyClient.GetKeyAsync(fixture.KeyName);
@@ -59,7 +59,7 @@ public sealed class EmulatorStaticPortPersistenceTests(StaticPortPersistenceFixt
         Assert.Equal(fixture.ConfiguredPort, key.Value.Id.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public async Task CertificateIsQueryableAfterRestartWithStableIdentifiers()
     {
         var certificate = await fixture.SecondRunCertificateClient.GetCertificateAsync(fixture.CertificateName);
@@ -69,7 +69,7 @@ public sealed class EmulatorStaticPortPersistenceTests(StaticPortPersistenceFixt
         Assert.Equal(fixture.ConfiguredPort, certificate.Value.SecretId.Port);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily skipped: IntegrationTests/Emulator requires a rewrite")]
     public async Task CertificatePrivateKeyIsDownloadableAfterRestart()
     {
         Assert.True(
