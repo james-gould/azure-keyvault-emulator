@@ -42,6 +42,9 @@ jobs:
           dotnet dev-certs https --trust
         continue-on-error: true
 
+      - name: Run Aspire Hosting Tests
+        run: dotnet test ./test/AzureKeyVaultEmulator.Aspire.Hosting.Tests/AzureKeyVaultEmulator.Aspire.Hosting.Tests.csproj
+
       - name: Run API Integration Tests
         run: dotnet test ./test/AzureKeyVaultEmulator.IntegrationTests/AzureKeyVaultEmulator.IntegrationTests.csproj
 

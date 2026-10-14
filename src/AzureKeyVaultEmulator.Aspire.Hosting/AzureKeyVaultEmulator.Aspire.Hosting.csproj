@@ -28,5 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="AzureKeyVaultEmulator.AppHost" />
+    <InternalsVisibleTo Include="AzureKeyVaultEmulator.Aspire.Hosting.Tests" />
   </ItemGroup>
 </Project>
