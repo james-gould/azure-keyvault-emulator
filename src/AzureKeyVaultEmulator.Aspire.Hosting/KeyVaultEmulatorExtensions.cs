@@ -19,6 +19,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// <returns>The original <paramref name="builder"/> updated to run the emulated Azure Key Vault.</returns>
         /// <exception cref="KeyVaultEmulatorException">When the <see cref="KeyVaultEmulatorOptions"/> is not valid.</exception>
         /// <exception cref="ArgumentNullException">When required parameters are null or defaulted.</exception>
+        [AspireExportIgnore(Reason = "Polyglot AppHosts use the DTO-based addAzureKeyVaultEmulator export.")]
         public static IResourceBuilder<AzureKeyVaultResource> AddAzureKeyVaultEmulator(
             this IDistributedApplicationBuilder builder,
             string name,
@@ -43,6 +44,7 @@ namespace AzureKeyVaultEmulator.Aspire.Hosting
         /// <returns>The original <paramref name="builder"/> updated to run the emulated Azure Key Vault.</returns>
         /// <exception cref="KeyVaultEmulatorException">When the <see cref="KeyVaultEmulatorOptions"/> is not valid.</exception>
         /// <exception cref="ArgumentNullException">When required parameters are null or defaulted.</exception>
+        [AspireExportIgnore(Reason = "Polyglot AppHosts use the DTO-based runAsEmulator export.")]
         public static IResourceBuilder<AzureKeyVaultResource> RunAsEmulator(
             this IResourceBuilder<AzureKeyVaultResource> builder,
             KeyVaultEmulatorOptions? options = null,

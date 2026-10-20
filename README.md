@@ -50,6 +50,8 @@ You can read more about configuration [here.](docs/CONFIG.md#local-docker)
 
 ## Running the Emulator with .NET Aspire
 
+For TypeScript AppHosts, see the [TypeScript hosting integration guide](src/AzureKeyVaultEmulator.Aspire.Hosting/README.md#typescript-apphosts).
+
 ### 1. Install the [AzureKeyVaultEmulator.Aspire.Hosting](https://www.nuget.org/packages/AzureKeyVaultEmulator.Aspire.Hosting) package into your `AppHost` project:
 
 ```
