@@ -13,7 +13,12 @@ namespace AzureKeyVaultEmulator.Secrets.Services
     {
         public async Task<SecretBundle> GetSecretAsync(string name, string version = "")
         {
-            return await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, version);
+            var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, version);
+
+            if (!secret.Attributes.Enabled)
+                throw new SecretDisabledException(name);
+
+            return secret;
         }
 
         public async Task<SecretBundle> SetSecretAsync(string name, SetSecretRequest secret, bool? managed = null)
@@ -45,7 +50,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             return response;
         }
 
-        public async Task<UpdateSecretRequest> UpdateSecretAsync(string name, string version, UpdateSecretRequest request)
+        public async Task<SecretItemBundle> UpdateSecretAsync(string name, string version, UpdateSecretRequest request)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(version);
@@ -55,16 +60,14 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!string.IsNullOrEmpty(request.ContentType))
                 secret.ContentType = request.ContentType;
 
+            if (request.Attributes?.Enabled is bool enabled)
+                secret.Attributes.Enabled = enabled;
+
             secret.Attributes.Update();
 
             await context.SaveChangesAsync();
 
-            return new UpdateSecretRequest
-            {
-                Tags = secret.Tags,
-                ContentType = secret.ContentType,
-                Attributes = secret.Attributes
-            };
+            return ToSecretItemBundle(secret, isVaultLevelList: false);
         }
 
         public async Task<DeletedSecretBundle> DeleteSecretAsync(string name, string version = "")

@@ -16,6 +16,6 @@ namespace AzureKeyVaultEmulator.Secrets.Services
         Task PurgeDeletedSecretAsync(string name);
         Task<SecretBundle> RecoverDeletedSecretAsync(string name);
         Task<SecretBundle> RestoreSecretAsync(string encodedName);
-        Task<UpdateSecretRequest> UpdateSecretAsync(string name, string version, UpdateSecretRequest request);
+        Task<SecretItemBundle> UpdateSecretAsync(string name, string version, UpdateSecretRequest request);
     }
 }
