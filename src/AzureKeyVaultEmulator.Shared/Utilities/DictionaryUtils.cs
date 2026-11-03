@@ -29,7 +29,7 @@ public static class DictionaryUtils
 
     /// <summary>
     /// Retrieves an entity from the <see cref="DbSet{TEntity}"/> by name, version, and deleted status,
-    /// ordering results by the <c>Updated</c> property of the entity's attributes in descending order.
+    /// ordering results by the <c>Created</c> property of the entity's attributes in descending order.
     /// </summary>
     /// <typeparam name="TEntity">
     /// The entity type, which must implement <see cref="INamedItem"/>, <see cref="IDeletable"/>, and <see cref="IAttributedModel{TAttributes}"/>.
@@ -42,7 +42,7 @@ public static class DictionaryUtils
     /// <param name="version">The version of the entity to retrieve. If empty, retrieves any version.</param>
     /// <param name="deleted">Whether to retrieve deleted entities.</param>
     /// <returns>
-    /// The most recently updated entity matching the specified criteria, or throws <see cref="MissingItemException"/> if not found.
+    /// The most recently created entity matching the specified criteria, or throws <see cref="MissingItemException"/> if not found.
     /// </returns>
     /// <exception cref="MissingItemException">Thrown when no matching entity is found.</exception>
     public static async Task<TEntity> SafeGetAsync<TEntity, TAttributes>(
@@ -67,7 +67,8 @@ public static class DictionaryUtils
         if (!string.IsNullOrEmpty(version))
             query = query.Where(x => x.PersistedVersion == version);
 
-        var item = await query.OrderByDescending(x => x.Attributes.Updated).FirstOrDefaultAsync();
+        // Created, not Updated: metadata updates must not promote an older version to latest.
+        var item = await query.OrderByDescending(x => x.Attributes.Created).FirstOrDefaultAsync();
 
         return item ?? throw new MissingItemException(name);
     }
