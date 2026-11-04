@@ -34,8 +34,8 @@ public static class QueryUtils
         return items
             .Join(
                 minima,
-                item => new { item.PersistedName, item.Attributes.Updated },
-                m => new { PersistedName = m.Name, Updated = m.MaxCreated },
+                item => new { item.PersistedName, item.Attributes.Created },
+                m => new { PersistedName = m.Name, Created = m.MaxCreated },
                 (item, _) => item
             );
     }

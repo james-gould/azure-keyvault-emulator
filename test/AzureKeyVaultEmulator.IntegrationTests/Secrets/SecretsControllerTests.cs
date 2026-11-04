@@ -523,5 +523,174 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             Assert.NotNull(secretFromStore.Value);
             Assert.Equal(secret.Value, secretFromStore.Value.Value);
         }
+
+        [Fact]
+        public async Task DisablingSecretVersionBlocksReadsUntilReEnabled()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+            var secretValue = fixture.FreshlyGeneratedGuid;
+
+            var secret = await fixture.CreateSecretAsync(secretName, secretValue);
+
+            secret.Properties.Enabled = false;
+
+            var disabled = await client.UpdateSecretPropertiesAsync(secret.Properties);
+
+            Assert.False(disabled.Value.Enabled);
+            Assert.Equal(secret.Id, disabled.Value.Id);
+            Assert.Equal(secret.Properties.Version, disabled.Value.Version);
+            Assert.Equal(secret.Properties.CreatedOn, disabled.Value.CreatedOn);
+
+            var forbidden = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secretName, secret.Properties.Version));
+            Assert.Equal((int)HttpStatusCode.Forbidden, forbidden.Status);
+            Assert.Equal("Forbidden", forbidden.ErrorCode);
+
+            var versions = await client.GetPropertiesOfSecretVersionsAsync(secretName).ToListAsync();
+            Assert.False(Assert.Single(versions).Enabled);
+
+            secret.Properties.Enabled = true;
+
+            await client.UpdateSecretPropertiesAsync(secret.Properties);
+
+            var reEnabled = await client.GetSecretAsync(secretName, secret.Properties.Version);
+
+            Assert.True(reEnabled.Value.Properties.Enabled);
+            Assert.Equal(secretValue, reEnabled.Value.Value);
+            Assert.Equal(secret.Id, reEnabled.Value.Id);
+        }
+
+        [Fact]
+        public async Task DisabledSecretReadReturnsSecretDisabledInnerError()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secret = await fixture.CreateSecretAsync(fixture.FreshlyGeneratedGuid, fixture.FreshlyGeneratedGuid);
+
+            secret.Properties.Enabled = false;
+            await client.UpdateSecretPropertiesAsync(secret.Properties);
+
+            var forbidden = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secret.Name, secret.Properties.Version));
+
+            Assert.Equal((int)HttpStatusCode.Forbidden, forbidden.Status);
+            Assert.Equal("Forbidden", forbidden.ErrorCode);
+            Assert.Contains("SecretDisabled", forbidden.GetRawResponse()!.Content.ToString());
+        }
+
+        [Fact]
+        public async Task UpdateSecretWithoutEnabledKeepsStoredFlag()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secret = await fixture.CreateSecretAsync(fixture.FreshlyGeneratedGuid, fixture.FreshlyGeneratedGuid);
+
+            secret.Properties.Enabled = false;
+            await client.UpdateSecretPropertiesAsync(secret.Properties);
+
+            // Sends an attributes object without enabled, which must not reset the stored flag to its default.
+            await client.UpdateSecretPropertiesAsync(new SecretProperties(secret.Id) { ExpiresOn = DateTimeOffset.UtcNow.AddDays(30) });
+
+            var versions = await client.GetPropertiesOfSecretVersionsAsync(secret.Name).ToListAsync();
+            Assert.False(Assert.Single(versions).Enabled);
+        }
+
+        [Fact]
+        public async Task UpdatedSecretStaysInListWithUpdatedTimestamp()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var secret = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+
+            // Timestamps have one-second precision; Updated must land after Created.
+            await Task.Delay(1000);
+
+            secret.Properties.ContentType = "text/plain";
+            var updated = await client.UpdateSecretPropertiesAsync(secret.Properties);
+
+            Assert.True(updated.Value.UpdatedOn > updated.Value.CreatedOn);
+
+            var listed = await client.GetPropertiesOfSecretsAsync().ToListAsync();
+            var entry = Assert.Single(listed, x => x.Name == secretName);
+
+            Assert.Equal(updated.Value.CreatedOn, entry.CreatedOn);
+            Assert.Equal(updated.Value.UpdatedOn, entry.UpdatedOn);
+        }
+
+        [Fact]
+        public async Task DisablingOlderVersionLeavesLatestVersionReadable()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var older = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+            await Task.Delay(1000);
+            var latest = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+
+            older.Properties.Enabled = false;
+            await client.UpdateSecretPropertiesAsync(older.Properties);
+
+            var fromStore = await client.GetSecretAsync(secretName);
+            Assert.Equal(latest.Properties.Version, fromStore.Value.Properties.Version);
+            Assert.Equal(latest.Value, fromStore.Value.Value);
+            Assert.True(fromStore.Value.Properties.Enabled);
+
+            var forbidden = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secretName, older.Properties.Version));
+            Assert.Equal((int)HttpStatusCode.Forbidden, forbidden.Status);
+        }
+
+        [Fact]
+        public async Task DisabledLatestVersionBlocksNameOnlyReadWithoutFallback()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var older = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+            await Task.Delay(1000);
+            var latest = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+
+            latest.Properties.Enabled = false;
+            await client.UpdateSecretPropertiesAsync(latest.Properties);
+
+            var forbidden = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secretName));
+            Assert.Equal((int)HttpStatusCode.Forbidden, forbidden.Status);
+
+            var olderFromStore = await client.GetSecretAsync(secretName, older.Properties.Version);
+            Assert.Equal(older.Value, olderFromStore.Value.Value);
+
+            var listed = await client.GetPropertiesOfSecretsAsync().ToListAsync();
+            var entry = Assert.Single(listed, x => x.Name == secretName);
+            Assert.Equal(latest.Properties.CreatedOn, entry.CreatedOn);
+            Assert.False(entry.Enabled);
+        }
+
+        [Fact]
+        public async Task UpdatingOlderVersionDoesNotPromoteItToLatest()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var older = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+            await Task.Delay(1000);
+            var latest = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+
+            // Ensure the update timestamp lands after the latest version's creation time.
+            await Task.Delay(1000);
+
+            older.Properties.ContentType = "text/plain";
+            await client.UpdateSecretPropertiesAsync(older.Properties);
+
+            var fromStore = await client.GetSecretAsync(secretName);
+            Assert.Equal(latest.Properties.Version, fromStore.Value.Properties.Version);
+
+            var listed = await client.GetPropertiesOfSecretsAsync().ToListAsync();
+            var entry = Assert.Single(listed, x => x.Name == secretName);
+            Assert.Equal(latest.Properties.CreatedOn, entry.CreatedOn);
+        }
     }
 }

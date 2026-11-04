@@ -38,6 +38,19 @@ namespace AzureKeyVaultEmulator.Middleware
                     };
                     status = HttpStatusCode.Conflict;
                 }
+                else if (e is SecretDisabledException)
+                {
+                    error = new KeyVaultError
+                    {
+                        Code = "Forbidden",
+                        Message = e.Message,
+                        InnerError = new KeyVaultError
+                        {
+                            Code = "SecretDisabled"
+                        },
+                    };
+                    status = HttpStatusCode.Forbidden;
+                }
                 else if (e is MissingItemException)
                 {
                     status = HttpStatusCode.NotFound;
