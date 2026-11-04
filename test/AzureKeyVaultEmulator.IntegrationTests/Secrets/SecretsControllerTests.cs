@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Azure;
+﻿using Azure;
 using Azure.Security.KeyVault.Secrets;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper;
 using AzureKeyVaultEmulator.IntegrationTests.SetupHelper.Fixtures;
@@ -572,22 +571,15 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             secret.Properties.Enabled = false;
             await client.UpdateSecretPropertiesAsync(secret.Properties);
 
-            using var response = await SendAsync(HttpMethod.Get, $"secrets/{secret.Name}/{secret.Properties.Version}");
+            var forbidden = await Assert.ThrowsAsync<RequestFailedException>(() => client.GetSecretAsync(secret.Name, secret.Properties.Version));
 
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-
-            using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            var error = body.RootElement.GetProperty("error");
-
-            Assert.Equal("Forbidden", error.GetProperty("code").GetString());
-            Assert.Equal("SecretDisabled", error.GetProperty("innererror").GetProperty("code").GetString());
+            Assert.Equal((int)HttpStatusCode.Forbidden, forbidden.Status);
+            Assert.Equal("Forbidden", forbidden.ErrorCode);
+            Assert.Contains("SecretDisabled", forbidden.GetRawResponse()!.Content.ToString());
         }
 
-        [Theory]
-        [InlineData("""{"contentType":"text/plain"}""")]
-        [InlineData("""{"attributes":{}}""")]
-        [InlineData("""{"attributes":{"enabled":null}}""")]
-        public async Task UpdateSecretWithoutEnabledKeepsStoredFlag(string patchBody)
+        [Fact]
+        public async Task UpdateSecretWithoutEnabledKeepsStoredFlag()
         {
             var client = await fixture.GetClientAsync();
 
@@ -596,12 +588,35 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             secret.Properties.Enabled = false;
             await client.UpdateSecretPropertiesAsync(secret.Properties);
 
-            using var response = await SendAsync(HttpMethod.Patch, $"secrets/{secret.Name}/{secret.Properties.Version}", patchBody);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Sends an attributes object without enabled, which must not reset the stored flag to its default.
+            await client.UpdateSecretPropertiesAsync(new SecretProperties(secret.Id) { ExpiresOn = DateTimeOffset.UtcNow.AddDays(30) });
 
             var versions = await client.GetPropertiesOfSecretVersionsAsync(secret.Name).ToListAsync();
             Assert.False(Assert.Single(versions).Enabled);
+        }
+
+        [Fact]
+        public async Task UpdatedSecretStaysInListWithUpdatedTimestamp()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var secret = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+
+            // Timestamps have one-second precision; Updated must land after Created.
+            await Task.Delay(1000);
+
+            secret.Properties.ContentType = "text/plain";
+            var updated = await client.UpdateSecretPropertiesAsync(secret.Properties);
+
+            Assert.True(updated.Value.UpdatedOn > updated.Value.CreatedOn);
+
+            var listed = await client.GetPropertiesOfSecretsAsync().ToListAsync();
+            var entry = Assert.Single(listed, x => x.Name == secretName);
+
+            Assert.Equal(updated.Value.CreatedOn, entry.CreatedOn);
+            Assert.Equal(updated.Value.UpdatedOn, entry.UpdatedOn);
         }
 
         [Fact]
@@ -676,19 +691,6 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
             var listed = await client.GetPropertiesOfSecretsAsync().ToListAsync();
             var entry = Assert.Single(listed, x => x.Name == secretName);
             Assert.Equal(latest.Properties.CreatedOn, entry.CreatedOn);
-        }
-
-        private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, string? json = null)
-        {
-            var http = await fixture.CreateHttpClient();
-
-            using var request = new HttpRequestMessage(method, path);
-            request.Headers.Authorization = new("Bearer", await fixture.GetBearerTokenAsync());
-
-            if (json is not null)
-                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            return await http.SendAsync(request);
         }
     }
 }

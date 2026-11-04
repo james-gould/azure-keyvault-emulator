@@ -60,8 +60,7 @@ namespace AzureKeyVaultEmulator.Secrets.Services
             if (!string.IsNullOrEmpty(request.ContentType))
                 secret.ContentType = request.ContentType;
 
-            if (request.Attributes?.Enabled is bool enabled)
-                secret.Attributes.Enabled = enabled;
+            secret.Attributes.Enabled = request.Attributes?.Enabled ?? secret.Attributes.Enabled;
 
             secret.Attributes.Update();
 
