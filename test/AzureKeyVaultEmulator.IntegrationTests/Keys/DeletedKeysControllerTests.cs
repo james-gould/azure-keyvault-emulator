@@ -92,4 +92,34 @@ public sealed class DeletedKeysControllerTests(KeysTestingFixture fixture) : ICl
 
         Assert.KeysAreEqual(createdKey, fromMainStore);
     }
+
+    [Fact]
+    public async Task RecoverDeletedKeyRestoresAllVersionsTest()
+    {
+        var client = await fixture.GetClientAsync();
+
+        var keyName = fixture.FreshlyGeneratedGuid;
+
+        var first = await fixture.CreateKeyAsync(keyName);
+        var second = await fixture.CreateKeyAsync(keyName);
+
+        await (await client.StartDeleteKeyAsync(keyName)).WaitForCompletionAsync();
+        await (await client.StartRecoverDeletedKeyAsync(keyName)).WaitForCompletionAsync();
+
+        var versions = new List<string>();
+        await foreach (var version in client.GetPropertiesOfKeyVersionsAsync(keyName))
+            versions.Add(version.Version);
+
+        Assert.Equal(2, versions.Count);
+        Assert.Contains(first.Properties.Version, versions);
+        Assert.Contains(second.Properties.Version, versions);
+
+        var olderVersion = (await client.GetKeyAsync(keyName, first.Properties.Version)).Value;
+        Assert.KeysAreEqual(first, olderVersion);
+
+        await Assert.RequestFailsAsync(() => client.GetDeletedKeyAsync(keyName));
+
+        await foreach (var deleted in client.GetDeletedKeysAsync())
+            Assert.NotEqual(keyName, deleted.Name);
+    }
 }

@@ -201,7 +201,13 @@ namespace AzureKeyVaultEmulator.Secrets.Services
 
             var secret = await context.Secrets.SafeGetAsync<SecretBundle, SecretAttributes>(name, deleted: true);
 
-            secret.Deleted = false;
+            // Delete marks every version; recover restores them all, not only the latest.
+            var versions = await context.Secrets
+                .Where(x => x.PersistedName == secret.PersistedName && x.Deleted)
+                .ToListAsync();
+
+            foreach (var version in versions)
+                version.Deleted = false;
 
             await context.SaveChangesAsync();
 
