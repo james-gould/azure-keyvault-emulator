@@ -105,5 +105,35 @@ namespace AzureKeyVaultEmulator.IntegrationTests.Secrets
 
             await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
         }
+
+        [Fact]
+        public async Task RecoverDeletedSecretRestoresAllVersionsTest()
+        {
+            var client = await fixture.GetClientAsync();
+
+            var secretName = fixture.FreshlyGeneratedGuid;
+
+            var first = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+            var second = await fixture.CreateSecretAsync(secretName, fixture.FreshlyGeneratedGuid);
+
+            await (await client.StartDeleteSecretAsync(secretName)).WaitForCompletionAsync();
+            await (await client.StartRecoverDeletedSecretAsync(secretName)).WaitForCompletionAsync();
+
+            var versions = new List<string>();
+            await foreach (var version in client.GetPropertiesOfSecretVersionsAsync(secretName))
+                versions.Add(version.Version);
+
+            Assert.Equal(2, versions.Count);
+            Assert.Contains(first.Properties.Version, versions);
+            Assert.Contains(second.Properties.Version, versions);
+
+            var olderVersion = await client.GetSecretAsync(secretName, first.Properties.Version);
+            Assert.Equal(first.Value, olderVersion.Value.Value);
+
+            await Assert.RequestFailsAsync(() => client.GetDeletedSecretAsync(secretName));
+
+            await foreach (var deleted in client.GetDeletedSecretsAsync())
+                Assert.NotEqual(secretName, deleted.Name);
+        }
     }
 }

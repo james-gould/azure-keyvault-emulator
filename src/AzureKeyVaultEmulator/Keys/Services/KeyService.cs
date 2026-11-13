@@ -429,7 +429,13 @@ namespace AzureKeyVaultEmulator.Keys.Services
 
             var key = await context.Keys.SafeGetAsync<KeyBundle, KeyAttributes>(name, deleted: true);
 
-            key.Deleted = false;
+            // Delete marks every version; recover restores them all, not only the latest.
+            var versions = await context.Keys
+                .Where(x => x.PersistedName == key.PersistedName && x.Deleted)
+                .ToListAsync();
+
+            foreach (var version in versions)
+                version.Deleted = false;
 
             await context.Keys.SafeAddAsync(name, key.PersistedVersion, key);
 
